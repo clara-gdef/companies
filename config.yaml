@@ -1,5 +1,4 @@
-global:
-  datadir: /local/gainondefor/work/lip6/data/companies
+datadir: /local/gainondefor/work/lip6/data/companies
 rep:
   ft:
     total: reps/ft_emb/30_latest_clus_cie_per_skills

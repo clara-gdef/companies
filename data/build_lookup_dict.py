@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 
 def main():
-    dd = cfg["global"]["datadir"]
+    dd = cfg["datadir"]
     lookup_ppl = dict()
     all_companies = set()
     all_dpt = set()
@@ -24,17 +24,22 @@ def main():
                 if len(ppl_ft[cie][i].keys()) > 0:
                     all_dpt.add((cie, i))
                     for pos, person_id in enumerate(ppl_ft[cie][i]["id_ppl"]):
-                        lookup_ppl[person_id] = {"ft_emb": ppl_ft[cie][i]["ppl_emb"][pos],
-                                                 "skills": ppl_sk[cie][i]["bin_skills"][pos]}
+                        lookup_ppl[person_id] = {"ft": ppl_ft[cie][i]["ppl_emb"][pos],
+                                                 "sk": ppl_sk[cie][i]["bin_skills"][pos],
+                                                 "cie_name": cie,
+                                                 "clus_name": i}
     cie_dict = dict()
     for pos, name in enumerate(sorted(list(all_companies))):
         cie_dict[pos] = name
+    offset = pos
     clus_dict = dict()
     for pos, name in enumerate(sorted(list(all_clusters))):
-        clus_dict[pos] = name
+        rank = offset + pos
+        clus_dict[rank] = name
+    offset = rank
     dpt_dict = dict()
     for pos, name in enumerate(sorted(list(all_dpt))):
-        dpt_dict[pos] = name
+        dpt_dict[offset + pos] = name
 
     print("Num cie: " + str(len(cie_dict)))
     with open(os.path.join(dd, 'lookup_cie.pkl'), 'wb') as f:
@@ -48,10 +53,18 @@ def main():
     with open(os.path.join(dd, 'lookup_dpt.pkl'), 'wb') as f:
         pkl.dump(dpt_dict, f)
 
+    rev_cie_dict = {v: k for k, v in cie_dict.items()}
+    rev_clus_dict = {v: k for k, v in clus_dict.items()}
+    rev_dpt_dict = {v: k for k, v in dpt_dict.items()}
+
     print("Num ppl: " + str(len(lookup_ppl)))
+    for person in tqdm(lookup_ppl, desc="Adding labels to people..."):
+        lookup_ppl[person]["cie_label"] = rev_cie_dict[lookup_ppl[person]["cie_name"]]
+        lookup_ppl[person]["clus_labl"] = rev_clus_dict[lookup_ppl[person]["clus_name"]]
+        lookup_ppl[person]["dpt_label"] = rev_dpt_dict[(lookup_ppl[person]["cie_name"], lookup_ppl[person]["clus_name"])]
+
     with open(os.path.join(dd, 'lookup_ppl.pkl'), 'wb') as f:
         pkl.dump(lookup_ppl, f)
-
 
 
 if __name__ == "__main__":
