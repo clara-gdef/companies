@@ -20,36 +20,26 @@ def main():
     print("Data loaded")
     with ipdb.launch_ipdb_on_exception():
         for (agg_name, agg_func) in [("avg", torch.mean), ("max", torch.max), ("sum", torch.sum)]:
-            cie_reps = dict()
-            for cie_num, cie_name in tqdm(cie_dict.items(), desc="Building rep of CIE for agg " + agg_name + "..."):
-                ppl_ft_emb = [ppl_dict[i]["ft"] for i in ppl_dict if ppl_dict[i]["cie_name"] == cie_name]
-                ppl_skills = [ppl_dict[i]["sk"] for i in ppl_dict if ppl_dict[i]["cie_name"] == cie_name]
-                if cie_num not in cie_reps.keys():
-                    cie_reps[cie_num] = dict()
-                cie_reps[cie_num]["ft"] = agg_func(torch.stack(ppl_ft_emb), dim=0).unsqueeze(0)
-                cie_reps[cie_num]["sk"] = agg_func(torch.stack(ppl_skills), dim=0)
-            with open(os.path.join(dd, "cie_rep_" + agg_name + ".pkl"), "wb") as f:
-                pkl.dump(cie_reps, f)
-            clus_reps = dict()
-            for clus_num, clus_name in tqdm(clus_dict.items(), desc="Building rep of CLUS for agg " + agg_name + "..."):
-                ppl_ft_emb = [ppl_dict[i]["ft"] for i in ppl_dict if ppl_dict[i]["clus_name"] == clus_name]
-                ppl_skills = [ppl_dict[i]["sk"] for i in ppl_dict if ppl_dict[i]["clus_name"] == clus_name]
-                if clus_num not in clus_reps.keys():
-                    clus_reps[clus_num] = dict()
-                clus_reps[clus_num]["ft"] = agg_func(torch.stack(ppl_ft_emb), dim=0)
-                clus_reps[clus_num]["sk"] = agg_func(torch.stack(ppl_skills), dim=0)
-            with open(os.path.join(dd, "clus_rep_" + agg_name + ".pkl"), "wb") as f:
-                pkl.dump(clus_reps, f)
-            dpt_reps = dict()
-            for dpt_num in tqdm(dpt_dict.keys(), desc="Building rep of DPT for agg " + agg_name + "..."):
-                ppl_ft_emb = [ppl_dict[i]["ft"] for i in ppl_dict if ppl_dict[i]["dpt_label"] == dpt_num]
-                ppl_skills = [ppl_dict[i]["sk"] for i in ppl_dict if ppl_dict[i]["dpt_label"] == dpt_num]
-                if dpt_num not in dpt_reps.keys():
-                    dpt_reps[dpt_num] = dict()
-                dpt_reps[dpt_num]["ft"] = agg_func(torch.stack(ppl_ft_emb), dim=0)
-                dpt_reps[dpt_num]["sk"] = agg_func(torch.stack(ppl_skills), dim=0)
-            with open(os.path.join(dd, "dpt_rep_" + agg_name + ".pkl"), "wb") as f:
-                pkl.dump(dpt_reps, f)
+            build_and_save_rep_for_bag("cie", cie_dict, ppl_dict, agg_name, agg_func)
+            build_and_save_rep_for_bag("clus", clus_dict, ppl_dict, agg_name, agg_func)
+            build_and_save_rep_for_bag("dpt", dpt_dict, ppl_dict, agg_name, agg_func)
+
+
+def build_and_save_rep_for_bag(bag_name, bag_dict, ppl_dict, agg_name, agg_func):
+    bag_reps = dict()
+    for bag_num, bag_name in tqdm(bag_dict.items(), desc="Building rep of " + bag_name.upper() + " for agg " + agg_name + "..."):
+        ppl_ft_emb = [ppl_dict[i]["ft"] for i in ppl_dict if ppl_dict[i]["cie_name"] == bag_name]
+        ppl_skills = [ppl_dict[i]["sk"] for i in ppl_dict if ppl_dict[i]["cie_name"] == bag_name]
+        if bag_num not in bag_reps.keys():
+            bag_reps[bag_num] = dict()
+        if agg_name ==  "max":
+            bag_reps[bag_num]["ft"] = agg_func(torch.stack(ppl_ft_emb), dim=0)[0].unsqueeze(0)
+            bag_reps[bag_num]["sk"] = agg_func(torch.stack(ppl_skills), dim=0)[0]
+        else:
+            bag_reps[bag_num]["ft"] = agg_func(torch.stack(ppl_ft_emb), dim=0).unsqueeze(0)
+            bag_reps[bag_num]["sk"] = agg_func(torch.stack(ppl_skills), dim=0)
+    with open(os.path.join(cfg["datadir"], bag_name + "_rep_" + agg_name + ".pkl"), "wb") as f:
+        pkl.dump(bag_reps, f)
 
 
 if __name__ == "__main__":
