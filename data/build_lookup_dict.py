@@ -5,15 +5,16 @@ from tqdm import tqdm
 
 
 def main():
+    dat_dir = CFG["datadir"]
     lookup_ppl = dict()
     all_companies = set()
     all_dpt = set()
     all_clusters = set()
     for split in ["_TEST", "_VALID", "_TRAIN"]:
         print("Loading people...")
-        with open(os.path.join(CFG["datadir"], CFG["rep"]['ft']['total'] + split + '.pkl'), 'rb') as f_name:
+        with open(os.path.join(dat_dir, CFG["rep"]['ft']['total'] + split + '.pkl'), 'rb') as f_name:
             ppl_ft = pkl.load(f_name)
-        with open(os.path.join(CFG["datadir"], CFG["rep"]['sk']['total'] + split + '.pkl'), 'rb') as f_name:
+        with open(os.path.join(dat_dir, CFG["rep"]['sk']['total'] + split + '.pkl'), 'rb') as f_name:
             ppl_sk = pkl.load(f_name)
         print("People loaded.")
         for cie in tqdm(ppl_ft.keys(), desc='Builing people lookup for ' + split + '...'):
@@ -41,15 +42,15 @@ def main():
         dpt_dict[offset + pos] = name
 
     print("Num cie: " + str(len(cie_dict)))
-    with open(os.path.join(CFG["datadir"], 'lookup_cie.pkl'), 'wb') as f_name:
+    with open(os.path.join(dat_dir, 'lookup_cie.pkl'), 'wb') as f_name:
         pkl.dump(cie_dict, f_name)
 
     print("Num clus: " + str(len(clus_dict)))
-    with open(os.path.join(CFG["datadir"], 'lookup_clus.pkl'), 'wb') as f_name:
+    with open(os.path.join(dat_dir, 'lookup_clus.pkl'), 'wb') as f_name:
         pkl.dump(clus_dict, f_name)
 
     print("Num dpt: " + str(len(dpt_dict)))
-    with open(os.path.join(CFG["datadir"], 'lookup_dpt.pkl'), 'wb') as f_name:
+    with open(os.path.join(dat_dir, 'lookup_dpt.pkl'), 'wb') as f_name:
         pkl.dump(dpt_dict, f_name)
 
     rev_cie_dict = {v: k for k, v in cie_dict.items()}
@@ -64,7 +65,7 @@ def main():
                                           lookup_ppl[person]["clus_name"])
         lookup_ppl[person]["dpt_label"] = rev_dpt_dict[lookup_ppl[person]["dpt_name"]]
 
-    with open(os.path.join(dd, 'lookup_ppl.pkl'), 'wb') as f_name:
+    with open(os.path.join(dat_dir, 'lookup_ppl.pkl'), 'wb') as f_name:
         pkl.dump(lookup_ppl, f_name)
 
 
