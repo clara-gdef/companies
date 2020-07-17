@@ -71,5 +71,5 @@ def main():
 if __name__ == "__main__":
     global cfg
     with open("config.yaml", "r") as ymlfile:
-        cfg = yaml.load(ymlfile)
+        cfg = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     main()
