@@ -60,8 +60,9 @@ def main():
     print("Num ppl: " + str(len(lookup_ppl)))
     for person in tqdm(lookup_ppl, desc="Adding labels to people..."):
         lookup_ppl[person]["cie_label"] = rev_cie_dict[lookup_ppl[person]["cie_name"]]
-        lookup_ppl[person]["clus_labl"] = rev_clus_dict[lookup_ppl[person]["clus_name"]]
-        lookup_ppl[person]["dpt_label"] = rev_dpt_dict[(lookup_ppl[person]["cie_name"], lookup_ppl[person]["clus_name"])]
+        lookup_ppl[person]["clus_label"] = rev_clus_dict[lookup_ppl[person]["clus_name"]]
+        lookup_ppl[person]["dpt_name"] = (lookup_ppl[person]["cie_name"], lookup_ppl[person]["clus_name"])
+        lookup_ppl[person]["dpt_label"] = rev_dpt_dict[lookup_ppl[person]["dpt_name"]]
 
     with open(os.path.join(dd, 'lookup_ppl.pkl'), 'wb') as f:
         pkl.dump(lookup_ppl, f)

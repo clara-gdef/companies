@@ -27,12 +27,13 @@ def main():
 
 def build_and_save_rep_for_bag(bag_name, bag_dict, ppl_dict, agg_name, agg_func):
     bag_reps = dict()
-    for bag_num, bag_name in tqdm(bag_dict.items(), desc="Building rep of " + bag_name.upper() + " for agg " + agg_name + "..."):
-        ppl_ft_emb = [ppl_dict[i]["ft"] for i in ppl_dict if ppl_dict[i]["cie_name"] == bag_name]
-        ppl_skills = [ppl_dict[i]["sk"] for i in ppl_dict if ppl_dict[i]["cie_name"] == bag_name]
+    for bag_num, bag_name in tqdm(bag_dict.items(),
+                                  desc="Building rep of " + bag_name.upper() + " for agg " + agg_name.upper() + "..."):
+        ppl_ft_emb = [ppl_dict[i]["ft"] for i in ppl_dict if ppl_dict[i][bag_name + "_name"] == bag_name]
+        ppl_skills = [ppl_dict[i]["sk"] for i in ppl_dict if ppl_dict[i][bag_name + "_name"] == bag_name]
         if bag_num not in bag_reps.keys():
             bag_reps[bag_num] = dict()
-        if agg_name ==  "max":
+        if agg_name == "max":
             bag_reps[bag_num]["ft"] = agg_func(torch.stack(ppl_ft_emb), dim=0)[0].unsqueeze(0)
             bag_reps[bag_num]["sk"] = agg_func(torch.stack(ppl_skills), dim=0)[0]
         else:
