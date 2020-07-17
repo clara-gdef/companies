@@ -1,5 +1,6 @@
 import os
 import pickle as pkl
+import ipdb
 from tqdm import tqdm
 from torch.utils.data import Dataset
 
@@ -10,8 +11,6 @@ class DiscriminativePolyvalentDataset(Dataset):
         if load:
             with open(os.path.join(data_dir, "disc_poly_" + agg_type + ".pkl"), 'rb') as f_name:
                 self.tuples = pkl.load(f_name)
-                self.user_dim = self.tuples[0][0].shape[-1]
-                self.bag_dim = self.tuples[0][0].shape[-1]
 
         else:
             print("Loading data...")
@@ -30,6 +29,7 @@ class DiscriminativePolyvalentDataset(Dataset):
             for cie in tqdm(ppl_reps.keys(), desc="Building Discriminative Polyvalent Dataset..."):
                 for clus in ppl_reps[cie].keys():
                     for person_id in ppl_reps[cie][clus]["id_ppl"]:
+                        ipdb.set_trace()
                         self.tuples.append((ppl_lookup[person_id][rep_type],
                                            cie_reps[ppl_lookup[person_id]["cie_label"]],
                                            ppl_lookup[person_id]["cie_label"]))
