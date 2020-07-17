@@ -1,16 +1,19 @@
 import os
 import pickle as pkl
+import ipdb
 import torch
 from torch.utils.data import Dataset
 
 
-class DicriminativePolyvalentDataset(Dataset):
+class DiscriminativePolyvalentDataset(Dataset):
     """Face Landmarks dataset."""
 
-    def __init__(self, datadir, ppl_file, agg_type, cie_reps_file, clus_reps_file, dpt_reps_file):
+    def __init__(self, datadir, ppl_file, rep_type, agg_type, cie_reps_file, clus_reps_file, dpt_reps_file):
         print("Loading data...")
+        with open(os.path.join(datadir, "lookup_ppl.pkl"), 'rb') as f:
+            ppl_lookup = pkl.load(f)
         with open(os.path.join(datadir, ppl_file), 'rb') as f:
-            ppl_dict = pkl.load(f)
+            ppl_reps = pkl.load(f)
         with open(os.path.join(datadir, cie_reps_file + "_" + agg_type + ".pkl"), "rb") as f:
             cie_reps = pkl.load(f)
         with open(os.path.join(datadir, clus_reps_file + "_" + agg_type + ".pkl"), "rb") as f:
@@ -18,6 +21,9 @@ class DicriminativePolyvalentDataset(Dataset):
         with open(os.path.join(datadir, dpt_reps_file + "_" + agg_type + ".pkl"), "rb") as f:
             dpt_reps = pkl.load(f)
         print("Data Loaded.")
+        self.tuples = []
+        for indices in ppl_reps:
+            ipdb.set_trace()
 
 
     def __len__(self):
