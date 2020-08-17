@@ -23,14 +23,16 @@ def train(hparams):
     dataset_train, dataset_valid = datasets[0], datasets[1]
     in_size, out_size = get_model_params(len(dataset_train), len(dataset_train.bag_rep))
 
+    xp_title = "disc_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
+        hparams.b_size)
+
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model, num_workers=32)
     valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model, num_workers=32)
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
-    model = InstanceClassifier(in_size, out_size, hparams, dataset_train)
+    model = InstanceClassifier(in_size, out_size, hparams, dataset_train, CFG["gpudatadir"], xp_title)
     print("Model Loaded.")
-    xp_title = "disc_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
-        hparams.b_size)
+
     model_path = os.path.join(CFG['modeldir'], "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type)
 
     logger = TensorBoardLogger(
@@ -58,9 +60,11 @@ def train(hparams):
 
 
 def test(hparams, trainer):
-    dataset = load_datasets(hparams, ["TEST"], False)
+    dataset = load_datasets(hparams, ["TEST"], hparams.load_dataset)
     test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_poly_model, num_workers=32)
     trainer.test(test_dataloaders=test_loader)
+    print("out of the testing loop !")
+    ipdb.set_trace()
 
 
 def load_datasets(hparams, splits, load):
@@ -102,7 +106,7 @@ if __name__ == "__main__":
     parser.add_argument("--gpus", type=int, default=[0])
     parser.add_argument("--b_size", type=int, default=64)
     parser.add_argument("--input_type", type=str, default="matMul")
-    parser.add_argument("--load_dataset", type=bool, default=False)
+    parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--epochs", type=int, default=2)
