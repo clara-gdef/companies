@@ -1,1 +1,1 @@
-from .InstanceClassifier import InstanceClassifier
+from .InstanceClassifier import *

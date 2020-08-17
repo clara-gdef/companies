@@ -1,56 +1,94 @@
+import os
+
 import ipdb
 import argparse
 import pytorch_lightning as pl
+from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
-from tqdm import tqdm
 import yaml
 from data.datasets import DiscriminativePolyvalentDataset
 from models.classes import InstanceClassifier
 from utils.models import collate_for_disc_poly_model
 
 
-def main(args):
+def main(hparams):
     with ipdb.launch_ipdb_on_exception():
-        dataset_train, dataset_valid, dataset_test = load_datasets(args)
-        in_size, out_size = get_model_params(len(dataset_train), len(dataset_train.bag_rep))
-
-        train_loader = DataLoader(dataset_train, batch_size=args.b_size, collate_fn=collate_for_disc_poly_model)
-        valid_loader = DataLoader(dataset_valid, batch_size=args.b_size, collate_fn=collate_for_disc_poly_model)
-        valid_loader = DataLoader(dataset_test, batch_size=args.b_size, collate_fn=collate_for_disc_poly_model)
-
-        print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
-        model = InstanceClassifier(in_size, out_size, args.input_type)
-        print("Model Loaded.")
-        trainer = pl.Trainer(gpus=args.gpus, max_epochs=args.epochs)
-        trainer.fit(model, train_loader, args.lr)
+        trainer, model = train(hparams)
+        results = test(hparams, trainer)
 
 
-def load_datasets(args):
+def train(hparams):
+    datasets = load_datasets(hparams, ["TRAIN", "VALID"], hparams.load_dataset)
+    dataset_train, dataset_valid = datasets[0], datasets[1]
+    in_size, out_size = get_model_params(len(dataset_train), len(dataset_train.bag_rep))
+
+    train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model, num_workers=32)
+    valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model, num_workers=32)
+
+    print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
+    model = InstanceClassifier(in_size, out_size, hparams, dataset_train)
+    print("Model Loaded.")
+    xp_title = "disc_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
+        hparams.b_size)
+    model_path = os.path.join(CFG['modeldir'], "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type)
+
+    logger = TensorBoardLogger(
+        save_dir='./models/logs',
+        name=xp_title)
+    print("Logger initiated.")
+    checkpoint_callback = ModelCheckpoint(
+        filepath=os.path.join(model_path, '{epoch:02d}'),
+        save_top_k=True,
+        verbose=True,
+        monitor='val_loss',
+        mode='min',
+        prefix=''
+    )
+    print("Checkpoint initiated.")
+    trainer = pl.Trainer(gpus=hparams.gpus,
+                         max_epochs=hparams.epochs,
+                         checkpoint_callback=checkpoint_callback,
+                         logger=logger,
+                         auto_lr_find=True
+                         )
+    print("Starting training...")
+    trainer.fit(model, train_loader, valid_loader)
+    return trainer, model
+
+
+def test(hparams, trainer):
+    dataset = load_datasets(hparams, ["TEST"], False)
+    test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_poly_model, num_workers=32)
+    trainer.test(test_dataloaders=test_loader)
+
+
+def load_datasets(hparams, splits, load):
     datasets = []
-    common_args = {
+    common_hparams = {
         "data_dir": CFG["gpudatadir"],
-        "ppl_file": CFG["rep"][args.rep_type]["total"],
-        "rep_type": args.rep_type,
-        "cie_reps_file": CFG["rep"]["cie"] + args.data_agg_type + ".pkl",
-        "clus_reps_file": CFG["rep"]["clus"] + args.data_agg_type + ".pkl",
-        "dpt_reps_file": CFG["rep"]["dpt"] + args.data_agg_type + ".pkl",
-        "agg_type": args.data_agg_type,
-        "load": False
+        "ppl_file": CFG["rep"][hparams.rep_type]["total"],
+        "rep_type": hparams.rep_type,
+        "cie_reps_file": CFG["rep"]["cie"] + hparams.data_agg_type + ".pkl",
+        "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type + ".pkl",
+        "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type + ".pkl",
+        "agg_type": hparams.data_agg_type,
+        "load": load
     }
-    for split in ["TRAIN", "VALID", "TEST"]:
-        datasets.append(DiscriminativePolyvalentDataset(**common_args, split=split))
+    for split in splits:
+        datasets.append(DiscriminativePolyvalentDataset(**common_hparams, split=split))
 
-    return datasets[0], datasets[1], datasets[2]
+    return datasets
 
 
 def get_model_params(rep_dim, num_bag):
     out_size = num_bag
-    if args.input_type == "hadamard" or args.input_type == "concat":
+    if hparams.input_type == "hadamard" or hparams.input_type == "concat":
         in_size = rep_dim * num_bag
-    elif args.input_type == "matMul":
+    elif hparams.input_type == "matMul":
         in_size = num_bag
     else:
-        raise Exception("Wrong input data specified: " + str(args.input_type))
+        raise Exception("Wrong input data specified: " + str(hparams.input_type))
 
     return in_size, out_size
 
@@ -61,11 +99,12 @@ if __name__ == "__main__":
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='sk')
-    parser.add_argument("--gpus", type=int, default=1)
+    parser.add_argument("--gpus", type=int, default=[0])
     parser.add_argument("--b_size", type=int, default=64)
     parser.add_argument("--input_type", type=str, default="matMul")
+    parser.add_argument("--load_dataset", type=bool, default=False)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--lr", type=float, default=1e-3)
-    parser.add_argument("--epochs", type=int, default=100)
-    args = parser.parse_args()
-    main(args)
+    parser.add_argument("--epochs", type=int, default=2)
+    hparams = parser.parse_args()
+    main(hparams)

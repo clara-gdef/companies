@@ -4,7 +4,6 @@ import itertools
 import torch
 from tqdm import tqdm
 from torch.utils.data import Dataset
-import ipdb
 
 
 class DiscriminativePolyvalentDataset(Dataset):
@@ -23,7 +22,10 @@ class DiscriminativePolyvalentDataset(Dataset):
             self.tuples = dic["tuples"]
             self.rep_dim = dic["rep_dim"]
             self.bag_rep = dic["bag_rep"]
-            print("Discriminative Polyvalent Dataset loaded.")
+            self.num_cie = dic["num_cie"]
+            self.num_clus = dic["num_clus"]
+            self.num_dpt = dic["num_dpt"]
+            print("Discriminative Polyvalent Dataset for split " + split + " loaded.")
             print("Dataset Length: " + str(len(self.tuples)))
 
         else:
@@ -40,25 +42,31 @@ class DiscriminativePolyvalentDataset(Dataset):
                 dpt_reps = pkl.load(f_name)
             print("Data Loaded.")
             self.rep_type = rep_type
-            self.tuples = build_ppl_tuples(ppl_reps, ppl_lookup, rep_type)
+            self.num_cie = len(cie_reps)
+            self.num_clus = len(clus_reps)
+            self.num_dpt = len(dpt_reps)
+            self.tuples = build_ppl_tuples(ppl_reps, ppl_lookup, rep_type, self.num_cie, self.num_clus, self.num_dpt, split)
             self.rep_dim = self.tuples[0]["rep"].shape[-1]
             self.bag_rep = self.build_bag_reps(cie_reps, clus_reps, dpt_reps)
             self.save_dataset(data_dir, agg_type, rep_type, split)
 
-            print("Discriminative Polyvalent Dataset built.")
+            print("Discriminative Polyvalent Dataset for split " + split + " built.")
             print("Dataset Length: " + str(len(self.tuples)))
 
     def __len__(self):
         return len(self.tuples)
 
     def __getitem__(self, idx):
-        return self.tuples[idx]
+        return self.tuples[idx], self.bag_rep
 
     def save_dataset(self, data_dir, agg_type, rep_type, split):
         dictionary = {"rep_type": self.rep_type,
                       "tuples": self.tuples,
                       "rep_dim": self.rep_dim,
-                      "bag_rep": self.bag_rep}
+                      "bag_rep": self.bag_rep,
+                      'num_cie': self.num_cie,
+                      'num_clus': self.num_clus,
+                      "num_dpt": self.num_dpt}
         file_name = "disc_poly_" + agg_type + "_" + rep_type + "_" + split + ".pkl"
         with open(os.path.join(data_dir, file_name), 'wb') as f_name:
             torch.save(dictionary, f_name)
@@ -70,17 +78,20 @@ class DiscriminativePolyvalentDataset(Dataset):
         return tmp[1:]
 
 
-def build_ppl_tuples(ppl_reps, ppl_lookup, rep_type):
+def build_ppl_tuples(ppl_reps, ppl_lookup, rep_type, num_cie, num_clus, num_dpt, split):
     tuples = []
-    for cie in tqdm(ppl_reps.keys(), desc="Building Discriminative Polyvalent Dataset..."):
+    for cie in tqdm(ppl_reps.keys(), desc="Building Discriminative Polyvalent Dataset for split " + split + " ..."):
         for clus in ppl_reps[cie].keys():
             for person_id in ppl_reps[cie][clus]["id_ppl"]:
+                assert ppl_lookup[person_id]["cie_label"] <= num_cie - 1
+                assert num_cie <= ppl_lookup[person_id]["clus_label"] <= num_cie + num_clus - 1
+                assert num_cie + num_clus <= ppl_lookup[person_id]["dpt_label"] <= num_cie + num_clus + num_dpt - 1
                 tuples.append(
                     {"id": person_id,
                      "rep": ppl_lookup[person_id][rep_type],
                      "cie": ppl_lookup[person_id]["cie_label"],
                      "clus": ppl_lookup[person_id]["clus_label"],
-                     "label": ppl_lookup[person_id]["dpt_label"]
+                     "dpt": ppl_lookup[person_id]["dpt_label"]
                      }
                 )
     return tuples
