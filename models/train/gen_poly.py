@@ -7,7 +7,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
 from data.datasets import GenerativePolyvalentDataset
-from models.classes import InstanceClassifierGen
+from models.classes.InstanceClassifierGen import InstanceClassifierGen
 from utils.models import collate_for_gen_poly_model
 
 
@@ -30,9 +30,9 @@ def train(hparams):
                          logger=logger,
                          auto_lr_find=auto_lr_find
                          )
-    datasets = load_datasets(hparams, ["TRAIN", "VALID"], True)
+    datasets = load_datasets(hparams, ["TRAIN", "VALID"], hparams.load_dataset)
     dataset_train, dataset_valid = datasets[0], datasets[1]
-    in_size, out_size = get_model_params(len(dataset_train), len(dataset_train.bag_rep))
+    in_size, out_size = get_model_params(len(dataset_train))
 
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_gen_poly_model,
                               num_workers=32)
@@ -70,10 +70,10 @@ def load_datasets(hparams, splits, load):
     return datasets
 
 
-def get_model_params(rep_dim, num_bag):
-    out_size = num_bag
+def get_model_params(rep_dim):
+    out_size = 1
     if hparams.input_type == "hadamard" or hparams.input_type == "concat":
-        in_size = rep_dim * num_bag
+        in_size = rep_dim * 2
     elif hparams.input_type == "matMul":
         in_size = rep_dim
     else:
@@ -101,8 +101,8 @@ def init_lightning(xp_title):
 
     early_stop_callback = EarlyStopping(
         monitor='val_loss',
-        min_delta=0.00,
-        patience=5,
+        min_delta=0.001,
+        patience=3,
         verbose=False,
         mode='min'
     )
@@ -115,10 +115,10 @@ if __name__ == "__main__":
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
-    parser.add_argument("--gpus", type=int, default=[1, 2, 3])
+    parser.add_argument("--gpus", type=int, default=[2])
     parser.add_argument("--b_size", type=int, default=2)
-    parser.add_argument("--input_type", type=str, default="hadamard")
-    parser.add_argument("--load_dataset", type=bool, default=False)
+    parser.add_argument("--input_type", type=str, default="matMul")
+    parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--lr", type=float, default=1e-7)
     parser.add_argument("--epochs", type=int, default=50)

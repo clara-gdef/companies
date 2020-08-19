@@ -104,7 +104,7 @@ def init_lightning(xp_title):
 
     early_stop_callback = EarlyStopping(
         monitor='val_loss',
-        min_delta=0.00,
+        min_delta=0.001,
         patience=5,
         verbose=False,
         mode='min'
@@ -118,8 +118,8 @@ if __name__ == "__main__":
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
-    parser.add_argument("--gpus", type=int, default=1)
-    parser.add_argument("--b_size", type=int, default=2)
+    parser.add_argument("--gpus", type=int, default=[1])
+    parser.add_argument("--b_size", type=int, default=64)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", type=bool, default=False)
     parser.add_argument("--data_agg_type", type=str, default="avg")

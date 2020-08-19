@@ -12,7 +12,10 @@ def collate_for_disc_poly_model(batch):
 
 
 def collate_for_gen_poly_model(batch):
-    ipdb.set_trace()
+    ppl = [i[0] for i in batch]
+    bag_reps = [i[1] for i in batch]
+    labels = [i[-1] for i in batch]
+    return torch.stack(ppl), torch.stack(bag_reps), labels
 
 
 def labels_to_one_hot(b_size, classes_num, total_classes):
