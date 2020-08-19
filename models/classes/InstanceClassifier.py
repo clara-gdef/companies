@@ -37,10 +37,10 @@ class InstanceClassifier(pl.LightningModule):
             profiles = batch[1].squeeze(1)
         else:
             profiles = batch[1]
+
         if self.input_type == "matMul":
-            ppl_tensor = torch.transpose(profiles, 1, 0)
-            tmp = torch.matmul(bag_representations, ppl_tensor)
-            input_tensor = tmp.view(len(batch[0]), -1)
+            bag_rep = torch.transpose(bag_representations, 1, 0)
+            input_tensor = torch.matmul(profiles, bag_rep)
             labels = labels_to_one_hot(input_tensor.shape[0], [batch[2], batch[3], batch[4]], input_tensor.shape[-1])
             output = self.forward(input_tensor)
             loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
@@ -63,12 +63,9 @@ class InstanceClassifier(pl.LightningModule):
         else:
             profiles = batch[1]
         if self.input_type == "matMul":
-            ipdb.set_trace()
-            ppl_tensor = torch.transpose(profiles, 1, 0)
-            tmp = torch.matmul(bag_representations, ppl_tensor).squeeze(-1)
-            input_tensor = tmp.view(len(batch[0]), -1)
+            bag_rep = torch.transpose(bag_representations, 1, 0)
+            input_tensor = torch.matmul(profiles, bag_rep)
             labels = labels_to_one_hot(input_tensor.shape[0], [batch[2], batch[3], batch[4]], input_tensor.shape[-1])
-            assert torch.sum(labels) == 3 * len(input_tensor)
             output = self.forward(input_tensor)
             val_loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
         else:
