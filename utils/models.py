@@ -19,14 +19,6 @@ def labels_to_one_hot(b_size, classes_num, total_classes):
     return one_hot
 
 
-def labels_to_one_hot(b_size, classes_num, total_classes):
-    one_hot = torch.zeros(b_size, total_classes)
-    for labels in classes_num:
-        for batch_num, class_num in enumerate(labels):
-            one_hot[batch_num][class_num] = 1.
-    return one_hot
-
-
 def class_to_one_hot(num_ppl, classes_num, total_classes):
     one_hot = torch.zeros(num_ppl, total_classes)
     for person_num, class_num in enumerate(classes_num):
