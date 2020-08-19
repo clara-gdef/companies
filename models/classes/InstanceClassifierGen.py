@@ -33,11 +33,11 @@ class InstanceClassifierGen(pl.LightningModule):
 
     def training_step(self, batch, batch_nb):
         if len(batch[1].shape) > 2:
-            profiles = batch[1].squeeze(1)
+            profiles = batch[0].squeeze(1)
         else:
-            profiles = batch[1]
+            profiles = batch[0]
         if self.input_type == "matMul":
-            raise NotImplementedError
+            input_tensor = torch.matmul()
             loss = torch.nn.functional.soft_margin_loss(output, labels.cuda())
         elif self.input_type == "concat":
             raise NotImplementedError

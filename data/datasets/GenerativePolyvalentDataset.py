@@ -1,6 +1,7 @@
 import os
 import pickle as pkl
 import ipdb
+import random
 import torch
 from tqdm import tqdm
 from torch.utils.data import Dataset
@@ -32,29 +33,43 @@ class GenerativePolyvalentDataset(Dataset):
                 dpt_reps = pkl.load(f_name)
             print("Data Loaded.")
             self.tuples = []
+
+            for person_id in tqdm(ppl_lookup.keys(), desc="Building Generative Polyvalent Dataset for split " + split + " ..."):
+                for cie in ppl_reps.keys():
+                    for clus in ppl_reps[cie].keys():
+                        if len(ppl_reps[cie][clus].keys()) > 0:
+                            try:
+                                if person_id in ppl_reps[cie][clus]["id_ppl"]:
+                                        self.tuples.append((ppl_lookup[person_id][rep_type],
+                                                            cie_reps[ppl_lookup[person_id]["cie_label"]][rep_type],
+                                                            1.))
+                                        self.tuples.append((ppl_lookup[person_id][rep_type],
+                                                            clus_reps[ppl_lookup[person_id]["clus_label"]][rep_type],
+                                                            1.))
+                                        self.tuples.append((ppl_lookup[person_id][rep_type],
+                                                            dpt_reps[ppl_lookup[person_id]["dpt_label"]][rep_type],
+                                                            1.))
+                                else:
+                                    if random.random() > 1e-3:
+                                        self.tuples.append((ppl_lookup[person_id][rep_type],
+                                                            cie_reps[ppl_lookup[person_id]["cie_label"]][rep_type],
+                                                            -1.))
+                                        self.tuples.append((ppl_lookup[person_id][rep_type],
+                                                            clus_reps[ppl_lookup[person_id]["clus_label"]][rep_type],
+                                                            -1.))
+                                        self.tuples.append((ppl_lookup[person_id][rep_type],
+                                                            dpt_reps[ppl_lookup[person_id]["dpt_label"]][rep_type],
+                                                            -1.))
+                            except:
+                                continue
+
+            print("Generative Polyvalent Dataset built.")
+            print("Dataset Length: " + str(len(self.tuples)))
             self.rep_type = rep_type
             self.num_cie = len(cie_reps)
             self.num_clus = len(clus_reps)
             self.num_dpt = len(dpt_reps)
             self.rep_dim = self.tuples[0][0].shape[-1]
-            for cie in tqdm(ppl_reps.keys(), desc="Building Generative Polyvalent Dataset for split " + split + " ..."):
-                for clus in ppl_reps[cie].keys():
-                    if len(ppl_reps[cie][clus].keys()) > 0:
-                        for person_id in ppl_reps[cie][clus]["id_ppl"]:
-                            try:
-                                self.tuples.append((ppl_lookup[person_id][rep_type],
-                                                    cie_reps[ppl_lookup[person_id]["cie_label"]][rep_type],
-                                                    ppl_lookup[person_id]["cie_label"]))
-                                self.tuples.append((ppl_lookup[person_id][rep_type],
-                                                    clus_reps[ppl_lookup[person_id]["clus_label"]][rep_type],
-                                                    ppl_lookup[person_id]["clus_label"]))
-                                self.tuples.append((ppl_lookup[person_id][rep_type],
-                                                    dpt_reps[ppl_lookup[person_id]["dpt_label"]][rep_type],
-                                                    ppl_lookup[person_id]["dpt_label"]))
-                            except:
-                                continue
-            print("Generative Polyvalent Dataset built.")
-            print("Dataset Length: " + str(len(self.tuples)))
             self.save_dataset(data_dir, agg_type, rep_type)
 
     def __len__(self):

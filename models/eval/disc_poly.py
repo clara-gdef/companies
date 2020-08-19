@@ -1,5 +1,4 @@
 import os
-import torch
 
 import ipdb
 import argparse
@@ -16,7 +15,8 @@ from utils.models import collate_for_disc_poly_model
 
 def main(hparams):
     with ipdb.launch_ipdb_on_exception():
-        results = test(hparams)
+        test(hparams)
+
 
 def test(hparams):
     xp_title = "disc_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
@@ -32,11 +32,11 @@ def test(hparams):
     in_size, out_size = get_model_params(len(dataset_train), len(dataset_train.bag_rep))
 
     arguments = {'in_size': in_size,
-            'out_size': out_size,
-            'hparams': hparams,
-            'dataset': dataset_train,
-            'datadir': CFG["gpudatadir"],
-            'desc': xp_title}
+                 'out_size': out_size,
+                 'hparams': hparams,
+                 'dataset': dataset_train,
+                 'datadir': CFG["gpudatadir"],
+                 'desc': xp_title}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = InstanceClassifierDisc(**arguments)
@@ -47,8 +47,9 @@ def test(hparams):
     dataset = load_datasets(hparams, ["TEST"], hparams.load_dataset)
     test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_poly_model, num_workers=32)
     model_path = os.path.join(CFG['modeldir'], "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type)
-    model_file = glob.glob(os.path.join(model_path, 'epoch=' + hparams.ckpt) + ".ckpt")
-    trainer.test(test_dataloaders=test_loader, ckpt_path=model_file[0], model=model)
+    model_files = glob.glob(os.path.join(model_path, "*"))
+    latest_file = max(model_files, key=os.path.getctime)
+    trainer.test(test_dataloaders=test_loader, ckpt_path=latest_file, model=model)
 
 
 def load_datasets(hparams, splits, load):
@@ -110,7 +111,6 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--b_size", type=int, default=64)
     parser.add_argument("--input_type", type=str, default="matMul")
-    parser.add_argument("--ckpt", type=str, default="01")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     hparams = parser.parse_args()
