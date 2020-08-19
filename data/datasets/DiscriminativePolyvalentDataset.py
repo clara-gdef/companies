@@ -12,7 +12,7 @@ class DiscriminativePolyvalentDataset(Dataset):
                  cie_reps_file, clus_reps_file,
                  dpt_reps_file, agg_type,
                  split,
-                 load=False):
+                 load):
         if load:
             print("Loading previously saved dataset...")
             file_name = "disc_poly_" + agg_type + "_" + rep_type + "_" + split + ".pkl"
@@ -82,16 +82,17 @@ def build_ppl_tuples(ppl_reps, ppl_lookup, rep_type, num_cie, num_clus, num_dpt,
     tuples = []
     for cie in tqdm(ppl_reps.keys(), desc="Building Discriminative Polyvalent Dataset for split " + split + " ..."):
         for clus in ppl_reps[cie].keys():
-            for person_id in ppl_reps[cie][clus]["id_ppl"]:
-                assert ppl_lookup[person_id]["cie_label"] <= num_cie - 1
-                assert num_cie <= ppl_lookup[person_id]["clus_label"] <= num_cie + num_clus - 1
-                assert num_cie + num_clus <= ppl_lookup[person_id]["dpt_label"] <= num_cie + num_clus + num_dpt - 1
-                tuples.append(
-                    {"id": person_id,
-                     "rep": ppl_lookup[person_id][rep_type],
-                     "cie": ppl_lookup[person_id]["cie_label"],
-                     "clus": ppl_lookup[person_id]["clus_label"],
-                     "dpt": ppl_lookup[person_id]["dpt_label"]
-                     }
-                )
+            if len(ppl_reps[cie][clus].keys()) > 0:
+                for person_id in ppl_reps[cie][clus]["id_ppl"]:
+                    assert ppl_lookup[person_id]["cie_label"] <= num_cie - 1
+                    assert num_cie <= ppl_lookup[person_id]["clus_label"] <= num_cie + num_clus - 1
+                    assert num_cie + num_clus <= ppl_lookup[person_id]["dpt_label"] <= num_cie + num_clus + num_dpt - 1
+                    tuples.append(
+                        {"id": person_id,
+                         "rep": ppl_lookup[person_id][rep_type],
+                         "cie": ppl_lookup[person_id]["cie_label"],
+                         "clus": ppl_lookup[person_id]["clus_label"],
+                         "dpt": ppl_lookup[person_id]["dpt_label"]
+                         }
+                    )
     return tuples

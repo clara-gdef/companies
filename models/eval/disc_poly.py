@@ -16,27 +16,21 @@ from utils.models import collate_for_disc_poly_model
 
 def main(hparams):
     with ipdb.launch_ipdb_on_exception():
-        trainer, model = train(hparams)
+        results = test(hparams)
 
-
-def train(hparams):
+def test(hparams):
     xp_title = "disc_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size)
     logger, checkpoint_callback = init_lightning(xp_title)
     trainer = pl.Trainer(gpus=hparams.gpus,
-                         max_epochs=hparams.epochs,
                          checkpoint_callback=checkpoint_callback,
+                         auto_lr_find=True,
                          logger=logger,
-                         auto_lr_find=True
                          )
-    datasets = load_datasets(hparams, ["TRAIN", "VALID"], True)
-    dataset_train, dataset_valid = datasets[0], datasets[1]
+    datasets = load_datasets(hparams, ["TRAIN"], True)
+    dataset_train = datasets[0]
     in_size, out_size = get_model_params(len(dataset_train), len(dataset_train.bag_rep))
 
-    train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
-                              num_workers=32)
-    valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
-                              num_workers=32)
     arguments = {'in_size': in_size,
             'out_size': out_size,
             'hparams': hparams,
@@ -47,9 +41,14 @@ def train(hparams):
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = InstanceClassifier(**arguments)
     print("Model Loaded.")
-    print("Starting training...")
-    trainer.fit(model, train_loader, valid_loader)
 
+    model.eval()
+
+    dataset = load_datasets(hparams, ["TEST"], hparams.load_dataset)
+    test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_poly_model, num_workers=32)
+    model_path = os.path.join(CFG['modeldir'], "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type)
+    model_file = glob.glob(os.path.join(model_path, 'epoch=' + str(hparams.ckpt)) + ".ckpt")
+    trainer.test(test_dataloaders=test_loader, ckpt_path=model_file[0], model=model)
 
 
 def load_datasets(hparams, splits, load):
@@ -106,14 +105,13 @@ if __name__ == "__main__":
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rep_type", type=str, default='ft')
+    parser.add_argument("--rep_type", type=str, default='sk')
     parser.add_argument("--gpus", type=int, default=[0])
+    parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--b_size", type=int, default=64)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--ckpt", type=int, default=18)
-    parser.add_argument("--load_dataset", type=bool, default=False)
+    parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
-    parser.add_argument("--lr", type=float, default=1e-3)
-    parser.add_argument("--epochs", type=int, default=1)
     hparams = parser.parse_args()
     main(hparams)

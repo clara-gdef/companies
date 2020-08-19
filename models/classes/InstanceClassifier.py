@@ -25,6 +25,7 @@ class InstanceClassifier(pl.LightningModule):
         self.num_clus = dataset.num_clus
         self.num_dpt = dataset.num_dpt
 
+        self.hparams = hparams
         self.data_dir = datadir
         self.description = desc
 
@@ -33,7 +34,12 @@ class InstanceClassifier(pl.LightningModule):
 
     def training_step(self, batch, batch_nb):
         if self.input_type == "matMul":
-            input_tensor = torch.matmul(batch[-1], torch.transpose(batch[1], 2, 1)).squeeze(-1)
+            if len(batch[1].shape) > 2:
+                ppl_tensor = torch.transpose(batch[1], 2, 1)
+            else:
+                ppl_tensor = torch.transpose(batch[1], 1, 0)
+            tmp = torch.matmul(batch[-1], ppl_tensor).squeeze(-1)
+            input_tensor = tmp.view(len(batch[0]), -1)
             labels = labels_to_one_hot(input_tensor.shape[0], [batch[2], batch[3], batch[4]], input_tensor.shape[-1])
             assert torch.sum(labels) == 3 * len(input_tensor)
             output = self.forward(input_tensor)
@@ -46,7 +52,12 @@ class InstanceClassifier(pl.LightningModule):
 
     def validation_step(self, batch, batch_nb):
         if self.input_type == "matMul":
-            input_tensor = torch.matmul(batch[-1], torch.transpose(batch[1], 2, 1)).squeeze(-1)
+            if len(batch[1].shape) > 2:
+                ppl_tensor = torch.transpose(batch[1], 2, 1)
+            else:
+                ppl_tensor = torch.transpose(batch[1], 1, 0)
+            tmp = torch.matmul(batch[-1], ppl_tensor).squeeze(-1)
+            input_tensor = tmp.view(len(batch[0]), -1)
             labels = labels_to_one_hot(input_tensor.shape[0], [batch[2], batch[3], batch[4]], input_tensor.shape[-1])
             assert torch.sum(labels) == 3 * len(input_tensor)
             output = self.forward(input_tensor)
@@ -69,7 +80,12 @@ class InstanceClassifier(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         if self.input_type == "matMul":
-            input_tensor = torch.matmul(batch[-1], torch.transpose(batch[1], 2, 1)).squeeze(-1)
+            if len(batch[1].shape) > 2:
+                ppl_tensor = torch.transpose(batch[1], 2, 1)
+            else:
+                ppl_tensor = torch.transpose(batch[1], 1, 0)
+            tmp = torch.matmul(batch[-1], ppl_tensor).squeeze(-1)
+            input_tensor = tmp.view(len(batch[0]), -1)
             labels = [batch[2], batch[3], batch[4]]
             labels_one_hot = labels_to_one_hot(input_tensor.shape[0], [batch[2], batch[3], batch[4]],
                                                input_tensor.shape[-1])
@@ -91,18 +107,12 @@ class InstanceClassifier(pl.LightningModule):
         clus_labels = torch.LongTensor([i[1][0] for i in self.test_labels]).cuda()
         dpt_labels = torch.LongTensor([i[2][0] for i in self.test_labels]).cuda()
 
-        ci_preds, ci_acc, ci_cm = test_for_bag(cie_preds, cie_labels, "cie")
-        cl_preds, cl_acc, cl_cm = test_for_bag(clus_preds, clus_labels, "clus")
-        d_preds, d_acc, d_cm = test_for_bag(dpt_preds, dpt_labels, "dpt")
-
+        ci_preds, ci_acc, ci_cm = test_for_bag(cie_preds, cie_labels, "cie", offset=0)
+        cl_preds, cl_acc, cl_cm = test_for_bag(clus_preds, clus_labels, "clus", offset=self.num_cie)
+        d_preds, d_acc, d_cm = test_for_bag(dpt_preds, dpt_labels, "dpt", offset=self.num_cie + self.num_clus)
         self.save_outputs(ci_preds, cie_labels, ci_cm,
                           cl_preds, clus_labels, cl_cm,
                           d_preds, dpt_labels, d_cm)
-        # # making a tensor out of the one hot labels
-        # labels_one_hot = torch.stack(self.test_labels_one_hot).cuda()
-        # cie_labels_one_hot = labels_one_hot[:, 0, :self.num_cie]
-        # clus_labels_one_hot = labels_one_hot[:, 0, self.num_cie: self.num_cie + self.num_clus]
-        # dpt_labels_one_hot = labels_one_hot[:, 0, -self.num_dpt:]
 
         return {"cie_acc": ci_acc,
                 "clus_acc": cl_acc,
@@ -127,8 +137,9 @@ class InstanceClassifier(pl.LightningModule):
             pkl.dump(res, f)
 
 
-def test_for_bag(pred, labels, bag_type):
-    predicted_classes = [i.item() for i in torch.argmax(pred, dim=1)]
+def test_for_bag(pred, labels, bag_type, offset):
+    tmp = [i.item() for i in torch.argmax(pred, dim=1)]
+    predicted_classes = [i + offset for i in tmp]
     good_pred = 0
     wrong_pred = 0
     for pred, label in zip(predicted_classes, labels):
@@ -142,27 +153,27 @@ def test_for_bag(pred, labels, bag_type):
 
     return predicted_classes, global_accuracy, cm
 
-
-def test_for_all_bags(pred, truth, total_ppl):
-    tp = torch.sum(torch.sum(pred & truth, dim=1))
-    fp = torch.sum(torch.sum((truth == 0) & (pred == 1), dim=1))
-    fn = torch.sum(torch.sum((truth == 1) & (pred == 0), dim=1))
-    tn = torch.sum(torch.sum((truth == 0) & (pred == 0), dim=1))
-
-    neg_ratio = (tn.item() + fn.item()) / total_ppl
-    pos_ratio = (tp.item() + fp.item()) / total_ppl
-
-    precision = tp.type(torch.float32) / ((tp + fp).type(torch.float32) + 1e-15)
-    recall = tp.type(torch.float32) / (tp + fn).type(torch.float32)
-    acc = (tn.item() + tp.item()) / total_ppl
-    if (recall + precision) != 0:
-        f1 = 2 * (precision * recall) / (recall + precision)
-    else:
-        f1 = torch.FloatTensor([0.0])
-    metrics = {"acc": acc,
-               "precision": precision.item(),
-               "recall": recall.item(),
-               "F1": f1.item(),
-               "pos_ratio": pos_ratio,
-               "neg_ratio": neg_ratio}
-    return metrics
+#
+# def test_for_all_bags(pred, truth, total_ppl):
+#     tp = torch.sum(torch.sum(pred & truth, dim=1))
+#     fp = torch.sum(torch.sum((truth == 0) & (pred == 1), dim=1))
+#     fn = torch.sum(torch.sum((truth == 1) & (pred == 0), dim=1))
+#     tn = torch.sum(torch.sum((truth == 0) & (pred == 0), dim=1))
+#
+#     neg_ratio = (tn.item() + fn.item()) / total_ppl
+#     pos_ratio = (tp.item() + fp.item()) / total_ppl
+#
+#     precision = tp.type(torch.float32) / ((tp + fp).type(torch.float32) + 1e-15)
+#     recall = tp.type(torch.float32) / (tp + fn).type(torch.float32)
+#     acc = (tn.item() + tp.item()) / total_ppl
+#     if (recall + precision) != 0:
+#         f1 = 2 * (precision * recall) / (recall + precision)
+#     else:
+#         f1 = torch.FloatTensor([0.0])
+#     metrics = {"acc": acc,
+#                "precision": precision.item(),
+#                "recall": recall.item(),
+#                "F1": f1.item(),
+#                "pos_ratio": pos_ratio,
+#                "neg_ratio": neg_ratio}
+#     return metrics
