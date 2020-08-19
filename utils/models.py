@@ -11,6 +11,10 @@ def collate_for_disc_poly_model(batch):
     return ids, torch.stack(reps), cies, clus, dpt, batch[0][-1]
 
 
+def collate_for_gen_poly_model(batch):
+    ipdb.set_trace()
+
+
 def labels_to_one_hot(b_size, classes_num, total_classes):
     one_hot = torch.zeros(b_size, total_classes)
     for labels in classes_num:
@@ -24,3 +28,4 @@ def class_to_one_hot(num_ppl, classes_num, total_classes):
     for person_num, class_num in enumerate(classes_num):
         one_hot[person_num][class_num] = 1.
     return one_hot.cuda()
+

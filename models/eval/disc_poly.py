@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 import yaml
 import glob
 from data.datasets import DiscriminativePolyvalentDataset
-from models.classes import InstanceClassifier
+from models.classes import InstanceClassifierDisc
 from utils.models import collate_for_disc_poly_model
 
 
@@ -39,7 +39,7 @@ def test(hparams):
             'desc': xp_title}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
-    model = InstanceClassifier(**arguments)
+    model = InstanceClassifierDisc(**arguments)
     print("Model Loaded.")
 
     model.eval()

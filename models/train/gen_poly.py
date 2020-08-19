@@ -1,6 +1,4 @@
 import os
-import torch
-
 import ipdb
 import argparse
 import pytorch_lightning as pl
@@ -8,10 +6,9 @@ from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
-import glob
-from data.datasets import DiscriminativePolyvalentDataset
-from models.classes import InstanceClassifierDisc
-from utils.models import collate_for_disc_poly_model
+from data.datasets import GenerativePolyvalentDataset
+from models.classes import InstanceClassifierGen
+from utils.models import collate_for_gen_poly_model
 
 
 def main(hparams):
@@ -20,7 +17,7 @@ def main(hparams):
 
 
 def train(hparams):
-    xp_title = "disc_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
+    xp_title = "gen_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size)
     logger, checkpoint_callback, early_stop_callback = init_lightning(xp_title)
     auto_lr_find = True
@@ -37,9 +34,9 @@ def train(hparams):
     dataset_train, dataset_valid = datasets[0], datasets[1]
     in_size, out_size = get_model_params(len(dataset_train), len(dataset_train.bag_rep))
 
-    train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
+    train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_gen_poly_model,
                               num_workers=32)
-    valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
+    valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_gen_poly_model,
                               num_workers=32)
     arguments = {'in_size': in_size,
                  'out_size': out_size,
@@ -49,7 +46,7 @@ def train(hparams):
                  'desc': xp_title}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
-    model = InstanceClassifierDisc(**arguments)
+    model = InstanceClassifierGen(**arguments)
     print("Model Loaded.")
     print("Starting training...")
     trainer.fit(model, train_loader, valid_loader)
@@ -68,7 +65,7 @@ def load_datasets(hparams, splits, load):
         "load": load
     }
     for split in splits:
-        datasets.append(DiscriminativePolyvalentDataset(**common_hparams, split=split))
+        datasets.append(GenerativePolyvalentDataset(**common_hparams, split=split))
 
     return datasets
 
@@ -78,7 +75,7 @@ def get_model_params(rep_dim, num_bag):
     if hparams.input_type == "hadamard" or hparams.input_type == "concat":
         in_size = rep_dim * num_bag
     elif hparams.input_type == "matMul":
-        in_size = num_bag
+        in_size = rep_dim
     else:
         raise Exception("Wrong input data specified: " + str(hparams.input_type))
 
@@ -86,7 +83,7 @@ def get_model_params(rep_dim, num_bag):
 
 
 def init_lightning(xp_title):
-    model_path = os.path.join(CFG['modeldir'], "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type)
+    model_path = os.path.join(CFG['modeldir'], "gen_poly/" + hparams.rep_type + "/" + hparams.data_agg_type)
 
     logger = TensorBoardLogger(
         save_dir='./models/logs',
@@ -118,9 +115,9 @@ if __name__ == "__main__":
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
-    parser.add_argument("--gpus", type=int, default=1)
+    parser.add_argument("--gpus", type=int, default=[1, 2, 3])
     parser.add_argument("--b_size", type=int, default=2)
-    parser.add_argument("--input_type", type=str, default="matMul")
+    parser.add_argument("--input_type", type=str, default="hadamard")
     parser.add_argument("--load_dataset", type=bool, default=False)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--lr", type=float, default=1e-7)

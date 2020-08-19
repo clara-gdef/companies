@@ -1,1 +1,1 @@
-from .InstanceClassifier import *
+from .InstanceClassifierDisc import *
