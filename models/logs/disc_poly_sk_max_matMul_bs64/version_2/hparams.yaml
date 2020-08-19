@@ -1,0 +1,9 @@
+b_size: 64
+ckpt: 21
+data_agg_type: max
+gpus:
+- 0
+input_type: matMul
+load_dataset: true
+lr: 0.001
+rep_type: sk

@@ -47,7 +47,7 @@ def test(hparams):
     dataset = load_datasets(hparams, ["TEST"], hparams.load_dataset)
     test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_poly_model, num_workers=32)
     model_path = os.path.join(CFG['modeldir'], "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type)
-    model_file = glob.glob(os.path.join(model_path, 'epoch=' + str(hparams.ckpt)) + ".ckpt")
+    model_file = glob.glob(os.path.join(model_path, 'epoch=' + hparams.ckpt) + ".ckpt")
     trainer.test(test_dataloaders=test_loader, ckpt_path=model_file[0], model=model)
 
 
@@ -105,12 +105,12 @@ if __name__ == "__main__":
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rep_type", type=str, default='sk')
+    parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=[0])
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--b_size", type=int, default=64)
     parser.add_argument("--input_type", type=str, default="matMul")
-    parser.add_argument("--ckpt", type=int, default=18)
+    parser.add_argument("--ckpt", type=str, default="01")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     hparams = parser.parse_args()
