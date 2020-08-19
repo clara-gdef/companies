@@ -35,12 +35,12 @@ class InstanceClassifier(pl.LightningModule):
     def training_step(self, batch, batch_nb):
         if self.input_type == "matMul":
             if len(batch[1].shape) > 2:
-                ipdb.set_trace()
-                ppl_tensor = torch.transpose(batch[1], 2, 1)
+                profiles = batch[1].squeeze(1)
             else:
-                ipdb.set_trace()
-                ppl_tensor = torch.transpose(batch[1], 1, 0)
-            tmp = torch.matmul(batch[-1], ppl_tensor).squeeze(-1)
+                profiles = batch[1]
+            ppl_tensor = torch.transpose(profiles, 1, 0)
+            ipdb.set_trace()
+            tmp = torch.matmul(batch[-1], ppl_tensor)
             input_tensor = tmp.view(len(batch[0]), -1)
             labels = labels_to_one_hot(input_tensor.shape[0], [batch[2], batch[3], batch[4]], input_tensor.shape[-1])
             assert torch.sum(labels) == 3 * len(input_tensor)
