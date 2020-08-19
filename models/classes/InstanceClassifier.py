@@ -57,13 +57,15 @@ class InstanceClassifier(pl.LightningModule):
         return {'loss': loss, 'log': tensorboard_logs}
 
     def validation_step(self, batch, batch_nb):
+        bag_representations = batch[-1]
+        if len(batch[1].shape) > 2:
+            profiles = batch[1].squeeze(1)
+        else:
+            profiles = batch[1]
         if self.input_type == "matMul":
-            if len(batch[1].shape) > 2:
-                ppl_tensor = torch.transpose(batch[1], 2, 1)
-            else:
-                ppl_tensor = torch.transpose(batch[1], 1, 0)
             ipdb.set_trace()
-            tmp = torch.matmul(batch[-1], ppl_tensor).squeeze(-1)
+            ppl_tensor = torch.transpose(profiles, 1, 0)
+            tmp = torch.matmul(bag_representations, ppl_tensor).squeeze(-1)
             input_tensor = tmp.view(len(batch[0]), -1)
             labels = labels_to_one_hot(input_tensor.shape[0], [batch[2], batch[3], batch[4]], input_tensor.shape[-1])
             assert torch.sum(labels) == 3 * len(input_tensor)
