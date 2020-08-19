@@ -37,6 +37,7 @@ class InstanceClassifier(pl.LightningModule):
             if len(batch[1].shape) > 2:
                 ppl_tensor = torch.transpose(batch[1], 2, 1)
             else:
+                ipdb.set_trace()
                 ppl_tensor = torch.transpose(batch[1], 1, 0)
             tmp = torch.matmul(batch[-1], ppl_tensor).squeeze(-1)
             input_tensor = tmp.view(len(batch[0]), -1)
