@@ -1,0 +1,9 @@
+b_size: 64
+data_agg_type: sum
+epochs: 50
+gpus:
+- 1
+input_type: matMul
+load_dataset: false
+lr: 0.000363078054770101
+rep_type: sk
