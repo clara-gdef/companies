@@ -20,7 +20,6 @@ class InstanceClassifier(pl.LightningModule):
         self.test_ppl_id = []
 
         self.input_type = hparams.input_type
-        self.lr = hparams.lr
         self.num_cie = dataset.num_cie
         self.num_clus = dataset.num_clus
         self.num_dpt = dataset.num_dpt
@@ -33,19 +32,24 @@ class InstanceClassifier(pl.LightningModule):
         return self.lin(x)
 
     def training_step(self, batch, batch_nb):
+        bag_representations = batch[-1]
+        if len(batch[1].shape) > 2:
+            profiles = batch[1].squeeze(1)
+        else:
+            profiles = batch[1]
         if self.input_type == "matMul":
-            if len(batch[1].shape) > 2:
-                profiles = batch[1].squeeze(1)
-            else:
-                profiles = batch[1]
             ppl_tensor = torch.transpose(profiles, 1, 0)
-            ipdb.set_trace()
-            tmp = torch.matmul(batch[-1], ppl_tensor)
+            tmp = torch.matmul(bag_representations, ppl_tensor)
             input_tensor = tmp.view(len(batch[0]), -1)
             labels = labels_to_one_hot(input_tensor.shape[0], [batch[2], batch[3], batch[4]], input_tensor.shape[-1])
-            assert torch.sum(labels) == 3 * len(input_tensor)
             output = self.forward(input_tensor)
             loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
+        elif self.input_type == "concat":
+            flattened_bag_reps = bag_representations.view(1, -1)
+            input_tensor = profiles
+            for line in bag_representations:
+                #TODO FIX THIS
+                input_tensor = torch.cat((input_tensor, line), dim=1)
         else:
             raise Exception("Wrong input data specified: " + str(self.input_type))
         tensorboard_logs = {'train_loss': loss}
@@ -58,6 +62,7 @@ class InstanceClassifier(pl.LightningModule):
                 ppl_tensor = torch.transpose(batch[1], 2, 1)
             else:
                 ppl_tensor = torch.transpose(batch[1], 1, 0)
+            ipdb.set_trace()
             tmp = torch.matmul(batch[-1], ppl_tensor).squeeze(-1)
             input_tensor = tmp.view(len(batch[0]), -1)
             labels = labels_to_one_hot(input_tensor.shape[0], [batch[2], batch[3], batch[4]], input_tensor.shape[-1])
@@ -78,7 +83,7 @@ class InstanceClassifier(pl.LightningModule):
         return outputs[-1]
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=1e-3)
+        return torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
 
     def test_step(self, batch, batch_idx):
         if self.input_type == "matMul":
