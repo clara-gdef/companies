@@ -35,6 +35,7 @@ class InstanceClassifier(pl.LightningModule):
     def training_step(self, batch, batch_nb):
         if self.input_type == "matMul":
             if len(batch[1].shape) > 2:
+                ipdb.set_trace()
                 ppl_tensor = torch.transpose(batch[1], 2, 1)
             else:
                 ipdb.set_trace()
