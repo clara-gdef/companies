@@ -33,56 +33,21 @@ class InstanceClassifierDisc(pl.LightningModule):
         return self.lin(x)
 
     def training_step(self, batch, batch_nb):
-        bag_representations = batch[-1]
-        if len(batch[1].shape) > 2:
-            profiles = batch[1].squeeze(1)
-        else:
-            profiles = batch[1]
-
-        if self.input_type == "matMul":
-            bag_rep = torch.transpose(bag_representations, 1, 0)
-            input_tensor = torch.matmul(profiles, bag_rep)
-            if self.type == "poly":
-                labels = labels_to_one_hot(input_tensor.shape[0], [batch[2], batch[3], batch[4]], input_tensor.shape[-1])
-            elif self.type == "spe":
-                labels = labels_to_one_hot(input_tensor.shape[0], [batch[2]], input_tensor.shape[-1])
-            else:
-                raise Exception("Wrong model type specified: " + str(self.type) + ", can be either \"poly\" or \"spe\"")
-            output = self.forward(input_tensor)
-            loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
-        elif self.input_type == "concat":
-            raise NotImplementedError
-        elif self.input_type == "hadamard":
-            ipdb.set_trace()
-        else:
-            raise Exception("Wrong input data specified: " + str(self.input_type))
+        input_tensor = self.get_input_tensor(batch)
+        tmp_labels = self.get_labels(batch)
+        labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, input_tensor.shape[-1])
+        output = self.forward(input_tensor)
+        loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
         tensorboard_logs = {'train_loss': loss}
         self.training_losses.append(loss.item())
         return {'loss': loss, 'log': tensorboard_logs}
 
     def validation_step(self, batch, batch_nb):
-        bag_representations = batch[-1]
-        if len(batch[1].shape) > 2:
-            profiles = batch[1].squeeze(1)
-        else:
-            profiles = batch[1]
-        if self.input_type == "matMul":
-            bag_rep = torch.transpose(bag_representations, 1, 0)
-            input_tensor = torch.matmul(profiles, bag_rep)
-            if self.type == "poly":
-                labels = labels_to_one_hot(input_tensor.shape[0], [batch[2], batch[3], batch[4]], input_tensor.shape[-1])
-            elif self.type == "spe":
-                labels = labels_to_one_hot(input_tensor.shape[0], [batch[2]], input_tensor.shape[-1])
-            else:
-                raise Exception("Wrong model type specified: " + str(self.type) + ", can be either \"poly\" or \"spe\"")
-            output = self.forward(input_tensor)
-            val_loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
-        elif self.input_type == "concat":
-            raise NotImplementedError
-        elif self.input_type == "hadamard":
-            ipdb.set_trace()
-        else:
-            raise Exception("Wrong input data specified: " + str(self.input_type))
+        input_tensor = self.get_input_tensor(batch)
+        tmp_labels = self.get_labels(batch)
+        labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, input_tensor.shape[-1])
+        output = self.forward(input_tensor)
+        val_loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
         tensorboard_logs = {'val_loss': val_loss}
         return {'loss': val_loss, 'log': tensorboard_logs}
 
@@ -167,6 +132,31 @@ class InstanceClassifierDisc(pl.LightningModule):
         tgt_file = os.path.join(self.data_dir, "OUTPUTS_" + self.description + ".pkl")
         with open(tgt_file, 'wb') as f:
             pkl.dump(res, f)
+
+    def get_labels(self, batch):
+        if self.type == "poly":
+            tmp_labels = [batch[2], batch[3], batch[4]]
+        elif self.type == "spe":
+            tmp_labels = [batch[2]]
+        else:
+            raise Exception("Wrong model type specified: " + str(self.type) + ", can be either \"poly\" or \"spe\"")
+        return tmp_labels
+
+    def get_input_tensor(self, batch):
+        if len(batch[1].shape) > 2:
+            profiles = batch[1].squeeze(1)
+        else:
+            profiles = batch[1]
+        if self.input_type == "matMul":
+            bag_rep = torch.transpose(batch[-1], 1, 0)
+            input_tensor = torch.matmul(profiles, bag_rep)
+        elif self.input_type == "concat":
+            raise NotImplementedError
+        elif self.input_type == "hadamard":
+            ipdb.set_trace()
+        else:
+            raise Exception("Wrong input data specified: " + str(self.input_type))
+        return input_tensor
 
 
 def test_for_bag(preds, labels, offset):
