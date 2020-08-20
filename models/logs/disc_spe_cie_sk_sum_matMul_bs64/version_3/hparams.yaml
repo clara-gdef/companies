@@ -1,0 +1,11 @@
+auto_lr_find: true
+b_size: 64
+bag_type: cie
+data_agg_type: sum
+epochs: 50
+gpus:
+- 0
+input_type: matMul
+load_dataset: false
+lr: 0.002754228703338169
+rep_type: sk
