@@ -48,3 +48,6 @@ class DiscriminativeSpecializedDataset(Dataset):
                                 "bag_rep": self.bag_rep,
                                 "label": person[bag_type]
                                 })
+
+    def get_num_bag(self):
+        return len(self.bag_rep)

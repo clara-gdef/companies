@@ -20,7 +20,7 @@ def main(hparams):
 
 
 def train(hparams):
-    xp_title = "disc_spe_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
+    xp_title = "disc_spe_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size)
     logger, checkpoint_callback, early_stop_callback = init_lightning(xp_title)
 
@@ -31,10 +31,9 @@ def train(hparams):
                          logger=logger,
                          auto_lr_find=True
                          )
-    datasets = load_datasets(hparams, ["TRAIN", "VALID"], True)
+    datasets = load_datasets(hparams, ["TRAIN", "VALID"])
     dataset_train, dataset_valid = datasets[0], datasets[1]
     in_size, out_size = get_model_params(dataset_train.rep_dim, dataset_train.get_num_bag())
-    ipdb.set_trace()
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model,
                               num_workers=32)
     valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model,
@@ -53,7 +52,7 @@ def train(hparams):
     trainer.fit(model, train_loader, valid_loader)
 
 
-def load_datasets(hparams, splits, load):
+def load_datasets(hparams, splits):
     datasets = []
     common_hparams = {
         "data_dir": CFG["gpudatadir"],
@@ -68,7 +67,7 @@ def load_datasets(hparams, splits, load):
 
 
 def get_model_params(rep_dim, num_bag):
-    out_size = 1
+    out_size = num_bag
     if hparams.input_type == "hadamard" or hparams.input_type == "concat":
         in_size = rep_dim * num_bag
     elif hparams.input_type == "matMul":
@@ -80,7 +79,7 @@ def get_model_params(rep_dim, num_bag):
 
 
 def init_lightning(xp_title):
-    model_path = os.path.join(CFG['modeldir'], "disc_spe/" + hparams.rep_type + "/" + hparams.data_agg_type)
+    model_path = os.path.join(CFG['modeldir'], "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type)
 
     logger = TensorBoardLogger(
         save_dir='./models/logs',

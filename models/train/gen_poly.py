@@ -12,8 +12,7 @@ from utils.models import collate_for_gen_poly_model
 
 
 def main(hparams):
-    with ipdb.launch_ipdb_on_exception():
-        train(hparams)
+    train(hparams)
 
 
 def train(hparams):

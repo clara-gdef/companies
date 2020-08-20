@@ -21,7 +21,7 @@ class GenerativePolyvalentDataset(Dataset):
             self.ppl_reps = dico["ppl_reps"]
             self.bags_reps = {**self.cie_reps, **self.clus_reps, **self.dpt_reps}
 
-            print("Building Generative Polyvalent Dataset for split " + split + " loaded.")
+            print("Generative Polyvalent Dataset for split " + split + " loaded.")
         else:
             print("Loading data...")
             with open(os.path.join(data_dir, "lookup_ppl.pkl"), 'rb') as f_name:
@@ -78,6 +78,7 @@ class GenerativePolyvalentDataset(Dataset):
         return len(self.tuples)
 
     def __getitem__(self, idx):
+        ipdb.set_trace()
         return (self.ppl_reps[self.tuples[idx][0]],
                 self.bags_reps[self.tuples[idx][1]],
                 self.tuples[idx][-1]
