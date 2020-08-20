@@ -17,39 +17,39 @@ def main(hparams):
 
 
 def train(hparams):
-    # xp_title = "gen_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
-    #     hparams.b_size)
-    # logger, checkpoint_callback, early_stop_callback = init_lightning(xp_title)
-    # auto_lr_find = True
-    # if hparams.rep_type == "ft":
-    #     auto_lr_find = False
-    # trainer = pl.Trainer(gpus=hparams.gpus,
-    #                      max_epochs=hparams.epochs,
-    #                      checkpoint_callback=checkpoint_callback,
-    #                      early_stop_callback=early_stop_callback,
-    #                      logger=logger,
-    #                      auto_lr_find=auto_lr_find
-    #                      )
+    xp_title = "gen_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
+        hparams.b_size)
+    logger, checkpoint_callback, early_stop_callback = init_lightning(xp_title)
+    auto_lr_find = True
+    if hparams.rep_type == "ft":
+        auto_lr_find = False
+    trainer = pl.Trainer(gpus=hparams.gpus,
+                         max_epochs=hparams.epochs,
+                         checkpoint_callback=checkpoint_callback,
+                         early_stop_callback=early_stop_callback,
+                         logger=logger,
+                         auto_lr_find=auto_lr_find
+                         )
     datasets = load_datasets(hparams, ["TRAIN", "VALID"], hparams.load_dataset)
-    # dataset_train, dataset_valid = datasets[0], datasets[1]
-    # in_size, out_size = get_model_params(len(dataset_train))
-    #
-    # train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_gen_poly_model,
-    #                           num_workers=32)
-    # valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_gen_poly_model,
-    #                           num_workers=32)
-    # arguments = {'in_size': in_size,
-    #              'out_size': out_size,
-    #              'hparams': hparams,
-    #              'dataset': dataset_train,
-    #              'datadir': CFG["gpudatadir"],
-    #              'desc': xp_title}
-    #
-    # print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
-    # model = InstanceClassifierGen(**arguments)
-    # print("Model Loaded.")
-    # print("Starting training...")
-    # trainer.fit(model, train_loader, valid_loader)
+    dataset_train, dataset_valid = datasets[0], datasets[1]
+    in_size, out_size = get_model_params(len(dataset_train))
+
+    train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_gen_poly_model,
+                              num_workers=32)
+    valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_gen_poly_model,
+                              num_workers=32)
+    arguments = {'in_size': in_size,
+                 'out_size': out_size,
+                 'hparams': hparams,
+                 'dataset': dataset_train,
+                 'datadir': CFG["gpudatadir"],
+                 'desc': xp_title}
+
+    print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
+    model = InstanceClassifierGen(**arguments)
+    print("Model Loaded.")
+    print("Starting training...")
+    trainer.fit(model, train_loader, valid_loader)
 
 
 def load_datasets(hparams, splits, load):
@@ -57,16 +57,13 @@ def load_datasets(hparams, splits, load):
     common_hparams = {
         "data_dir": CFG["gpudatadir"],
         "ppl_file": CFG["rep"][hparams.rep_type]["total"],
-        "rep_type": hparams.rep_type,
         "cie_reps_file": CFG["rep"]["cie"] + hparams.data_agg_type + ".pkl",
         "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type + ".pkl",
         "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type + ".pkl",
-        "agg_type": hparams.data_agg_type,
         "load": load
     }
     for split in splits:
         datasets.append(GenerativePolyvalentDataset(**common_hparams, split=split))
-
     return datasets
 
 
