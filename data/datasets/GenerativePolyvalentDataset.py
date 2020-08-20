@@ -8,10 +8,10 @@ from torch.utils.data import Dataset
 
 
 class GenerativePolyvalentDataset(Dataset):
-    def __init__(self, data_dir, ppl_file, rep_type, cie_reps_file, clus_reps_file, dpt_reps_file, agg_type, load,
+    def __init__(self, data_dir, ppl_file, cie_reps_file, clus_reps_file, dpt_reps_file, load,
                  split="TEST"):
         if load:
-            with open(os.path.join(data_dir, "gen_poly_indices.pkl"), 'rb') as f_name:
+            with open(os.path.join(data_dir, "gen_poly_indices_" + split + ".pkl"), 'rb') as f_name:
                 dico = torch.load(f_name)
             self.tuples = dico["tuples"]
             self.num_cie = dico["num_cie"]
@@ -38,27 +38,6 @@ class GenerativePolyvalentDataset(Dataset):
                     for clus in ppl_reps[cie].keys():
                         if len(ppl_reps[cie][clus].keys()) > 0:
                             try:
-                                # if person_id in ppl_reps[cie][clus]["id_ppl"]:
-                                #         self.tuples.append((ppl_lookup[person_id][rep_type],
-                                #                             cie_reps[ppl_lookup[person_id]["cie_label"]][rep_type],
-                                #                             1.))
-                                #         self.tuples.append((ppl_lookup[person_id][rep_type],
-                                #                             clus_reps[ppl_lookup[person_id]["clus_label"]][rep_type],
-                                #                             1.))
-                                #         self.tuples.append((ppl_lookup[person_id][rep_type],
-                                #                             dpt_reps[ppl_lookup[person_id]["dpt_label"]][rep_type],
-                                #                             1.))
-                                # else:
-                                #     if random.random() > 1e-4:
-                                #         self.tuples.append((ppl_lookup[person_id][rep_type],
-                                #                             cie_reps[ppl_lookup[person_id]["cie_label"]][rep_type],
-                                #                             -1.))
-                                #         self.tuples.append((ppl_lookup[person_id][rep_type],
-                                #                             clus_reps[ppl_lookup[person_id]["clus_label"]][rep_type],
-                                #                             -1.))
-                                #         self.tuples.append((ppl_lookup[person_id][rep_type],
-                                #                             dpt_reps[ppl_lookup[person_id]["dpt_label"]][rep_type],
-                                #                             -1.))
                                 if person_id in ppl_reps[cie][clus]["id_ppl"]:
                                         self.tuples.append((person_id,
                                                             ppl_lookup[person_id]["cie_label"],
@@ -82,13 +61,12 @@ class GenerativePolyvalentDataset(Dataset):
                                                             -1.))
                             except:
                                 continue
-
             print("Generative Polyvalent Dataset built.")
             print("Dataset Length: " + str(len(self.tuples)))
             self.num_cie = len(cie_reps)
             self.num_clus = len(clus_reps)
             self.num_dpt = len(dpt_reps)
-            self.save_dataset(data_dir)
+            self.save_dataset(data_dir, split)
 
     def __len__(self):
         return len(self.tuples)
@@ -96,8 +74,8 @@ class GenerativePolyvalentDataset(Dataset):
     def __getitem__(self, idx):
         return self.tuples[idx]
 
-    def save_dataset(self, data_dir):
-        with open(os.path.join(data_dir, "gen_poly_indices.pkl"), 'wb') as f_name:
+    def save_dataset(self, data_dir, split):
+        with open(os.path.join(data_dir, "gen_poly_indices_" + split + ".pkl"), 'wb') as f_name:
             dico = {"tuples": self.tuples,
                     'num_cie': self.num_cie,
                     'num_clus': self.num_clus,
