@@ -37,9 +37,6 @@ class GenerativePolyvalentDataset(Dataset):
                 dpt_reps = pkl.load(f_name)
             print("Data Loaded.")
             self.tuples = []
-            ipdb.set_trace()
-            # check if we can retrieve any bag rep from sole label (eg are they unique across bag types)
-
             for person_id in tqdm(ppl_lookup.keys(), desc="Building Generative Polyvalent Dataset for split " + split + " ..."):
                 for cie in ppl_reps.keys():
                     for clus in ppl_reps[cie].keys():
