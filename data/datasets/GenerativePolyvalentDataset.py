@@ -75,9 +75,9 @@ class GenerativePolyvalentDataset(Dataset):
         return self.tuples[idx]
 
     def save_dataset(self, data_dir, split):
+        dico = {"tuples": self.tuples,
+                'num_cie': self.num_cie,
+                'num_clus': self.num_clus,
+                "num_dpt": self.num_dpt}
         with open(os.path.join(data_dir, "gen_poly_indices_" + split + ".pkl"), 'wb') as f_name:
-            dico = {"tuples": self.tuples,
-                    'num_cie': self.num_cie,
-                    'num_clus': self.num_clus,
-                    "num_dpt": self.num_dpt}
             torch.save(dico, f_name)
