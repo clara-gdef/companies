@@ -1,2 +1,3 @@
 from .DiscriminativePolyvalentDataset import DiscriminativePolyvalentDataset
 from .GenerativePolyvalentDataset import GenerativePolyvalentDataset
+from .DiscriminativeSpecializedDataset import DiscriminativeSpecializedDataset

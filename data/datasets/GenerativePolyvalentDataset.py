@@ -17,10 +17,9 @@ class GenerativePolyvalentDataset(Dataset):
             self.cie_reps = dico["cie_reps"]
             self.clus_reps = dico["clus_reps"]
             self.dpt_reps = dico["dpt_reps"]
-            self.rep_type = dico["rep_type"]
             self.ppl_lookup = dico["ppl_lookup"]
             self.ppl_reps = dico["ppl_reps"]
-            self.bags_raps = {**self.cie_reps, **self.clus_reps, **self.dpt_reps}
+            self.bags_reps = {**self.cie_reps, **self.clus_reps, **self.dpt_reps}
 
             print("Building Generative Polyvalent Dataset for split " + split + " loaded.")
         else:
@@ -67,12 +66,12 @@ class GenerativePolyvalentDataset(Dataset):
                                 continue
             print("Generative Polyvalent Dataset built.")
             print("Dataset Length: " + str(len(self.tuples)))
-            self.cie_rep = cie_reps
-            self.clus_rep = clus_reps
-            self.dpt_rep = dpt_reps
+            self.cie_reps = cie_reps
+            self.clus_reps = clus_reps
+            self.dpt_reps = dpt_reps
             self.ppl_lookup = ppl_lookup
             self.ppl_reps = ppl_reps
-            self.bags_raps = {**self.cie_reps, **self.clus_reps, **self.dpt_reps}
+            self.bags_reps = {**self.cie_reps, **self.clus_reps, **self.dpt_reps}
             self.save_dataset(data_dir, split)
 
     def __len__(self):
@@ -80,13 +79,12 @@ class GenerativePolyvalentDataset(Dataset):
 
     def __getitem__(self, idx):
         return (self.ppl_reps[self.tuples[idx][0]],
-                self.bags_raps[self.tuples[idx][1]],
+                self.bags_reps[self.tuples[idx][1]],
                 self.tuples[idx][-1]
                 )
 
     def save_dataset(self, data_dir, split):
         dico = {"tuples": self.tuples,
-                "rep_type": self.rep_type,
                 "ppl_lookup": self.ppl_lookup,
                 "ppl_reps": self.ppl_reps,
                 'cie_reps': self.cie_reps,
