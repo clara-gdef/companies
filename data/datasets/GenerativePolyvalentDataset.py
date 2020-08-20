@@ -14,12 +14,13 @@ class GenerativePolyvalentDataset(Dataset):
             with open(os.path.join(data_dir, "gen_poly_indices_" + split + ".pkl"), 'rb') as f_name:
                 dico = torch.load(f_name)
             self.tuples = dico["tuples"]
-            self.cie_rep = dico["cie_rep"]
-            self.clus_rep = dico["clus_rep"]
-            self.dpt_rep = dico["dpt_rep"]
+            self.cie_reps = dico["cie_reps"]
+            self.clus_reps = dico["clus_reps"]
+            self.dpt_reps = dico["dpt_reps"]
             self.rep_type = dico["rep_type"]
             self.ppl_lookup = dico["ppl_lookup"]
             self.ppl_reps = dico["ppl_reps"]
+            self.bags_raps = {**self.cie_reps, **self.clus_reps, **self.dpt_reps}
 
             print("Building Generative Polyvalent Dataset for split " + split + " loaded.")
         else:
@@ -38,7 +39,7 @@ class GenerativePolyvalentDataset(Dataset):
             self.tuples = []
             ipdb.set_trace()
             # check if we can retrieve any bag rep from sole label (eg are they unique across bag types)
-            
+
             for person_id in tqdm(ppl_lookup.keys(), desc="Building Generative Polyvalent Dataset for split " + split + " ..."):
                 for cie in ppl_reps.keys():
                     for clus in ppl_reps[cie].keys():
@@ -74,16 +75,16 @@ class GenerativePolyvalentDataset(Dataset):
             self.dpt_rep = dpt_reps
             self.ppl_lookup = ppl_lookup
             self.ppl_reps = ppl_reps
+            self.bags_raps = {**self.cie_reps, **self.clus_reps, **self.dpt_reps}
             self.save_dataset(data_dir, split)
 
     def __len__(self):
         return len(self.tuples)
 
     def __getitem__(self, idx):
-        selected_profiles = self.tuples[idx]
-
-        return (self.ppl_reps[selected_profiles[0]],
-                self.cie_rep
+        return (self.ppl_reps[self.tuples[idx][0]],
+                self.bags_raps[self.tuples[idx][1]],
+                self.tuples[idx][-1]
                 )
 
     def save_dataset(self, data_dir, split):
@@ -91,8 +92,8 @@ class GenerativePolyvalentDataset(Dataset):
                 "rep_type": self.rep_type,
                 "ppl_lookup": self.ppl_lookup,
                 "ppl_reps": self.ppl_reps,
-                'cie_rep': self.cie_rep,
-                'clus_rep': self.clus_rep,
-                "dpt_rep": self.dpt_rep}
+                'cie_reps': self.cie_reps,
+                'clus_reps': self.clus_reps,
+                "dpt_reps": self.dpt_reps}
         with open(os.path.join(data_dir, "gen_poly_indices_" + split + ".pkl"), 'wb') as f_name:
             torch.save(dico, f_name)
