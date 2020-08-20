@@ -153,7 +153,13 @@ class InstanceClassifierDisc(pl.LightningModule):
         elif self.input_type == "concat":
             raise NotImplementedError
         elif self.input_type == "hadamard":
-            ipdb.set_trace()
+            b_size = profiles.shape[0]
+            bag_rep = batch[-1]
+            expanded_bag_rep = bag_rep.expand(b_size,  bag_rep.shape[0], bag_rep.shape[-1])
+            prof = profiles.unsqueeze(1)
+            expanded_profiles = prof.expand(b_size, bag_rep.shape[0], bag_rep.shape[-1])
+            tmp = expanded_bag_rep * expanded_profiles
+            input_tensor = tmp.view(b_size, -1)
         else:
             raise Exception("Wrong input data specified: " + str(self.input_type))
         return input_tensor
