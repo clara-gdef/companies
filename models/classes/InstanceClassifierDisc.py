@@ -18,6 +18,7 @@ class InstanceClassifierDisc(pl.LightningModule):
         self.test_labels_one_hot = []
         self.test_labels = []
         self.test_ppl_id = []
+        self.type = desc.split("_")[1]
 
         self.input_type = hparams.input_type
         self.num_cie = dataset.num_cie
@@ -41,7 +42,12 @@ class InstanceClassifierDisc(pl.LightningModule):
         if self.input_type == "matMul":
             bag_rep = torch.transpose(bag_representations, 1, 0)
             input_tensor = torch.matmul(profiles, bag_rep)
-            labels = labels_to_one_hot(input_tensor.shape[0], [batch[2], batch[3], batch[4]], input_tensor.shape[-1])
+            if self.type == "poly":
+                labels = labels_to_one_hot(input_tensor.shape[0], [batch[2], batch[3], batch[4]], input_tensor.shape[-1])
+            elif self.type == "spe":
+                labels = labels_to_one_hot(input_tensor.shape[0], [batch[2]], input_tensor.shape[-1])
+            else:
+                raise Exception("Wrong model type specified: " + str(self.type) + ", can be either \"poly\" or \"spe\"")
             output = self.forward(input_tensor)
             loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
         elif self.input_type == "concat":
@@ -63,7 +69,12 @@ class InstanceClassifierDisc(pl.LightningModule):
         if self.input_type == "matMul":
             bag_rep = torch.transpose(bag_representations, 1, 0)
             input_tensor = torch.matmul(profiles, bag_rep)
-            labels = labels_to_one_hot(input_tensor.shape[0], [batch[2], batch[3], batch[4]], input_tensor.shape[-1])
+            if self.type == "poly":
+                labels = labels_to_one_hot(input_tensor.shape[0], [batch[2], batch[3], batch[4]], input_tensor.shape[-1])
+            elif self.type == "spe":
+                labels = labels_to_one_hot(input_tensor.shape[0], [batch[2]], input_tensor.shape[-1])
+            else:
+                raise Exception("Wrong model type specified: " + str(self.type) + ", can be either \"poly\" or \"spe\"")
             output = self.forward(input_tensor)
             val_loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
         elif self.input_type == "concat":

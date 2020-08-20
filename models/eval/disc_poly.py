@@ -24,7 +24,6 @@ def test(hparams):
     logger, checkpoint_callback = init_lightning(xp_title)
     trainer = pl.Trainer(gpus=hparams.gpus,
                          checkpoint_callback=checkpoint_callback,
-                         auto_lr_find=True,
                          logger=logger,
                          )
     datasets = load_datasets(hparams, ["TRAIN"], True)
@@ -111,7 +110,7 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--b_size", type=int, default=64)
     parser.add_argument("--input_type", type=str, default="matMul")
-    parser.add_argument("--load_dataset", type=bool, default=True)
+    parser.add_argument("--load_dataset", type=bool, default=False)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     hparams = parser.parse_args()
     main(hparams)

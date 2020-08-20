@@ -17,19 +17,20 @@ class DiscriminativeSpecializedDataset(Dataset):
         self.tuples = []
 
         bag_rep = dic["bag_rep"]
-        num_cie = dic["num_cie"]
-        num_clus = dic["num_clus"]
-        num_dpt = dic["num_dpt"]
-        all_tuples = dic["tuples"]
+        self.num_cie = dic["num_cie"]
+        self.num_clus = dic["num_clus"]
+        self.num_dpt = dic["num_dpt"]
+        self.all_tuples = dic["tuples"]
+
         if bag_type == "cie":
-            self.bag_rep = bag_rep[:num_cie]
+            self.bag_rep = bag_rep[:self.num_cie]
         elif bag_type == "clus":
-            self.bag_rep = bag_rep[num_cie: num_cie + num_clus]
+            self.bag_rep = bag_rep[self.num_cie: self.num_cie + self.num_clus]
         elif bag_type == "dpt":
-            self.bag_rep = bag_rep[-num_dpt:]
+            self.bag_rep = bag_rep[-self.num_dpt:]
         else:
             raise Exception("Wrong bag type specified: " + bag_type)
-        self.select_relevant_tuples(bag_type, all_tuples)
+        self.select_relevant_tuples(bag_type, self.all_tuples)
 
         print("Discriminative Specialized Dataset for split " + split + " loaded.")
         print("Dataset Length: " + str(len(self.tuples)))
@@ -38,11 +39,12 @@ class DiscriminativeSpecializedDataset(Dataset):
         return len(self.tuples)
 
     def __getitem__(self, idx):
-        return self.tuples[idx], self.bag_rep
+        return self.tuples[idx]
 
     def select_relevant_tuples(self, bag_type, all_tuples):
         for person in all_tuples:
             self.tuples.append({"id": person["id"],
-                                "rep": person["rep"],
-                                bag_type: person[bag_type]
+                                "ppl_rep": person["rep"],
+                                "bag_rep": self.bag_rep,
+                                "label": person[bag_type]
                                 })
