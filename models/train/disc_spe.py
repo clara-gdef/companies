@@ -23,20 +23,18 @@ def train(hparams):
     xp_title = "disc_spe_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size)
     logger, checkpoint_callback, early_stop_callback = init_lightning(xp_title)
-    auto_lr_find = True
-    if hparams.rep_type == "ft":
-        auto_lr_find = False
+
     trainer = pl.Trainer(gpus=hparams.gpus,
                          max_epochs=hparams.epochs,
                          checkpoint_callback=checkpoint_callback,
                          early_stop_callback=early_stop_callback,
                          logger=logger,
-                         auto_lr_find=auto_lr_find
+                         auto_lr_find=True
                          )
     datasets = load_datasets(hparams, ["TRAIN", "VALID"], True)
     dataset_train, dataset_valid = datasets[0], datasets[1]
-    in_size, out_size = get_model_params(len(dataset_train), len(dataset_train.bag_rep))
-
+    in_size, out_size = get_model_params(dataset_train.rep_dim, dataset_train.get_num_bag())
+    ipdb.set_trace()
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model,
                               num_workers=32)
     valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model,
@@ -70,7 +68,7 @@ def load_datasets(hparams, splits, load):
 
 
 def get_model_params(rep_dim, num_bag):
-    out_size = num_bag
+    out_size = 1
     if hparams.input_type == "hadamard" or hparams.input_type == "concat":
         in_size = rep_dim * num_bag
     elif hparams.input_type == "matMul":

@@ -35,7 +35,7 @@ def train(hparams):
                          )
     datasets = load_datasets(hparams, ["TRAIN", "VALID"], True)
     dataset_train, dataset_valid = datasets[0], datasets[1]
-    in_size, out_size = get_model_params(len(dataset_train), len(dataset_train.bag_rep))
+    in_size, out_size = get_model_params(len(dataset_train.rep_dim), len(dataset_train.bag_rep))
 
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
                               num_workers=32)
