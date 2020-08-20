@@ -1,0 +1,10 @@
+b_size: 2
+bag_type: cie
+data_agg_type: avg
+epochs: 50
+gpus:
+- 0
+input_type: matMul
+load_dataset: false
+lr: 1.0e-07
+rep_type: ft
