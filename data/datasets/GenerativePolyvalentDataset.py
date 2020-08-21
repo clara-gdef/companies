@@ -8,18 +8,19 @@ from torch.utils.data import Dataset
 
 
 class GenerativePolyvalentDataset(Dataset):
-    def __init__(self, data_dir, ppl_file, cie_reps_file, clus_reps_file, dpt_reps_file, load,
+    def __init__(self, data_dir, ppl_file, cie_reps_file, clus_reps_file, dpt_reps_file, rep_type, load,
                  split="TEST"):
         if load:
             with open(os.path.join(data_dir, "gen_poly_indices_" + split + ".pkl"), 'rb') as f_name:
                 dico = torch.load(f_name)
             self.tuples = dico["tuples"]
+            self.rep_type = dico["rep_type"]
             self.cie_reps = dico["cie_reps"]
             self.clus_reps = dico["clus_reps"]
             self.dpt_reps = dico["dpt_reps"]
             self.ppl_lookup = dico["ppl_lookup"]
-            self.ppl_reps = dico["ppl_reps"]
             self.bags_reps = {**self.cie_reps, **self.clus_reps, **self.dpt_reps}
+            ipdb.set_trace()
 
             print("Generative Polyvalent Dataset for split " + split + " loaded.")
         else:
@@ -70,7 +71,6 @@ class GenerativePolyvalentDataset(Dataset):
             self.clus_reps = clus_reps
             self.dpt_reps = dpt_reps
             self.ppl_lookup = ppl_lookup
-            self.ppl_reps = ppl_reps
             self.bags_reps = {**self.cie_reps, **self.clus_reps, **self.dpt_reps}
             self.save_dataset(data_dir, split)
 
@@ -78,14 +78,14 @@ class GenerativePolyvalentDataset(Dataset):
         return len(self.tuples)
 
     def __getitem__(self, idx):
-        ipdb.set_trace()
-        return (self.ppl_reps[self.tuples[idx][0]],
+        return (self.ppl_lookup[self.tuples[idx][0]][self.rep_type],
                 self.bags_reps[self.tuples[idx][1]],
                 self.tuples[idx][-1]
                 )
 
     def save_dataset(self, data_dir, split):
         dico = {"tuples": self.tuples,
+                "rep_type": self.rep_type,
                 "ppl_lookup": self.ppl_lookup,
                 "ppl_reps": self.ppl_reps,
                 'cie_reps': self.cie_reps,

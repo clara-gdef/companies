@@ -46,6 +46,7 @@ def train(hparams):
     model = InstanceClassifierGen(**arguments)
     print("Model Loaded.")
     print("Starting training...")
+    ipdb.set_trace()
     trainer.fit(model, train_loader, valid_loader)
 
 
@@ -57,6 +58,7 @@ def load_datasets(hparams, splits, load):
         "cie_reps_file": CFG["rep"]["cie"] + hparams.data_agg_type + ".pkl",
         "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type + ".pkl",
         "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type + ".pkl",
+        "rep_type": hparams.rep_type,
         "load": load
     }
     for split in splits:
@@ -112,7 +114,7 @@ if __name__ == "__main__":
     parser.add_argument("--gpus", type=int, default=[0])
     parser.add_argument("--b_size", type=int, default=2)
     parser.add_argument("--input_type", type=str, default="matMul")
-    parser.add_argument("--load_dataset", type=bool, default=True)
+    parser.add_argument("--load_dataset", type=bool, default=False)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--lr", type=float, default=1e-7)
     parser.add_argument("--epochs", type=int, default=50)
