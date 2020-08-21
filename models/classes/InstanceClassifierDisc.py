@@ -19,6 +19,8 @@ class InstanceClassifierDisc(pl.LightningModule):
         self.test_labels = []
         self.test_ppl_id = []
         self.type = desc.split("_")[1]
+        if self.type == 'spe':
+            self.bag_type = desc.split("_")[2]
 
         self.input_type = hparams.input_type
         self.num_cie = dataset.num_cie
@@ -35,8 +37,8 @@ class InstanceClassifierDisc(pl.LightningModule):
     def training_step(self, batch, batch_nb):
         input_tensor = self.get_input_tensor(batch)
         tmp_labels = self.get_labels(batch)
-        labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, input_tensor.shape[-1])
         output = self.forward(input_tensor)
+        labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, output.shape[-1])
         loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
         tensorboard_logs = {'train_loss': loss}
         self.training_losses.append(loss.item())
@@ -45,8 +47,8 @@ class InstanceClassifierDisc(pl.LightningModule):
     def validation_step(self, batch, batch_nb):
         input_tensor = self.get_input_tensor(batch)
         tmp_labels = self.get_labels(batch)
-        labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, input_tensor.shape[-1])
         output = self.forward(input_tensor)
+        labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, output.shape[-1])
         val_loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
         tensorboard_logs = {'val_loss': val_loss}
         return {'loss': val_loss, 'log': tensorboard_logs}
@@ -137,7 +139,16 @@ class InstanceClassifierDisc(pl.LightningModule):
         if self.type == "poly":
             tmp_labels = [batch[2], batch[3], batch[4]]
         elif self.type == "spe":
-            tmp_labels = [batch[2]]
+            if self.bag_type == "cie":
+                tmp_labels = [batch[2]]
+            elif self.bag_type == "clus":
+                offset = self.num_cie
+                tmp_labels = [[i - offset for i in batch[2]]]
+            elif self.bag_type == "dpt":
+                offset = self.num_cie + self.num_clus
+                tmp_labels = [[i - offset for i in batch[2]]]
+            else:
+                raise Exception("Wrong bag type specified: " + str(self.bag_type))
         else:
             raise Exception("Wrong model type specified: " + str(self.type) + ", can be either \"poly\" or \"spe\"")
         return tmp_labels

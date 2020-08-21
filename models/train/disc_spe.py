@@ -29,7 +29,7 @@ def train(hparams):
                          checkpoint_callback=checkpoint_callback,
                          early_stop_callback=early_stop_callback,
                          logger=logger,
-                         auto_lr_find=True
+                         auto_lr_find=hparams.auto_lr_find
                          )
     datasets = load_datasets(hparams, ["TRAIN", "VALID"])
     dataset_train, dataset_valid = datasets[0], datasets[1]
@@ -97,7 +97,7 @@ def init_lightning(xp_title):
 
     early_stop_callback = EarlyStopping(
         monitor='val_loss',
-        min_delta=0.0,
+        min_delta=0.001,
         patience=10,
         verbose=False,
         mode='min'
@@ -114,10 +114,10 @@ if __name__ == "__main__":
     parser.add_argument("--gpus", type=int, default=[0])
     parser.add_argument("--b_size", type=int, default=64)
     parser.add_argument("--input_type", type=str, default="matMul")
-    parser.add_argument("--load_dataset", type=bool, default=False)
     parser.add_argument("--data_agg_type", type=str, default="avg")
-    parser.add_argument("--bag_type", type=str, default="cie")
-    parser.add_argument("--lr", type=float, default=1e-7)
+    parser.add_argument("--bag_type", type=str, default="clus")
+    parser.add_argument("--lr", type=float, default=1e-4)
+    parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--epochs", type=int, default=50)
     hparams = parser.parse_args()
     main(hparams)
