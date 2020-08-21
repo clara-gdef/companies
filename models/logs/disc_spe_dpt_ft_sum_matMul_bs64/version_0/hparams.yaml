@@ -1,0 +1,10 @@
+auto_lr_find: true
+b_size: 64
+bag_type: dpt
+data_agg_type: sum
+epochs: 50
+gpus:
+- 0
+input_type: matMul
+lr: 9.120108393559096e-06
+rep_type: ft
