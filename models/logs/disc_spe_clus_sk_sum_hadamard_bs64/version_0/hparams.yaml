@@ -1,0 +1,10 @@
+auto_lr_find: true
+b_size: 64
+bag_type: clus
+data_agg_type: sum
+epochs: 50
+gpus:
+- 0
+input_type: hadamard
+lr: 0.0002511886431509582
+rep_type: sk
