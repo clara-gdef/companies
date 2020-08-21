@@ -70,6 +70,7 @@ class GenerativePolyvalentDataset(Dataset):
             self.cie_reps = cie_reps
             self.clus_reps = clus_reps
             self.dpt_reps = dpt_reps
+            self.rep_type = rep_type
             self.ppl_lookup = ppl_lookup
             self.bags_reps = {**self.cie_reps, **self.clus_reps, **self.dpt_reps}
             self.save_dataset(data_dir, split)
@@ -87,7 +88,6 @@ class GenerativePolyvalentDataset(Dataset):
         dico = {"tuples": self.tuples,
                 "rep_type": self.rep_type,
                 "ppl_lookup": self.ppl_lookup,
-                "ppl_reps": self.ppl_reps,
                 'cie_reps': self.cie_reps,
                 'clus_reps': self.clus_reps,
                 "dpt_reps": self.dpt_reps}
