@@ -1,0 +1,11 @@
+auto_lr_find: true
+b_size: 64
+bag_type: cie
+data_agg_type: sum
+epochs: 50
+gpus:
+- 0
+input_type: hadamard
+load_dataset: false
+lr: 7.585775750291836e-06
+rep_type: ft
