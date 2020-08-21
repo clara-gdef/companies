@@ -12,22 +12,20 @@ from utils.models import collate_for_gen_poly_model
 
 
 def main(hparams):
-    train(hparams)
+    with ipdb.launch_ipdb_on_exception():
+        train(hparams)
 
 
 def train(hparams):
     xp_title = "gen_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size)
     logger, checkpoint_callback, early_stop_callback = init_lightning(xp_title)
-    auto_lr_find = True
-    if hparams.rep_type == "ft":
-        auto_lr_find = False
     trainer = pl.Trainer(gpus=hparams.gpus,
                          max_epochs=hparams.epochs,
                          checkpoint_callback=checkpoint_callback,
                          early_stop_callback=early_stop_callback,
                          logger=logger,
-                         auto_lr_find=auto_lr_find
+                         auto_lr_find=hparams.auto_lr_find
                          )
     datasets = load_datasets(hparams, ["TRAIN", "VALID"], hparams.load_dataset)
     dataset_train, dataset_valid = datasets[0], datasets[1]

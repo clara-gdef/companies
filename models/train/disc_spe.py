@@ -8,7 +8,6 @@ from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
-import glob
 from data.datasets import DiscriminativeSpecializedDataset
 from models.classes import InstanceClassifierDisc
 from utils.models import collate_for_disc_spe_model
@@ -23,7 +22,7 @@ def train(hparams):
     xp_title = "disc_spe_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size)
     logger, checkpoint_callback, early_stop_callback = init_lightning(xp_title)
-
+    print(hparams.auto_lr_find)
     trainer = pl.Trainer(gpus=hparams.gpus,
                          max_epochs=hparams.epochs,
                          checkpoint_callback=checkpoint_callback,
@@ -49,6 +48,7 @@ def train(hparams):
     model = InstanceClassifierDisc(**arguments)
     print("Model Loaded.")
     print("Starting training...")
+    ipdb.set_trace()
     trainer.fit(model, train_loader, valid_loader)
 
 
