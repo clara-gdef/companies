@@ -120,7 +120,7 @@ if __name__ == "__main__":
     parser.add_argument("--rep_type", type=str, default='sk')
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--b_size", type=int, default=64)
-    parser.add_argument("--input_type", type=str, default="userOriented")
+    parser.add_argument("--input_type", type=str, default="hadamard")
     parser.add_argument("--load_dataset", type=bool, default=False)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--lr", type=float, default=1e-5)
