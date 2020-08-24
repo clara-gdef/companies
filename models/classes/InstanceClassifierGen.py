@@ -32,22 +32,39 @@ class InstanceClassifierGen(pl.LightningModule):
         return self.lin(x)
 
     def training_step(self, batch, batch_nb):
-        input_tensor = self.get_input_tensor(batch)
-        tmp_labels = self.get_labels(batch)
-        labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, input_tensor.shape[-1])
-        output = self.forward(input_tensor)
-        loss = torch.nn.functionnal.soft_margin_loss(output, labels)
-        tensorboard_logs = {'train_loss': loss}
-        self.training_losses.append(loss.item())
+        if self.input_type != "userOriented":
+            input_tensor = self.get_input_tensor(batch)
+            tmp_labels = self.get_labels(batch)
+            labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, input_tensor.shape[-1])
+            output = self.forward(input_tensor)
+            loss = torch.nn.functionnal.soft_margin_loss(output, labels)
+            tensorboard_logs = {'train_loss': loss}
+            self.training_losses.append(loss.item())
+        else:
+            bag_matrix, profiles = self.get_input_tensor(batch)
+            tmp_labels = self.get_labels(batch)
+            labels = labels_to_one_hot(profiles.shape[0], tmp_labels, profiles.shape[-1])
+            output = torch.matmul(self.forward(bag_matrix), profiles)
+            loss = torch.nn.functionnal.soft_margin_loss(output, labels)
+            tensorboard_logs = {'train_loss': loss}
+            self.training_losses.append(loss.item())
         return {'loss': loss, 'log': tensorboard_logs}
 
     def validation_step(self, batch, batch_nb):
-        input_tensor = self.get_input_tensor(batch)
-        tmp_labels = self.get_labels(batch)
-        labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, input_tensor.shape[-1])
-        output = self.forward(input_tensor)
-        val_loss = torch.nn.functionnal.soft_margin_loss(output, labels)
-        tensorboard_logs = {'val_loss': val_loss}
+        if self.input_type != "userOriented":
+            input_tensor = self.get_input_tensor(batch)
+            tmp_labels = self.get_labels(batch)
+            labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, input_tensor.shape[-1])
+            output = self.forward(input_tensor)
+            val_loss = torch.nn.functionnal.soft_margin_loss(output, labels)
+            tensorboard_logs = {'val_loss': val_loss}
+        else:
+            bag_matrix, profiles = self.get_input_tensor(batch)
+            tmp_labels = self.get_labels(batch)
+            labels = labels_to_one_hot(profiles.shape[0], tmp_labels, profiles.shape[-1])
+            output = torch.matmul(self.forward(bag_matrix), profiles)
+            val_loss = torch.nn.functionnal.soft_margin_loss(output, labels)
+            tensorboard_logs = {'val_loss': val_loss}
         return {'loss': val_loss, 'log': tensorboard_logs}
 
     def epoch_end(self):
@@ -153,6 +170,8 @@ class InstanceClassifierGen(pl.LightningModule):
             raise NotImplementedError
         elif self.input_type == "hadamard":
             ipdb.set_trace()
+        elif self.input_type == "userOriented":
+            input_tensor = (torch.transpose(batch[-1], 1, 0), profiles)
         else:
             raise Exception("Wrong input data specified: " + str(self.input_type))
         return input_tensor

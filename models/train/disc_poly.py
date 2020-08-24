@@ -23,24 +23,21 @@ def train(hparams):
     xp_title = "disc_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size)
     logger, checkpoint_callback, early_stop_callback = init_lightning(xp_title)
-    auto_lr_find = True
-    if hparams.rep_type == "ft":
-        auto_lr_find = False
-    trainer = pl.Trainer(gpus=hparams.gpus,
+    trainer = pl.Trainer(gpus=[hparams.gpus],
                          max_epochs=hparams.epochs,
                          checkpoint_callback=checkpoint_callback,
                          early_stop_callback=early_stop_callback,
                          logger=logger,
-                         auto_lr_find=auto_lr_find
+                         auto_lr_find=False
                          )
     datasets = load_datasets(hparams, ["TRAIN", "VALID"], True)
     dataset_train, dataset_valid = datasets[0], datasets[1]
-    in_size, out_size = get_model_params(len(dataset_train.rep_dim), len(dataset_train.bag_rep))
+    in_size, out_size = get_model_params(dataset_train.rep_dim, len(dataset_train.bag_rep))
 
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
-                              num_workers=32)
+                              num_workers=16)
     valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
-                              num_workers=32)
+                              num_workers=16)
     arguments = {'in_size': in_size,
                  'out_size': out_size,
                  'hparams': hparams,
@@ -79,6 +76,9 @@ def get_model_params(rep_dim, num_bag):
         in_size = rep_dim * num_bag
     elif hparams.input_type == "matMul":
         in_size = num_bag
+    elif hparams.input_type == "userOriented":
+        in_size = rep_dim
+        out_size = rep_dim
     else:
         raise Exception("Wrong input data specified: " + str(hparams.input_type))
 
@@ -86,7 +86,7 @@ def get_model_params(rep_dim, num_bag):
 
 
 def init_lightning(xp_title):
-    model_path = os.path.join(CFG['modeldir'], "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type)
+    model_path = os.path.join(CFG['modeldir'], "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type)
 
     logger = TensorBoardLogger(
         save_dir='./models/logs',
@@ -104,7 +104,7 @@ def init_lightning(xp_title):
 
     early_stop_callback = EarlyStopping(
         monitor='val_loss',
-        min_delta=0.001,
+        min_delta=0.000,
         patience=5,
         verbose=False,
         mode='min'
@@ -117,13 +117,13 @@ if __name__ == "__main__":
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rep_type", type=str, default='ft')
-    parser.add_argument("--gpus", type=int, default=[1])
+    parser.add_argument("--rep_type", type=str, default='sk')
+    parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--b_size", type=int, default=64)
-    parser.add_argument("--input_type", type=str, default="matMul")
+    parser.add_argument("--input_type", type=str, default="userOriented")
     parser.add_argument("--load_dataset", type=bool, default=False)
     parser.add_argument("--data_agg_type", type=str, default="avg")
-    parser.add_argument("--lr", type=float, default=1e-7)
+    parser.add_argument("--lr", type=float, default=1e-5)
     parser.add_argument("--epochs", type=int, default=50)
     hparams = parser.parse_args()
     main(hparams)

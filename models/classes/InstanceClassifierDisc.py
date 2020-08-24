@@ -35,22 +35,39 @@ class InstanceClassifierDisc(pl.LightningModule):
         return self.lin(x)
 
     def training_step(self, batch, batch_nb):
-        input_tensor = self.get_input_tensor(batch)
-        tmp_labels = self.get_labels(batch)
-        output = self.forward(input_tensor)
-        labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, output.shape[-1])
-        loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
-        tensorboard_logs = {'train_loss': loss}
-        self.training_losses.append(loss.item())
+        if self.input_type != "userOriented":
+            input_tensor = self.get_input_tensor(batch)
+            tmp_labels = self.get_labels(batch)
+            labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, input_tensor.shape[-1])
+            output = self.forward(input_tensor)
+            loss = torch.nn.functional.soft_margin_loss(output, labels)
+            tensorboard_logs = {'train_loss': loss}
+            self.training_losses.append(loss.item())
+        else:
+            bag_matrix, profiles = self.get_input_tensor(batch)
+            tmp_labels = self.get_labels(batch)
+            labels = labels_to_one_hot(profiles.shape[0], tmp_labels, bag_matrix.shape[0])
+            output = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
+            loss = torch.nn.functional.soft_margin_loss(torch.transpose(output, 1, 0), labels.cuda())
+            tensorboard_logs = {'train_loss': loss}
+            self.training_losses.append(loss.item())
         return {'loss': loss, 'log': tensorboard_logs}
 
     def validation_step(self, batch, batch_nb):
-        input_tensor = self.get_input_tensor(batch)
-        tmp_labels = self.get_labels(batch)
-        output = self.forward(input_tensor)
-        labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, output.shape[-1])
-        val_loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
-        tensorboard_logs = {'val_loss': val_loss}
+        if self.input_type != "userOriented":
+            input_tensor = self.get_input_tensor(batch)
+            tmp_labels = self.get_labels(batch)
+            labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, input_tensor.shape[-1])
+            output = self.forward(input_tensor)
+            val_loss = torch.nn.functional.soft_margin_loss(output, labels)
+            tensorboard_logs = {'val_loss': val_loss}
+        else:
+            bag_matrix, profiles = self.get_input_tensor(batch)
+            tmp_labels = self.get_labels(batch)
+            labels = labels_to_one_hot(profiles.shape[0], tmp_labels, bag_matrix.shape[0])
+            output = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
+            val_loss = torch.nn.functional.soft_margin_loss(torch.transpose(output, 1, 0), labels.cuda())
+            tensorboard_logs = {'val_loss': val_loss}
         return {'loss': val_loss, 'log': tensorboard_logs}
 
     def epoch_end(self):
@@ -65,28 +82,38 @@ class InstanceClassifierDisc(pl.LightningModule):
         return torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
 
     def test_step(self, batch, batch_idx):
-        if self.input_type == "matMul":
-            if len(batch[1].shape) > 2:
-                ppl_tensor = torch.transpose(batch[1], 2, 1)
-            else:
-                ppl_tensor = torch.transpose(batch[1], 1, 0)
-            tmp = torch.matmul(batch[-1], ppl_tensor).squeeze(-1)
-            input_tensor = tmp.view(len(batch[0]), -1)
-            labels = [batch[2], batch[3], batch[4]]
-            labels_one_hot = labels_to_one_hot(input_tensor.shape[0], [batch[2], batch[3], batch[4]],
-                                               input_tensor.shape[-1])
-            assert torch.sum(labels_one_hot) == 3 * len(input_tensor)
+        if self.input_type != "userOriented":
+            input_tensor = self.get_input_tensor(batch)
+            tmp_labels = self.get_labels(batch)
+            labels_one_hot = labels_to_one_hot(input_tensor.shape[0], tmp_labels, input_tensor.shape[-1])
             self.test_outputs.append(self.forward(input_tensor))
-            self.test_labels_one_hot.append(labels_one_hot)
-            self.test_labels.append(labels)
-            self.test_ppl_id.append(batch[0])
+        else:
+            bag_matrix, profiles = self.get_input_tensor(batch)
+            tmp_labels = self.get_labels(batch)
+            labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, bag_matrix.shape[0])
+            self.test_outputs.append(torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0)).cuda())
+        self.test_labels_one_hot.append(labels_one_hot)
+        self.test_labels.append(tmp_labels)
+        self.test_ppl_id.append(batch[0])
 
     def test_epoch_end(self, outputs):
         outputs = torch.stack(self.test_outputs)
+        if self.type == "poly":
+            res = self.test_poly(outputs)
+        else:
+            res = self.test_spe(outputs)
+        return res
+
+    def test_poly(self, outputs):
         # slicing predictions per class type
-        cie_preds = outputs[:, 0, :self.num_cie]
-        clus_preds = outputs[:, 0, self.num_cie: self.num_cie + self.num_clus]
-        dpt_preds = outputs[:, 0, -self.num_dpt:]
+        if self.input_type != "userOriented":
+            cie_preds = outputs[:, 0, :self.num_cie]
+            clus_preds = outputs[:, 0, self.num_cie: self.num_cie + self.num_clus]
+            dpt_preds = outputs[:, 0, -self.num_dpt:]
+        else:
+            cie_preds = outputs[:, :self.num_cie, 0]
+            clus_preds = outputs[:, self.num_cie: self.num_cie + self.num_clus, 0]
+            dpt_preds = outputs[:, -self.num_dpt:, 0]
 
         cie_labels = torch.LongTensor([i[0][0] for i in self.test_labels]).cuda()
         clus_labels = torch.LongTensor([i[1][0] for i in self.test_labels]).cuda()
@@ -95,14 +122,13 @@ class InstanceClassifierDisc(pl.LightningModule):
         ci_preds, ci_cm, ci_res = test_for_bag(cie_preds, cie_labels, offset=0)
         cl_preds, cl_cm, cl_res = test_for_bag(clus_preds, clus_labels, offset=self.num_cie)
         d_preds, d_cm, d_res = test_for_bag(dpt_preds, dpt_labels, offset=self.num_cie + self.num_clus)
-        self.save_outputs(ci_preds, cie_labels, ci_cm, ci_res,
-                          cl_preds, clus_labels, cl_cm, cl_res,
-                          d_preds, dpt_labels, d_cm, d_res)
+        # self.save_outputs(ci_preds, cie_labels, ci_cm, ci_res,
+        #                   cl_preds, clus_labels, cl_cm, cl_res,
+        #                   d_preds, dpt_labels, d_cm, d_res)
 
         ci_avg_prec, ci_avg_rec = get_average_metrics(ci_res)
         cl_avg_prec, cl_avg_rec = get_average_metrics(cl_res)
         d_avg_prec, d_avg_rec = get_average_metrics(d_res)
-
         return {"cie_acc": ci_res["accuracy"],
                 "cie_precision": ci_avg_prec,
                 "cie_recall": ci_avg_rec,
@@ -113,6 +139,27 @@ class InstanceClassifierDisc(pl.LightningModule):
                 "dpt_precision": d_avg_prec,
                 "dpt_recall": d_avg_rec
                 }
+
+    def test_spe(self, outputs):
+        preds = outputs[:, 0, :]
+        labels = torch.LongTensor([i[0][0] for i in self.test_labels]).cuda()
+        preds, cm, res = test_for_bag(preds, labels, offset=0)
+        self.save_bag_outputs(preds, labels, cm, res)
+        prec, rec = get_average_metrics(res)
+        return {"acc": res["accuracy"],
+                "precision": prec,
+                "recall": rec}
+
+    def save_bag_outputs(self, preds, labels, cm, res):
+        res = {self.bag_type: {"preds": preds,
+                       "labels": labels,
+                       "cm": cm,
+                       "res": res}
+               }
+        tgt_file = os.path.join(self.data_dir, "OUTPUTS_" + self.description + ".pkl")
+        with open(tgt_file, 'wb') as f:
+            pkl.dump(res, f)
+
 
     def save_outputs(self, ci_preds, cie_labels, ci_cm, ci_res,
                      cl_preds, clus_labels, cl_cm, cl_res,
@@ -171,6 +218,8 @@ class InstanceClassifierDisc(pl.LightningModule):
             expanded_profiles = prof.expand(b_size, bag_rep.shape[0], bag_rep.shape[-1])
             tmp = expanded_bag_rep * expanded_profiles
             input_tensor = tmp.view(b_size, -1)
+        elif self.input_type == "userOriented":
+            input_tensor = (batch[-1], profiles)
         else:
             raise Exception("Wrong input data specified: " + str(self.input_type))
         return input_tensor

@@ -1,0 +1,9 @@
+b_size: 64
+data_agg_type: avg
+epochs: 50
+gpus:
+- 1
+input_type: userOriented
+load_dataset: false
+lr: 1.0e-05
+rep_type: ft
