@@ -28,7 +28,7 @@ def test(hparams):
                          )
     datasets = load_datasets(hparams, ["TRAIN"])
     dataset_train = datasets[0]
-    in_size, out_size = get_model_params(len(dataset_train), len(dataset_train.bag_rep))
+    in_size, out_size = get_model_params(dataset_train.rep_dim, len(dataset_train.bag_rep))
 
     arguments = {'in_size': in_size,
                  'out_size': out_size,
@@ -71,6 +71,11 @@ def get_model_params(rep_dim, num_bag):
         in_size = rep_dim * num_bag
     elif hparams.input_type == "matMul":
         in_size = num_bag
+    elif hparams.input_type == "userOriented":
+        in_size = rep_dim
+        out_size = rep_dim
+    elif hparams.input_type == "userOnly":
+        in_size = rep_dim
     else:
         raise Exception("Wrong input data specified: " + str(hparams.input_type))
 
@@ -101,11 +106,10 @@ if __name__ == "__main__":
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rep_type", type=str, default='ft')
+    parser.add_argument("--rep_type", type=str, default='sk')
     parser.add_argument("--gpus", type=int, default=[0])
     parser.add_argument("--bag_type", type=str, default="cie")
-    parser.add_argument("--input_type", type=str, default="matMul")
-    parser.add_argument("--load_dataset", type=bool, default=False)
+    parser.add_argument("--input_type", type=str, default="userOnly")
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--b_size", type=int, default=64)
