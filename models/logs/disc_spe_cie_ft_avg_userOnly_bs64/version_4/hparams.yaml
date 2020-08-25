@@ -1,0 +1,10 @@
+auto_lr_find: true
+b_size: 64
+bag_type: cie
+data_agg_type: avg
+epochs: 50
+gpus:
+- 0
+input_type: userOnly
+lr: 0.0001
+rep_type: ft
