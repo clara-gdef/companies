@@ -38,8 +38,8 @@ class InstanceClassifierDisc(pl.LightningModule):
         if self.input_type != "userOriented":
             input_tensor = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
-            labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, input_tensor.shape[-1])
             output = self.forward(input_tensor)
+            labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, output.shape[-1])
             loss = torch.nn.functional.soft_margin_loss(output, labels.cuda())
             tensorboard_logs = {'train_loss': loss}
             self.training_losses.append(loss.item())
@@ -57,8 +57,8 @@ class InstanceClassifierDisc(pl.LightningModule):
         if self.input_type != "userOriented":
             input_tensor = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
-            labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, input_tensor.shape[-1])
             output = self.forward(input_tensor)
+            labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, output.shape[-1])
             val_loss = torch.nn.functional.soft_margin_loss(output, labels.cuda())
             tensorboard_logs = {'val_loss': val_loss}
         else:

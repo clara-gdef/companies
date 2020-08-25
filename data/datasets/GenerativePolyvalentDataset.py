@@ -20,7 +20,6 @@ class GenerativePolyvalentDataset(Dataset):
             self.dpt_reps = dico["dpt_reps"]
             self.ppl_lookup = dico["ppl_lookup"]
             self.bags_reps = {**self.cie_reps, **self.clus_reps, **self.dpt_reps}
-            ipdb.set_trace()
 
             print("Generative Polyvalent Dataset for split " + split + " loaded.")
         else:
