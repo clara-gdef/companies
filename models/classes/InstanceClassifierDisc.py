@@ -122,9 +122,9 @@ class InstanceClassifierDisc(pl.LightningModule):
         ci_preds, ci_cm, ci_res = test_for_bag(cie_preds, cie_labels, offset=0)
         cl_preds, cl_cm, cl_res = test_for_bag(clus_preds, clus_labels, offset=self.num_cie)
         d_preds, d_cm, d_res = test_for_bag(dpt_preds, dpt_labels, offset=self.num_cie + self.num_clus)
-        # self.save_outputs(ci_preds, cie_labels, ci_cm, ci_res,
-        #                   cl_preds, clus_labels, cl_cm, cl_res,
-        #                   d_preds, dpt_labels, d_cm, d_res)
+        self.save_outputs(ci_preds, cie_labels, ci_cm, ci_res,
+                          cl_preds, clus_labels, cl_cm, cl_res,
+                          d_preds, dpt_labels, d_cm, d_res)
 
         ci_avg_prec, ci_avg_rec = get_average_metrics(ci_res)
         cl_avg_prec, cl_avg_rec = get_average_metrics(cl_res)
