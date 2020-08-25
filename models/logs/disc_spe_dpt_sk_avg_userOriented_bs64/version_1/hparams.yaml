@@ -1,0 +1,9 @@
+b_size: 64
+bag_type: dpt
+data_agg_type: avg
+gpus:
+- 0
+input_type: userOriented
+load_dataset: false
+lr: 0.0001
+rep_type: sk
