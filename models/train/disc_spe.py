@@ -47,7 +47,7 @@ def train(hparams):
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = InstanceClassifierDisc(**arguments)
     print("Model Loaded.")
-    print("Starting training...")
+    print("Starting training " + xp_title)
     trainer.fit(model, train_loader, valid_loader)
 
 
