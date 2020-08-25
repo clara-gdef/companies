@@ -40,7 +40,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             tmp_labels = self.get_labels(batch)
             labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, input_tensor.shape[-1])
             output = self.forward(input_tensor)
-            loss = torch.nn.functional.soft_margin_loss(output, labels)
+            loss = torch.nn.functional.soft_margin_loss(output, labels.cuda())
             tensorboard_logs = {'train_loss': loss}
             self.training_losses.append(loss.item())
         else:
@@ -59,7 +59,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             tmp_labels = self.get_labels(batch)
             labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, input_tensor.shape[-1])
             output = self.forward(input_tensor)
-            val_loss = torch.nn.functional.soft_margin_loss(output, labels)
+            val_loss = torch.nn.functional.soft_margin_loss(output, labels.cuda())
             tensorboard_logs = {'val_loss': val_loss}
         else:
             bag_matrix, profiles = self.get_input_tensor(batch)
