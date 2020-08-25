@@ -160,7 +160,6 @@ class InstanceClassifierDisc(pl.LightningModule):
         with open(tgt_file, 'wb') as f:
             pkl.dump(res, f)
 
-
     def save_outputs(self, ci_preds, cie_labels, ci_cm, ci_res,
                      cl_preds, clus_labels, cl_cm, cl_res,
                      d_preds, dpt_labels, d_cm, d_res):
