@@ -114,7 +114,7 @@ if __name__ == "__main__":
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rep_type", type=str, default='sk')
+    parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=[0])
     parser.add_argument("--b_size", type=int, default=64)
     parser.add_argument("--input_type", type=str, default="userOnly")
