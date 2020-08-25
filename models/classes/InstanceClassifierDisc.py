@@ -39,14 +39,14 @@ class InstanceClassifierDisc(pl.LightningModule):
             input_tensor = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
             output = self.forward(input_tensor)
-            labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, output.shape[-1])
+            labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.get_num_classes())
             loss = torch.nn.functional.soft_margin_loss(output, labels.cuda())
             tensorboard_logs = {'train_loss': loss}
             self.training_losses.append(loss.item())
         else:
             bag_matrix, profiles = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
-            labels = labels_to_one_hot(profiles.shape[0], tmp_labels, bag_matrix.shape[0])
+            labels = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
             output = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
             loss = torch.nn.functional.soft_margin_loss(torch.transpose(output, 1, 0), labels.cuda())
             tensorboard_logs = {'train_loss': loss}
@@ -58,13 +58,13 @@ class InstanceClassifierDisc(pl.LightningModule):
             input_tensor = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
             output = self.forward(input_tensor)
-            labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, output.shape[-1])
+            labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels,self.get_num_classes())
             val_loss = torch.nn.functional.soft_margin_loss(output, labels.cuda())
             tensorboard_logs = {'val_loss': val_loss}
         else:
             bag_matrix, profiles = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
-            labels = labels_to_one_hot(profiles.shape[0], tmp_labels, bag_matrix.shape[0])
+            labels = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
             output = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
             val_loss = torch.nn.functional.soft_margin_loss(torch.transpose(output, 1, 0), labels.cuda())
             tensorboard_logs = {'val_loss': val_loss}
@@ -85,12 +85,12 @@ class InstanceClassifierDisc(pl.LightningModule):
         if self.input_type != "userOriented":
             input_tensor = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
-            labels_one_hot = labels_to_one_hot(input_tensor.shape[0], tmp_labels, input_tensor.shape[-1])
+            labels_one_hot = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.get_num_classes())
             self.test_outputs.append(self.forward(input_tensor))
         else:
             bag_matrix, profiles = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
-            labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, bag_matrix.shape[0])
+            labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
             self.test_outputs.append(torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0)).cuda())
         self.test_labels_one_hot.append(labels_one_hot)
         self.test_labels.append(tmp_labels)
@@ -224,6 +224,17 @@ class InstanceClassifierDisc(pl.LightningModule):
         else:
             raise Exception("Wrong input data specified: " + str(self.input_type))
         return input_tensor
+
+    def get_num_classes(self):
+        if self.type == "spe":
+            if self.bag_type == "cie":
+                return self.num_cie
+            elif self.bag_type == "clus":
+                return self.num_clus
+            elif self.bag_type == "dpt":
+                return self.num_dpt
+        else:
+            return self.num_cie + self.num_clus + self.num_dpt
 
 
 def test_for_bag(preds, labels, offset):
