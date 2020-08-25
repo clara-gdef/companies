@@ -219,6 +219,8 @@ class InstanceClassifierDisc(pl.LightningModule):
             input_tensor = tmp.view(b_size, -1)
         elif self.input_type == "userOriented":
             input_tensor = (batch[-1], profiles)
+        elif self.input_type == "userOnly":
+            input_tensor = profiles
         else:
             raise Exception("Wrong input data specified: " + str(self.input_type))
         return input_tensor

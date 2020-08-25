@@ -74,6 +74,8 @@ def get_model_params(rep_dim, num_bag):
     elif hparams.input_type == "userOriented":
         in_size = rep_dim
         out_size = rep_dim
+    elif hparams.input_type == "userOnly":
+        in_size = rep_dim
     else:
         raise Exception("Wrong input data specified: " + str(hparams.input_type))
 
@@ -115,7 +117,7 @@ if __name__ == "__main__":
     parser.add_argument("--rep_type", type=str, default='sk')
     parser.add_argument("--gpus", type=int, default=[0])
     parser.add_argument("--b_size", type=int, default=64)
-    parser.add_argument("--input_type", type=str, default="hadamard")
+    parser.add_argument("--input_type", type=str, default="userOnly")
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--bag_type", type=str, default="cie")
     parser.add_argument("--lr", type=float, default=1e-4)
