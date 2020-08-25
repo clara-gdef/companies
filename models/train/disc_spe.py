@@ -48,7 +48,6 @@ def train(hparams):
     model = InstanceClassifierDisc(**arguments)
     print("Model Loaded.")
     print("Starting training...")
-    ipdb.set_trace()
     trainer.fit(model, train_loader, valid_loader)
 
 
@@ -110,12 +109,12 @@ if __name__ == "__main__":
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rep_type", type=str, default='ft')
+    parser.add_argument("--rep_type", type=str, default='sk')
     parser.add_argument("--gpus", type=int, default=[0])
     parser.add_argument("--b_size", type=int, default=64)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--data_agg_type", type=str, default="avg")
-    parser.add_argument("--bag_type", type=str, default="clus")
+    parser.add_argument("--bag_type", type=str, default="cie")
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--epochs", type=int, default=50)
