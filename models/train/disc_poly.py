@@ -1,6 +1,4 @@
 import os
-import torch
-
 import ipdb
 import argparse
 import pytorch_lightning as pl
@@ -8,10 +6,9 @@ from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
-import glob
 from data.datasets import DiscriminativePolyvalentDataset
 from models.classes import InstanceClassifierDisc
-from utils.models import collate_for_NormedDisc_poly_model
+from utils.models import collate_for_disc_poly_model
 
 
 def main(hparams):
@@ -36,9 +33,9 @@ def train(hparams):
     datasets = load_datasets(hparams, ["TRAIN", "VALID"], hparams.load_dataset)
     dataset_train, dataset_valid = datasets[0], datasets[1]
     in_size, out_size = get_model_params(dataset_train.rep_dim, len(dataset_train.bag_rep))
-    train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_NormedDisc_poly_model,
+    train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
                               num_workers=16)
-    valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_NormedDisc_poly_model,
+    valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
                               num_workers=16)
     arguments = {'in_size': in_size,
                  'out_size': out_size,
