@@ -11,16 +11,19 @@ import yaml
 import glob
 from data.datasets import DiscriminativePolyvalentDataset
 from models.classes import InstanceClassifierDisc
-from utils.models import collate_for_disc_poly_model
+from utils.models import collate_for_NormedDisc_poly_model
 
 
 def main(hparams):
+
     with ipdb.launch_ipdb_on_exception():
-        train(hparams)
+        datasets = load_datasets(hparams, ["TRAIN", "VALID"], hparams.load_dataset)
+
+#        train(hparams)
 
 
 def train(hparams):
-    xp_title = "disc_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
+    xp_title = "NormedDisc_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size)
     logger, checkpoint_callback, early_stop_callback = init_lightning(xp_title)
     trainer = pl.Trainer(gpus=[hparams.gpus],
@@ -30,13 +33,12 @@ def train(hparams):
                          logger=logger,
                          auto_lr_find=False
                          )
-    datasets = load_datasets(hparams, ["TRAIN", "VALID"], True)
+    datasets = load_datasets(hparams, ["TRAIN", "VALID"], hparams.load_dataset)
     dataset_train, dataset_valid = datasets[0], datasets[1]
     in_size, out_size = get_model_params(dataset_train.rep_dim, len(dataset_train.bag_rep))
-
-    train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
+    train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_NormedDisc_poly_model,
                               num_workers=16)
-    valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
+    valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_NormedDisc_poly_model,
                               num_workers=16)
     arguments = {'in_size': in_size,
                  'out_size': out_size,
@@ -79,6 +81,8 @@ def get_model_params(rep_dim, num_bag):
     elif hparams.input_type == "userOriented":
         in_size = rep_dim
         out_size = rep_dim
+    elif hparams.input_type == "userOnly":
+        in_size = rep_dim
     else:
         raise Exception("Wrong input data specified: " + str(hparams.input_type))
 
@@ -86,7 +90,7 @@ def get_model_params(rep_dim, num_bag):
 
 
 def init_lightning(xp_title):
-    model_path = os.path.join(CFG['modeldir'], "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type)
+    model_path = os.path.join(CFG['modeldir'], "NormedDisc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type)
 
     logger = TensorBoardLogger(
         save_dir='./models/logs',
@@ -120,7 +124,7 @@ if __name__ == "__main__":
     parser.add_argument("--rep_type", type=str, default='sk')
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--b_size", type=int, default=64)
-    parser.add_argument("--input_type", type=str, default="hadamard")
+    parser.add_argument("--input_type", type=str, default="userOnly")
     parser.add_argument("--load_dataset", type=bool, default=False)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--lr", type=float, default=1e-5)

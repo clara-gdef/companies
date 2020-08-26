@@ -2,6 +2,8 @@ import os
 import pickle as pkl
 import itertools
 import torch
+import numpy as np
+import ipdb
 from tqdm import tqdm
 from torch.utils.data import Dataset
 
@@ -20,6 +22,7 @@ class DiscriminativePolyvalentDataset(Dataset):
                 dic = torch.load(f_name)
             self.rep_type = dic["rep_type"]
             self.tuples = dic["tuples"]
+            ipdb.set_trace()
             self.rep_dim = dic["rep_dim"]
             self.bag_rep = dic["bag_rep"]
             self.num_cie = dic["num_cie"]
@@ -79,6 +82,15 @@ class DiscriminativePolyvalentDataset(Dataset):
 
 
 def build_ppl_tuples(ppl_reps, ppl_lookup, rep_type, num_cie, num_clus, num_dpt, split):
+    ipdb.set_trace()
+    tmp = []
+    for cie in tqdm(ppl_reps.keys(), desc="Getting mean and std for Discriminative Polyvalent Dataset for split " + split + " ..."):
+        for clus in ppl_reps[cie].keys():
+            if len(ppl_reps[cie][clus].keys()) > 0:
+                for person_id in ppl_reps[cie][clus]["id_ppl"]:
+                    tmp.append(ppl_lookup[person_id][rep_type])
+    ds_mean = torch.mean(torch.stack(tmp))
+    ds_std = torch.std(torch.stack(tmp))
     tuples = []
     for cie in tqdm(ppl_reps.keys(), desc="Building Discriminative Polyvalent Dataset for split " + split + " ..."):
         for clus in ppl_reps[cie].keys():
@@ -89,7 +101,7 @@ def build_ppl_tuples(ppl_reps, ppl_lookup, rep_type, num_cie, num_clus, num_dpt,
                     assert num_cie + num_clus <= ppl_lookup[person_id]["dpt_label"] <= num_cie + num_clus + num_dpt - 1
                     tuples.append(
                         {"id": person_id,
-                         "rep": ppl_lookup[person_id][rep_type],
+                         "rep": (ppl_lookup[person_id][rep_type] - ds_mean) / ds_std,
                          "cie": ppl_lookup[person_id]["cie_label"],
                          "clus": ppl_lookup[person_id]["clus_label"],
                          "dpt": ppl_lookup[person_id]["dpt_label"]
