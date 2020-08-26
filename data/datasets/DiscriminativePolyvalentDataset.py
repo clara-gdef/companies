@@ -82,7 +82,6 @@ class DiscriminativePolyvalentDataset(Dataset):
 
 
 def build_ppl_tuples(ppl_reps, ppl_lookup, rep_type, num_cie, num_clus, num_dpt, split):
-    ipdb.set_trace()
     tmp = []
     for cie in tqdm(ppl_reps.keys(), desc="Getting mean and std for Discriminative Polyvalent Dataset for split " + split + " ..."):
         for clus in ppl_reps[cie].keys():
