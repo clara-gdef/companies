@@ -55,17 +55,14 @@ def test(hparams, model, test_loader):
         bag_rep = torch.transpose(bag_rep, 1, 0)
         input_tensor = torch.matmul(ppl, bag_rep).cuda()
         output = model(input_tensor)
-        label = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
 
         ids.append(identifier)
         b4_training.append(input_tensor)
         outputs.append(output)
-        preds.append(torch.argmax(output, dim=1))
-        labels.append(label)
+        preds.append(torch.argmax(output, dim=1).item())
+        labels.append(tmp_labels[0])
     ipdb.set_trace()
-    preds = outputs[:, 0, :]
     preds, cm, res = test_for_bag(preds, labels, before_training, 0, get_num_classes(hparams.bag_type))
-    save_bag_outputs(preds, labels, cm, res)
     prec, rec = get_average_metrics(res)
     return {"acc": res["accuracy"],
             "precision": prec,
@@ -85,10 +82,7 @@ def get_num_classes(self, bag_type):
 
 
 def test_for_bag(preds, labels, b4_training, offset, num_classes):
-    tmp = [i.item() for i in torch.argmax(preds, dim=1)]
-    tmp2 = [i.item() for i in torch.argmax(torch.stack(b4_training)[:, 0, :], dim=1)]
-    ipdb.set_trace()
-    predicted_classes = [i + offset for i in tmp]
+    predicted_classes = [i + offset for i in preds]
     cm = confusion_matrix(labels.cpu().numpy(), np.asarray(predicted_classes))
     results = classification_report(predicted_classes, labels.cpu(), output_dict=True, labels=range(num_classes))
     return predicted_classes, cm, results
