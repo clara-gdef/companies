@@ -81,11 +81,10 @@ def main_for_one_epoch(hparams, epoch, model, optim, critetion,
 
 def train(hparams, train_loader, model, crit, optim, epoch):
     loss_list = []
-    for ids, ppl, labels, bag_rep in tqdm(train_loader, desc="Training for epoch " + str(
+    for ids, ppl, tmp_labels, bag_rep in tqdm(train_loader, desc="Training for epoch " + str(
                                                                                    epoch) + "..."):
         bag_rep = torch.transpose(bag_rep, 1, 0)
         input_tensor = torch.matmul(ppl, bag_rep)
-        tmp_labels = get_labels(labels, hparams.bag_type)
         labels = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
         output = model(input_tensor)
         # the model is specialized
@@ -99,11 +98,10 @@ def train(hparams, train_loader, model, crit, optim, epoch):
 
 def valid(hparams, valid_loader, model, crit, epoch):
     loss_list = []
-    for ids, ppl, labels, bag_rep in tqdm(valid_loader, desc="Validating for epoch " + str(
+    for ids, ppl, tmp_labels, bag_rep in tqdm(valid_loader, desc="Validating for epoch " + str(
                                                                                    epoch) + "..."):
         bag_rep = torch.transpose(bag_rep, 1, 0)
         input_tensor = torch.matmul(ppl, bag_rep)
-        tmp_labels = get_labels(labels, hparams.bag_type)
         labels = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
         output = model(input_tensor)
         # the model is specialized
@@ -125,20 +123,6 @@ def load_datasets(hparams, splits):
         datasets.append(DiscriminativeSpecializedDataset(**common_hparams, split=split))
 
     return datasets
-
-
-def get_labels(batch, bag_type):
-    if bag_type == "cie":
-        tmp_labels = [batch[2]]
-    elif bag_type == "clus":
-        offset = num_cie
-        tmp_labels = [[i - offset for i in batch[2]]]
-    elif bag_type == "dpt":
-        offset = num_cie + num_clus
-        tmp_labels = [[i - offset for i in batch[2]]]
-    else:
-        raise Exception("Wrong bag type specified: " + str(bag_type))
-    return tmp_labels
 
 
 if __name__ == "__main__":
