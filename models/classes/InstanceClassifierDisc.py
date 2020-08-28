@@ -61,7 +61,7 @@ class InstanceClassifierDisc(pl.LightningModule):
         self.training_losses.append(loss.item())
 
         preds = [i.item() for i in torch.argmax(output, dim=1)]
-        res_dict = get_metrics(preds, tmp_labels, self.get_num_classes())
+        res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes())
 
         return {**res_dict, 'loss': loss, 'log': tensorboard_logs}
 
@@ -85,7 +85,7 @@ class InstanceClassifierDisc(pl.LightningModule):
         tensorboard_logs = {'val_loss': val_loss}
 
         preds = [i.item() for i in torch.argmax(output, dim=1)]
-        res_dict = get_metrics(preds, tmp_labels, self.get_num_classes())
+        res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes())
 
         return {**res_dict, 'loss': val_loss, 'log': tensorboard_logs}
 
