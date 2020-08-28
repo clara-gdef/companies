@@ -49,7 +49,7 @@ def main(hparams):
         optim = torch.optim.Adam(model.parameters(), lr=hparams.lr)
 
         for epoch in range(1, hparams.epochs + 1):
-            dico = main_for_one_epoch(hparams, epoch, model, optim, critetion,
+            dico = main_for_one_epoch(hparams, epoch, model.cuda(), optim, critetion,
                                       best_val_loss, train_loader, valid_loader, train_writer, valid_writer)
             best_val_loss = dico['best_val_loss']
 
@@ -84,7 +84,7 @@ def train(hparams, train_loader, model, crit, optim, epoch):
     for ids, ppl, tmp_labels, bag_rep in tqdm(train_loader, desc="Training for epoch " + str(
                                                                                    epoch) + "..."):
         bag_rep = torch.transpose(bag_rep, 1, 0)
-        input_tensor = torch.matmul(ppl, bag_rep)
+        input_tensor = torch.matmul(ppl, bag_rep).cuda()
         output = model(input_tensor)
         labels = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
         # the model is specialized
@@ -101,7 +101,7 @@ def valid(hparams, valid_loader, model, crit, epoch):
     for ids, ppl, tmp_labels, bag_rep in tqdm(valid_loader, desc="Validating for epoch " + str(
                                                                                    epoch) + "..."):
         bag_rep = torch.transpose(bag_rep, 1, 0)
-        input_tensor = torch.matmul(ppl, bag_rep)
+        input_tensor = torch.matmul(ppl, bag_rep).cuda()
         output = model(input_tensor)
         labels = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
         # the model is specialized
@@ -132,7 +132,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=1)
-    parser.add_argument("--b_size", type=int, default=2)
+    parser.add_argument("--b_size", type=int, default=64)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--bag_type", type=str, default="cie")
