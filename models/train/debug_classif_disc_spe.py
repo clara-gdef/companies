@@ -87,7 +87,6 @@ def train(train_loader, model, crit, optim, epoch):
         output = model(input_tensor)
         labels = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
         # the model is specialized
-        ipdb.set_trace()
         loss = crit(output, labels)
         loss_list.append(loss)
         loss.backward()
