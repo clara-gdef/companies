@@ -19,8 +19,8 @@ num_dpt = 5888
 def main(hparams):
     with ipdb.launch_ipdb_on_exception():
         # Load datasets
-        xp_title = "disc_spe_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
-            hparams.b_size)
+        xp_title = "disc_spe_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" +\
+                   hparams.input_type + "_bs1"
         print(hparams.auto_lr_find)
         datasets = load_datasets(hparams, ["TEST"])
         dataset_test = datasets[0]
@@ -126,8 +126,6 @@ if __name__ == "__main__":
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--bag_type", type=str, default="cie")
     parser.add_argument("--lr", type=float, default=1e-7)
-    parser.add_argument("--auto_lr_find", type=bool, default=False)
-    parser.add_argument("--epochs", type=int, default=50)
     hparams = parser.parse_args()
     main(hparams)
 
