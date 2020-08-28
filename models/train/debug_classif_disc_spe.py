@@ -59,7 +59,7 @@ def main_for_one_epoch(hparams, epoch, model, optim, critetion,
                                     train_writer, valid_writer):
     print("Training and validating for epoch " + str(epoch))
 
-    train_loss = train(hparams, train_loader, model, optim, critetion, epoch)
+    train_loss = train(hparams, train_loader, model, critetion, optim, epoch)
 
     for k, v in train_loss.items():
         train_writer.add_scalar(k, v, epoch)
@@ -79,9 +79,10 @@ def main_for_one_epoch(hparams, epoch, model, optim, critetion,
     return dictionary
 
 
-def train(hparams, train_loader, model, crit, optim):
+def train(hparams, train_loader, model, crit, optim, epoch):
     loss_list = []
-    for ids, ppl, labels, bag_rep in tqdm(train_loader):
+    for ids, ppl, labels, bag_rep in tqdm(train_loader, desc="Training for epoch " + str(
+                                                                                   epoch) + "..."):
         bag_rep = torch.transpose(bag_rep, 1, 0)
         input_tensor = torch.matmul(ppl, bag_rep)
         tmp_labels = get_labels(labels, hparams.bag_type)
@@ -96,9 +97,10 @@ def train(hparams, train_loader, model, crit, optim):
     return {'CE': torch.mean(torch.stack(loss_list)).item()}
 
 
-def valid(hparams, valid_loader, model, crit):
+def valid(hparams, valid_loader, model, crit, epoch):
     loss_list = []
-    for ids, ppl, labels, bag_rep in tqdm(valid_loader):
+    for ids, ppl, labels, bag_rep in tqdm(valid_loader, desc="Validating for epoch " + str(
+                                                                                   epoch) + "..."):
         bag_rep = torch.transpose(bag_rep, 1, 0)
         input_tensor = torch.matmul(ppl, bag_rep)
         tmp_labels = get_labels(labels, hparams.bag_type)
