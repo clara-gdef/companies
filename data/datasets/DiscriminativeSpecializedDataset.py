@@ -34,7 +34,8 @@ class DiscriminativeSpecializedDataset(Dataset):
         self.select_relevant_tuples(bag_type, self.all_tuples)
 
         ##### debug
-        tmp = np.random.shuffle(self.tuples)[:2000]
+        np.random.shuffle(self.tuples)
+        tmp = self.tuples[:2000]
         self.tuples = tmp
 
         print("Discriminative Specialized Dataset for split " + split + " loaded.")
