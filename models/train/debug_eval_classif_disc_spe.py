@@ -9,9 +9,8 @@ from tqdm import tqdm
 from data.datasets import DiscriminativeSpecializedDataset
 from models.classes import DebugClassifierDisc
 from utils.models import collate_for_disc_spe_model
-from sklearn.metrics import confusion_matrix, classification_report, f1_score, accuracy_score, precision_score, recall_score
+from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
 import numpy as np
-
 
 num_cie = 207
 num_clus = 30
@@ -21,15 +20,15 @@ num_dpt = 5888
 def main(hparams):
     with ipdb.launch_ipdb_on_exception():
         # Load datasets
-        xp_title = "disc_spe_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" +\
-                   hparams.input_type + "_bs1"
+        xp_title = "disc_spe_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
+            hparams.b_size) + "_lr" + str(hparams.lr)
         datasets = load_datasets(hparams, ["TEST"])
         dataset_test = datasets[0]
 
         # initiate model
         in_size, out_size = dataset_test.get_num_bag(), dataset_test.get_num_bag()
         test_loader = DataLoader(dataset_test, batch_size=1, collate_fn=collate_for_disc_spe_model,
-                                  num_workers=16, shuffle=True)
+                                 num_workers=16, shuffle=True)
         arguments = {'in_size': in_size,
                      'out_size': out_size,
                      'hparams': hparams,
@@ -40,8 +39,7 @@ def main(hparams):
         model = DebugClassifierDisc(**arguments)
 
         # set up file writers
-        file_name = "debug_disc_spe_" + str(hparams.rep_type) + "_" + str(hparams.bag_type) + "_" + str(hparams.lr)
-        file_path = os.path.join(CFG["modeldir"], file_name)
+        file_path = os.path.join(CFG["modeldir"] + "/DEBUG", xp_title)
 
         model.load_state_dict(torch.load(file_path))
         test(hparams, model.cuda(), test_loader)
@@ -67,10 +65,13 @@ def test(hparams, model, test_loader):
 
     res_dict = {"acc_trained": accuracy_score(preds, labels) * 100,
                 "acc_b4_training": accuracy_score(b4_training, labels) * 100,
-                "precision_trained": precision_score(preds, labels, average='weighted', labels=range(num_classes)) * 100,
-                "precision_b4_training": precision_score(b4_training, labels, average='weighted', labels=range(num_classes)) * 100,
+                "precision_trained": precision_score(preds, labels, average='weighted',
+                                                     labels=range(num_classes)) * 100,
+                "precision_b4_training": precision_score(b4_training, labels, average='weighted',
+                                                         labels=range(num_classes)) * 100,
                 "recall_trained": recall_score(preds, labels, average='weighted', labels=range(num_classes)) * 100,
-                "recall_b4_training": recall_score(b4_training, labels, average='weighted', labels=range(num_classes)) * 100,
+                "recall_b4_training": recall_score(b4_training, labels, average='weighted',
+                                                   labels=range(num_classes)) * 100,
                 "f1_trained": f1_score(preds, labels, average='weighted', labels=range(num_classes)) * 100,
                 "f1_b4_training": f1_score(b4_training, labels, average='weighted', labels=range(num_classes)) * 100}
     print(res_dict)
@@ -123,7 +124,6 @@ def load_datasets(hparams, splits):
     return datasets
 
 
-
 if __name__ == "__main__":
     global CFG
     with open("config.yaml", "r") as ymlfile:
@@ -131,10 +131,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=1)
+    parser.add_argument("--b_size", type=int, default=64)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--bag_type", type=str, default="cie")
     parser.add_argument("--lr", type=float, default=1e-7)
     hparams = parser.parse_args()
     main(hparams)
-
