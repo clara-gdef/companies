@@ -19,6 +19,7 @@ def collate_for_gen_poly_model(batch):
 
 
 def collate_for_disc_spe_model(batch):
+    ipdb.set_trace()
     ids = [i["id"] for i in batch]
     ppl = [i["ppl_rep"] for i in batch]
     labels = [i["label"] for i in batch]
