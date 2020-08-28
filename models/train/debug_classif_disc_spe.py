@@ -85,8 +85,8 @@ def train(hparams, train_loader, model, crit, optim, epoch):
                                                                                    epoch) + "..."):
         bag_rep = torch.transpose(bag_rep, 1, 0)
         input_tensor = torch.matmul(ppl, bag_rep)
-        labels = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
         output = model(input_tensor)
+        labels = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
         # the model is specialized
         loss = crit(torch.softmax(output, dim=1), labels)
         loss_list.append(loss)
@@ -102,8 +102,8 @@ def valid(hparams, valid_loader, model, crit, epoch):
                                                                                    epoch) + "..."):
         bag_rep = torch.transpose(bag_rep, 1, 0)
         input_tensor = torch.matmul(ppl, bag_rep)
-        labels = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
         output = model(input_tensor)
+        labels = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
         # the model is specialized
         loss = crit(torch.softmax(output, dim=1), labels)
         loss_list.append(loss)
