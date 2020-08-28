@@ -20,7 +20,7 @@ def main(hparams):
     with ipdb.launch_ipdb_on_exception():
         # Load datasets
         xp_title = "disc_spe_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
-            hparams.b_size)
+            hparams.b_size + "_lr" + str(hparams.lr))
         datasets = load_datasets(hparams, ["TRAIN", "VALID"])
         dataset_train, dataset_valid = datasets[0], datasets[1]
 
