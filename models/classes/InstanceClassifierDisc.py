@@ -283,9 +283,9 @@ def get_average_metrics(res_dict):
 
 def get_metrics(preds, labels, num_classes, handle):
     res_dict = {
-        "acc_" + handle: accuracy_score(preds, labels) * 100
+        "acc_" + handle: accuracy_score(preds, labels) * 100,
         "precision_" + handle: precision_score(preds, labels, average='weighted',
-                                     labels=range(num_classes)) * 100,
+                                               labels=range(num_classes)) * 100,
         "recall_" + handle: recall_score(preds, labels, average='weighted', labels=range(num_classes)) * 100,
         "f1_" + handle: f1_score(preds, labels, average='weighted', labels=range(num_classes)) * 100}
     return res_dict
