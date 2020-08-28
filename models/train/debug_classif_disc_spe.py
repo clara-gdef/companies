@@ -43,8 +43,8 @@ def main(hparams):
 
         # set up file writers
         log_path = "models/logs/DEBUG/" + hparams.rep_type + "/" + xp_title
-        train_writer = SummaryWriter(log_path + "_train", flush_secs=30)
-        valid_writer = SummaryWriter(log_path + "_valid", flush_secs=30)
+        train_writer = SummaryWriter(log_path + "_train", flush_secs=1)
+        valid_writer = SummaryWriter(log_path + "_valid", flush_secs=1)
         critetion = torch.nn.CrossEntropyLoss()
         optim = torch.optim.Adam(model.parameters(), lr=hparams.lr)
 
