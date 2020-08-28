@@ -37,8 +37,7 @@ def main(hparams):
                      'hparams': hparams,
                      'dataset': dataset_train,
                      'datadir': CFG["gpudatadir"],
-                     'desc': xp_title,
-                     "constant_weight": 1}
+                     'desc': xp_title}
 
         print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
         model = DebugClassifierDisc(**arguments)
