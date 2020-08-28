@@ -97,8 +97,8 @@ def train(train_loader, model, crit, optim, epoch):
         loss.backward()
         optim.step()
 
-        b4_training.extend(torch.argmax(input_tensor, dim=1))
-        preds.extend(torch.argmax(output, dim=1))
+        b4_training.extend([j.item() for j in torch.argmax(input_tensor, dim=1)])
+        preds.extend([i.item() for i in torch.argmax(output, dim=1)])
         labels.extend(tmp_labels)
 
     res_dict = {"acc_trained": accuracy_score(preds, labels) * 100,
