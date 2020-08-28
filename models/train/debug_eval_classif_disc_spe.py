@@ -63,17 +63,16 @@ def test(hparams, model, test_loader):
         outputs.append(output)
         preds.append(torch.argmax(output, dim=1).item())
         labels.append(tmp_labels[0])
-    # preds, cm, res_trained, res_b4_training = test_for_bag(preds, labels, b4_training, 0, get_num_classes(hparams.bag_type))
-    # prec_trained, rec_trained = get_average_metrics(res_trained)
-    # prec_b4_training, rec_b4_training = get_average_metrics(res_b4_training)
-    res_dict = {"acc_trained": accuracy_score(preds, labels),
-                "acc_b4_training": accuracy_score(b4_training, labels),
-                "precision_trained": precision_score(preds, labels, average='weighted'),
-                "precision_b4_training": precision_score(b4_training, labels, average='weighted'),
-                "recall_trained": recall_score(preds, labels, average='weighted'),
-                "recall_b4_training": recall_score(b4_training, labels, average='weighted'),
-                "f1_trained": f1_score(preds, labels, average='weighted'),
-                "f1_b4_training": f1_score(b4_training, labels, average='weighted')}
+        num_classes = get_num_classes(hparams.bag_type)
+
+    res_dict = {"acc_trained": accuracy_score(preds, labels) * 100,
+                "acc_b4_training": accuracy_score(b4_training, labels) * 100,
+                "precision_trained": precision_score(preds, labels, average='weighted', labels=range(num_classes)) * 100,
+                "precision_b4_training": precision_score(b4_training, labels, average='weighted', labels=range(num_classes)) * 100,
+                "recall_trained": recall_score(preds, labels, average='weighted', labels=range(num_classes)) * 100,
+                "recall_b4_training": recall_score(b4_training, labels, average='weighted', labels=range(num_classes)) * 100,
+                "f1_trained": f1_score(preds, labels, average='weighted', labels=range(num_classes)) * 100,
+                "f1_b4_training": f1_score(b4_training, labels, average='weighted', labels=range(num_classes)) * 100}
     print(res_dict)
     ipdb.set_trace()
     return res_dict
