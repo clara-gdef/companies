@@ -22,7 +22,6 @@ def collate_for_disc_spe_model(batch):
     ids = [i["id"] for i in batch]
     ppl = [i["ppl_rep"] for i in batch]
     labels = [i["label"] for i in batch]
-    ipdb.set_trace()
     return ids, torch.stack(ppl), labels, batch[0]["bag_rep"]
 
 
