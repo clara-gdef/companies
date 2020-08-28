@@ -59,7 +59,7 @@ class InstanceClassifierDisc(pl.LightningModule):
         self.training_losses.append(loss.item())
 
         preds = [i.item() for i in torch.argmax(output, dim=1)]
-        res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes())
+        res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "train")
         tensorboard_logs = {**res_dict, 'train_loss': loss}
 
         return {'loss': loss, 'log': tensorboard_logs}
@@ -84,7 +84,7 @@ class InstanceClassifierDisc(pl.LightningModule):
                                                          torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
 
         preds = [i.item() for i in torch.argmax(output, dim=1)]
-        res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes())
+        res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "val")
         tensorboard_logs = {**res_dict, 'val_loss': val_loss}
 
         return {'loss': val_loss, 'log': tensorboard_logs}
@@ -281,11 +281,11 @@ def get_average_metrics(res_dict):
     return np.mean(precision), np.mean(recall)
 
 
-def get_metrics(preds, labels, num_classes):
+def get_metrics(preds, labels, num_classes, handle):
     res_dict = {
-        "acc": accuracy_score(preds, labels) * 100
-        "precision": precision_score(preds, labels, average='weighted',
+        "acc_" + handle: accuracy_score(preds, labels) * 100
+        "precision_" + handle: precision_score(preds, labels, average='weighted',
                                      labels=range(num_classes)) * 100,
-        "recall": recall_score(preds, labels, average='weighted', labels=range(num_classes)) * 100,
-        "f1": f1_score(preds, labels, average='weighted', labels=range(num_classes)) * 100}
+        "recall_" + handle: recall_score(preds, labels, average='weighted', labels=range(num_classes)) * 100,
+        "f1_" + handle: f1_score(preds, labels, average='weighted', labels=range(num_classes)) * 100}
     return res_dict
