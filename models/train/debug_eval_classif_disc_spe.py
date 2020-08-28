@@ -49,13 +49,18 @@ def test(hparams, model, test_loader):
     b4_training = []
     outputs = []
     labels = []
-    for ids, ppl, tmp_labels, bag_rep in tqdm(test_loader, desc="Testing..."):
+    ids = []
+    preds = []
+    for identifier, ppl, tmp_labels, bag_rep in tqdm(test_loader, desc="Testing..."):
         bag_rep = torch.transpose(bag_rep, 1, 0)
         input_tensor = torch.matmul(ppl, bag_rep).cuda()
-        b4_training.append(input_tensor)
         output = model(input_tensor)
-        outputs.append(output)
         label = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
+
+        ids.append(identifier)
+        b4_training.append(input_tensor)
+        outputs.append(output)
+        preds.append(torch.argmax(output, dim=1))
         labels.append(label)
     ipdb.set_trace()
     preds = outputs[:, 0, :]
