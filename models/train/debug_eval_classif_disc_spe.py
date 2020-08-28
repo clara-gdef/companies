@@ -27,7 +27,7 @@ def main(hparams):
 
         # initiate model
         in_size, out_size = dataset_test.get_num_bag(), dataset_test.get_num_bag()
-        test_loader = DataLoader(dataset_test, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model,
+        test_loader = DataLoader(dataset_test, batch_size=1, collate_fn=collate_for_disc_spe_model,
                                   num_workers=16, shuffle=True)
         arguments = {'in_size': in_size,
                      'out_size': out_size,
@@ -48,18 +48,21 @@ def main(hparams):
 
 def test(hparams, model, test_loader):
     b4_training = []
+    outputs = []
+    labels = []
     for ids, ppl, tmp_labels, bag_rep in tqdm(test_loader, desc="Testing..."):
         bag_rep = torch.transpose(bag_rep, 1, 0)
         input_tensor = torch.matmul(ppl, bag_rep).cuda()
         b4_training.append(input_tensor)
         output = model(input_tensor)
-        labels = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
-        ipdb.set_trace()
-        # test_outputs.append(input_tensor)
-        preds = outputs[:, 0, :]
-        preds, cm, res = test_for_bag(preds, labels, before_training, 0, get_num_classes(hparams.bag_type))
-        save_bag_outputs(preds, labels, cm, res)
-        prec, rec = get_average_metrics(res)
+        outputs.append(output)
+        label = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
+        labels.append(label)
+    ipdb.set_trace()
+    preds = outputs[:, 0, :]
+    preds, cm, res = test_for_bag(preds, labels, before_training, 0, get_num_classes(hparams.bag_type))
+    save_bag_outputs(preds, labels, cm, res)
+    prec, rec = get_average_metrics(res)
     return {"acc": res["accuracy"],
             "precision": prec,
             "recall": rec}
@@ -119,7 +122,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=1)
-    parser.add_argument("--b_size", type=int, default=2)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--bag_type", type=str, default="cie")
