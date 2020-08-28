@@ -55,7 +55,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
         else:
             # the model is specialized
-            loss = torch.nn.functional.cross_entropy(torch.softmax(output, dim=1), torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
+            loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
         tensorboard_logs = {'train_loss': loss}
         self.training_losses.append(loss.item())
         return {'loss': loss, 'log': tensorboard_logs}
@@ -76,7 +76,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             val_loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
         else:
             # the model is specialized
-            val_loss = torch.nn.functional.cross_entropy(torch.softmax(output, dim=1), torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
+            val_loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
         tensorboard_logs = {'val_loss': val_loss}
         return {'loss': val_loss, 'log': tensorboard_logs}
 
