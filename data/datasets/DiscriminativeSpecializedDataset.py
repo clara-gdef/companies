@@ -2,6 +2,7 @@ import os
 import pickle as pkl
 import itertools
 import torch
+import numpy as np
 from tqdm import tqdm
 from torch.utils.data import Dataset
 
@@ -33,7 +34,7 @@ class DiscriminativeSpecializedDataset(Dataset):
         self.select_relevant_tuples(bag_type, self.all_tuples)
 
         ##### debug
-        tmp = self.tuples[:2000]
+        tmp = np.random.shuffle(self.tuples)[:2000]
         self.tuples = tmp
 
         print("Discriminative Specialized Dataset for split " + split + " loaded.")
