@@ -13,7 +13,9 @@ class DebugClassifierDisc(torch.nn.Module):
     def __init__(self, in_size, out_size, hparams, dataset, datadir, desc):
         super().__init__()
         self.lin = torch.nn.Linear(in_size, out_size)
-        torch.nn.init.ones_(self.lin)
+        torch.nn.init.ones_(self.lin.weight)
+        torch.nn.init.zeros_(self.lin.bias)
+
 
         self.training_losses = []
         self.test_outputs = []
