@@ -120,6 +120,10 @@ def train(train_loader, model, crit, optim, epoch):
 
 def valid(valid_loader, model, crit, epoch):
     loss_list = []
+    b4_training = []
+    labs = []
+    preds = []
+    num_classes = num_cie
     for ids, ppl, tmp_labels, bag_rep in tqdm(valid_loader, desc="Validating for epoch " + str(
             epoch) + "..."):
         bag_rep = torch.transpose(bag_rep, 1, 0)
@@ -130,7 +134,22 @@ def valid(valid_loader, model, crit, epoch):
         loss = crit(output, labels)
         loss_list.append(loss)
 
-    return {'CE': torch.mean(torch.stack(loss_list)).item()}
+        b4_training.extend(torch.argmax(input_tensor, dim=1))
+        preds.extend(torch.argmax(output, dim=1))
+        labs.extend(tmp_labels)
+    res_dict = {"acc_trained": accuracy_score(preds, labels) * 100,
+                "acc_b4_training": accuracy_score(b4_training, labels) * 100,
+                "precision_trained": precision_score(preds, labels, average='weighted',
+                                                     labels=range(num_classes)) * 100,
+                "precision_b4_training": precision_score(b4_training, labels, average='weighted',
+                                                         labels=range(num_classes)) * 100,
+                "recall_trained": recall_score(preds, labels, average='weighted', labels=range(num_classes)) * 100,
+                "recall_b4_training": recall_score(b4_training, labels, average='weighted',
+                                                   labels=range(num_classes)) * 100,
+                "f1_trained": f1_score(preds, labels, average='weighted', labels=range(num_classes)) * 100,
+                "f1_b4_training": f1_score(b4_training, labels, average='weighted', labels=range(num_classes)) * 100,
+                'CE': torch.mean(torch.stack(loss_list)).item()}
+    return res_dict
 
 
 def load_datasets(hparams, splits):
