@@ -60,7 +60,10 @@ class InstanceClassifierDisc(pl.LightningModule):
         tensorboard_logs = {'train_loss': loss}
         self.training_losses.append(loss.item())
 
-        return {'loss': loss, 'log': tensorboard_logs}
+        preds = [i.item() for i in torch.argmax(output, dim=1)]
+        res_dict = get_metrics(preds, tmp_labels, self.get_num_classes())
+
+        return {**res_dict, 'loss': loss, 'log': tensorboard_logs}
 
     def validation_step(self, batch, batch_nb):
         if self.input_type != "userOriented":
@@ -80,7 +83,12 @@ class InstanceClassifierDisc(pl.LightningModule):
             # the model is specialized
             val_loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
         tensorboard_logs = {'val_loss': val_loss}
-        return {'loss': val_loss, 'log': tensorboard_logs}
+
+        preds = [i.item() for i in torch.argmax(output, dim=1)]
+        res_dict = get_metrics(preds, tmp_labels, self.get_num_classes())
+
+        return {**res_dict, 'loss': val_loss, 'log': tensorboard_logs}
+
 
     def epoch_end(self):
         train_loss_mean = np.mean(self.training_losses)
@@ -272,4 +280,13 @@ def get_average_metrics(res_dict):
         precision.append(res_dict[k]["precision"])
         recall.append(res_dict[k]["recall"])
     return np.mean(precision), np.mean(recall)
+
+
+def get_metrics(preds, labels, num_classes):
+    res_dict = {
+    "precision_trained": precision_score(preds, labels, average='weighted',
+                                         labels=range(num_classes)) * 100,
+    "recall_trained": recall_score(preds, labels, average='weighted', labels=range(num_classes)) * 100,
+    "f1_trained": f1_score(preds, labels, average='weighted', labels=range(num_classes)) * 100}
+    return res_dict
 
