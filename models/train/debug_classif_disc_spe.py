@@ -49,22 +49,22 @@ def main(hparams):
         optim = torch.optim.Adam(model.parameters(), lr=hparams.lr)
 
         for epoch in range(1, hparams.epochs + 1):
-            dico = main_for_one_epoch(hparams, epoch, model.cuda(), optim, critetion,
+            dico = main_for_one_epoch(epoch, model.cuda(), optim, critetion,
                                       best_val_loss, train_loader, valid_loader, train_writer, valid_writer, xp_title)
             best_val_loss = dico['best_val_loss']
 
 
-def main_for_one_epoch(hparams, epoch, model, optim, critetion,
+def main_for_one_epoch(epoch, model, optim, critetion,
                                       best_val_loss, train_loader, valid_loader,
                                     train_writer, valid_writer, xp_title):
     print("Training and validating for epoch " + str(epoch))
 
-    train_loss = train(hparams, train_loader, model, critetion, optim, epoch)
+    train_loss = train(train_loader, model, critetion, optim, epoch)
 
     for k, v in train_loss.items():
         train_writer.add_scalar(k, v, epoch)
 
-    valid_loss = valid(hparams, valid_loader, model, critetion, epoch)
+    valid_loss = valid(valid_loader, model, critetion, epoch)
 
     for k, v in valid_loss.items():
         valid_writer.add_scalar(k, v, epoch)
@@ -78,7 +78,7 @@ def main_for_one_epoch(hparams, epoch, model, optim, critetion,
     return dictionary
 
 
-def train(hparams, train_loader, model, crit, optim, epoch):
+def train(train_loader, model, crit, optim, epoch):
     loss_list = []
     for ids, ppl, tmp_labels, bag_rep in tqdm(train_loader, desc="Training for epoch " + str(
                                                                                    epoch) + "..."):
@@ -95,7 +95,7 @@ def train(hparams, train_loader, model, crit, optim, epoch):
     return {'CE': torch.mean(torch.stack(loss_list)).item()}
 
 
-def valid(hparams, valid_loader, model, crit, epoch):
+def valid(valid_loader, model, crit, epoch):
     loss_list = []
     for ids, ppl, tmp_labels, bag_rep in tqdm(valid_loader, desc="Validating for epoch " + str(
                                                                                    epoch) + "..."):
