@@ -43,7 +43,7 @@ def main(hparams):
         file_path = os.path.join(CFG["modeldir"], file_name)
 
         model.load_state_dict(torch.load(file_path))
-        test(hparams, model, test_loader)
+        test(hparams, model.cuda(), test_loader)
 
 
 def test(hparams, model, test_loader):
