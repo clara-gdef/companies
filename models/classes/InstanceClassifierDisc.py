@@ -9,7 +9,6 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 
 
 class InstanceClassifierDisc(pl.LightningModule):
-
     def __init__(self, in_size, out_size, hparams, dataset, datadir, desc):
         super().__init__()
         self.lin = torch.nn.Linear(in_size, out_size)
@@ -70,7 +69,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             input_tensor = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
             output = self.forward(input_tensor)
-            labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels,self.get_num_classes())
+            labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.get_num_classes())
         else:
             bag_matrix, profiles = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
@@ -81,14 +80,14 @@ class InstanceClassifierDisc(pl.LightningModule):
             val_loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
         else:
             # the model is specialized
-            val_loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
+            val_loss = torch.nn.functional.cross_entropy(output,
+                                                         torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
 
         preds = [i.item() for i in torch.argmax(output, dim=1)]
         res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes())
         tensorboard_logs = {**res_dict, 'val_loss': val_loss}
 
         return {'loss': val_loss, 'log': tensorboard_logs}
-
 
     def epoch_end(self):
         train_loss_mean = np.mean(self.training_losses)
@@ -177,9 +176,9 @@ class InstanceClassifierDisc(pl.LightningModule):
 
     def save_bag_outputs(self, preds, labels, cm, res):
         res = {self.bag_type: {"preds": preds,
-                       "labels": labels,
-                       "cm": cm,
-                       "res": res}
+                               "labels": labels,
+                               "cm": cm,
+                               "res": res}
                }
         tgt_file = os.path.join(self.data_dir, "OUTPUTS_" + self.description + ".pkl")
         with open(tgt_file, 'wb') as f:
@@ -237,7 +236,7 @@ class InstanceClassifierDisc(pl.LightningModule):
         elif self.input_type == "hadamard":
             b_size = profiles.shape[0]
             bag_rep = batch[-1]
-            expanded_bag_rep = bag_rep.expand(b_size,  bag_rep.shape[0], bag_rep.shape[-1])
+            expanded_bag_rep = bag_rep.expand(b_size, bag_rep.shape[0], bag_rep.shape[-1])
             prof = profiles.unsqueeze(1)
             expanded_profiles = prof.expand(b_size, bag_rep.shape[0], bag_rep.shape[-1])
             tmp = expanded_bag_rep * expanded_profiles
@@ -284,9 +283,9 @@ def get_average_metrics(res_dict):
 
 def get_metrics(preds, labels, num_classes):
     res_dict = {
-    "precision_trained": precision_score(preds, labels, average='weighted',
-                                         labels=range(num_classes)) * 100,
-    "recall_trained": recall_score(preds, labels, average='weighted', labels=range(num_classes)) * 100,
-    "f1_trained": f1_score(preds, labels, average='weighted', labels=range(num_classes)) * 100}
+        "acc": accuracy_score(preds, labels) * 100
+        "precision": precision_score(preds, labels, average='weighted',
+                                     labels=range(num_classes)) * 100,
+        "recall": recall_score(preds, labels, average='weighted', labels=range(num_classes)) * 100,
+        "f1": f1_score(preds, labels, average='weighted', labels=range(num_classes)) * 100}
     return res_dict
-
