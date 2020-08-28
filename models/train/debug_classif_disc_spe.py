@@ -50,13 +50,13 @@ def main(hparams):
 
         for epoch in range(1, hparams.epochs + 1):
             dico = main_for_one_epoch(hparams, epoch, model.cuda(), optim, critetion,
-                                      best_val_loss, train_loader, valid_loader, train_writer, valid_writer)
+                                      best_val_loss, train_loader, valid_loader, train_writer, valid_writer, xp_title)
             best_val_loss = dico['best_val_loss']
 
 
 def main_for_one_epoch(hparams, epoch, model, optim, critetion,
                                       best_val_loss, train_loader, valid_loader,
-                                    train_writer, valid_writer):
+                                    train_writer, valid_writer, xp_title):
     print("Training and validating for epoch " + str(epoch))
 
     train_loss = train(hparams, train_loader, model, critetion, optim, epoch)
@@ -69,8 +69,7 @@ def main_for_one_epoch(hparams, epoch, model, optim, critetion,
     for k, v in valid_loss.items():
         valid_writer.add_scalar(k, v, epoch)
 
-    file_name = "debug_disc_spe_" + str(hparams.rep_type) + "_" + str(hparams.bag_type) + "_" + str(hparams.lr)
-    file_path = os.path.join(CFG["modeldir"], file_name)
+    file_path = os.path.join(CFG["modeldir"] + "/DEBUG", xp_title)
     if valid_loss['CE'] < best_val_loss:
         torch.save(model.state_dict(), file_path)
         best_val_loss = valid_loss['CE']
