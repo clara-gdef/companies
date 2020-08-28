@@ -97,7 +97,6 @@ def train(train_loader, model, crit, optim, epoch):
         loss.backward()
         optim.step()
 
-        ipdb.set_trace()
 
         b4_training.extend(torch.argmax(input_tensor, dim=1))
         preds.extend(torch.argmax(output, dim=1))
