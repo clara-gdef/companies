@@ -37,7 +37,8 @@ def main(hparams):
                      'hparams': hparams,
                      'dataset': dataset_train,
                      'datadir': CFG["gpudatadir"],
-                     'desc': xp_title}
+                     'desc': xp_title,
+                     "constant_weight": 1}
 
         print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
         model = DebugClassifierDisc(**arguments)
@@ -98,11 +99,10 @@ def train(train_loader, model, crit, optim, epoch):
         optim.step()
 
         ipdb.set_trace()
-        
-        b4_training.append(torch.argmax(input_tensor, dim=1).item())
-        preds.append(torch.argmax(output, dim=1).item())
-        labs.append(tmp_labels[0])
-        preds.append(torch.argmax(output, dim=1).item())
+
+        b4_training.extend(torch.argmax(input_tensor, dim=1))
+        preds.extend(torch.argmax(output, dim=1))
+        labs.extend(tmp_labels)
 
     res_dict = {"acc_trained": accuracy_score(preds, labels) * 100,
                 "acc_b4_training": accuracy_score(b4_training, labels) * 100,
