@@ -59,7 +59,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
         tensorboard_logs = {'train_loss': loss}
         self.training_losses.append(loss.item())
-        
+
         return {'loss': loss, 'log': tensorboard_logs}
 
     def validation_step(self, batch, batch_nb):
@@ -224,7 +224,6 @@ class InstanceClassifierDisc(pl.LightningModule):
         if self.input_type == "matMul":
             bag_rep = torch.transpose(batch[-1], 1, 0)
             input_tensor = torch.matmul(profiles, bag_rep)
-            ipdb.set_trace()
         elif self.input_type == "concat":
             raise NotImplementedError
         elif self.input_type == "hadamard":
