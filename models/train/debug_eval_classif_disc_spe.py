@@ -22,7 +22,7 @@ def main(hparams):
         # Load datasets
         xp_title = "disc_spe_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
             hparams.b_size) + "_lr" + str(hparams.lr)
-        datasets = load_datasets(hparams, ["TRAIN"])
+        datasets = load_datasets(hparams, ["TEST"])
         dataset_test = datasets[0]
 
         # initiate model

@@ -136,7 +136,7 @@ if __name__ == "__main__":
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--bag_type", type=str, default="cie")
     parser.add_argument("--lr", type=float, default=1e-6)
-    parser.add_argument("--epochs", type=int, default=50)
+    parser.add_argument("--epochs", type=int, default=100)
     hparams = parser.parse_args()
     main(hparams)
 
