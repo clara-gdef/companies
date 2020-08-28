@@ -11,6 +11,10 @@ from data.datasets import DiscriminativeSpecializedDataset
 from models.classes import DebugClassifierDisc
 from utils.models import collate_for_disc_spe_model
 
+num_cie = 207
+num_clus = 30
+num_dpt = 5888
+
 
 def main(hparams):
     with ipdb.launch_ipdb_on_exception():
@@ -22,214 +26,55 @@ def main(hparams):
         dataset_test = datasets[0]
 
         # initiate model
-        in_size, out_size = dataset_train.get_num_bag(), dataset_train.get_num_bag()
-        train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model,
+        in_size, out_size = dataset_test.get_num_bag(), dataset_test.get_num_bag()
+        test_loader = DataLoader(dataset_test, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model,
                                   num_workers=16, shuffle=True)
-        valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model,
-                                  num_workers=16)
         arguments = {'in_size': in_size,
                      'out_size': out_size,
                      'hparams': hparams,
-                     'dataset': dataset_train,
+                     'dataset': dataset_test,
                      'datadir': CFG["gpudatadir"],
                      'desc': xp_title}
-
         print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
         model = DebugClassifierDisc(**arguments)
 
         # set up file writers
-        log_path = "models/logs/DEBUG/" + hparams.rep_type + "/" + xp_title
-        train_writer = SummaryWriter(log_path + "_train", flush_secs=30)
-        valid_writer = SummaryWriter(log_path + "_valid", flush_secs=30)
-        critetion = torch.nn.CrossEntropyLoss()
-        optim = torch.optim.Adam(model.parameters(), lr=hparams.lr)
+        file_name = "debug_disc_spe_" + str(hparams.rep_type) + "_" + str(hparams.bag_type) + "_" + str(hparams.lr)
+        file_path = os.path.join(CFG["modeldir"], file_name)
 
-        for epoch in range(1, hparams.epochs + 1):
-            dico = main_for_one_epoch(hparams, epoch, model, optim, critetion,
-                                      best_val_loss, train_loader, valid_loader, train_writer, valid_writer)
-            best_val_loss = dico['best_val_loss']
+        model.load_state_dict(torch.load(file_path))
+        test(hparams, model, test_loader)
 
 
-def main_for_one_epoch(hparams, epoch, model, optim, critetion,
-                       best_val_loss, train_loader, valid_loader,
-                       train_writer, valid_writer):
-    print("Training and validating for epoch " + str(epoch))
-
-    train_loss = train(hparams, train_loader, model, optim, critetion, epoch)
-
-    for k, v in train_loss.items():
-        train_writer.add_scalar(k, v, epoch)
-
-    valid_loss = valid(hparams, valid_loader, model, critetion, epoch)
-
-    for k, v in valid_loss.items():
-        valid_writer.add_scalar(k, v, epoch)
-
-    if valid_loss['overallLoss'] < best_val_loss:
-        torch.save(model.state_dict, )
-        best_val_loss = valid_loss['overallLoss']
-
-    dictionary = {**train_loss, **valid_loss, 'best_val_loss': best_val_loss}
-    return dictionary
-
-
-def test(self, batch, batch_idx):
-    if self.input_type != "userOriented":
-        input_tensor = self.get_input_tensor(batch)
-        tmp_labels = self.get_labels(batch)
-        labels_one_hot = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.get_num_classes())
-        self.test_outputs.append(self.forward(input_tensor))
-        self.before_training.append(input_tensor)
-        ##### B4 training #####
-        # self.test_outputs.append(input_tensor)
-    self.test_labels_one_hot.append(labels_one_hot)
-    self.test_labels.append(tmp_labels)
-    self.test_ppl_id.append(batch[0])
-
-
-def test_epoch_end(self, outputs):
-    outputs = torch.stack(self.test_outputs)
-    if self.type == "poly":
-        res = self.test_poly(outputs)
-    else:
-        res = self.test_spe(outputs)
-    return res
-
-
-def test_poly(self, outputs):
-    # slicing predictions per class type
-    if self.input_type != "userOriented":
-        cie_preds = outputs[:, 0, :self.num_cie]
-        clus_preds = outputs[:, 0, self.num_cie: self.num_cie + self.num_clus]
-        dpt_preds = outputs[:, 0, -self.num_dpt:]
-    else:
-        cie_preds = outputs[:, :self.num_cie, 0]
-        clus_preds = outputs[:, self.num_cie: self.num_cie + self.num_clus, 0]
-        dpt_preds = outputs[:, -self.num_dpt:, 0]
-
-    cie_labels = torch.LongTensor([i[0][0] for i in self.test_labels]).cuda()
-    clus_labels = torch.LongTensor([i[1][0] for i in self.test_labels]).cuda()
-    dpt_labels = torch.LongTensor([i[2][0] for i in self.test_labels]).cuda()
-
-    ci_preds, ci_cm, ci_res = test_for_bag(cie_preds, cie_labels, offset=0)
-    cl_preds, cl_cm, cl_res = test_for_bag(clus_preds, clus_labels, offset=self.num_cie)
-    d_preds, d_cm, d_res = test_for_bag(dpt_preds, dpt_labels, offset=self.num_cie + self.num_clus)
-    # self.save_outputs(ci_preds, cie_labels, ci_cm, ci_res,
-    #                   cl_preds, clus_labels, cl_cm, cl_res,
-    #                   d_preds, dpt_labels, d_cm, d_res)
-
-    ci_avg_prec, ci_avg_rec = get_average_metrics(ci_res)
-    cl_avg_prec, cl_avg_rec = get_average_metrics(cl_res)
-    d_avg_prec, d_avg_rec = get_average_metrics(d_res)
-    return {"cie_acc": ci_res["accuracy"],
-            "cie_precision": ci_avg_prec,
-            "cie_recall": ci_avg_rec,
-            "clus_acc": cl_res["accuracy"],
-            "clus_precision": cl_avg_prec,
-            "clus_recall": cl_avg_rec,
-            "dpt_acc": d_res["accuracy"],
-            "dpt_precision": d_avg_prec,
-            "dpt_recall": d_avg_rec
-            }
-
-
-def test_spe(self, outputs):
-    ipdb.set_trace()
-    preds = outputs[:, 0, :]
-    labels = torch.LongTensor([i[0][0] for i in self.test_labels]).cuda()
-    preds, cm, res = test_for_bag(preds, labels, self.before_training, 0, self.get_num_classes())
-    self.save_bag_outputs(preds, labels, cm, res)
-    prec, rec = get_average_metrics(res)
+def test(hparams, model, test_loader):
+    b4_training = []
+    for ids, ppl, tmp_labels, bag_rep in tqdm(test_loader, desc="Testing..."):
+        bag_rep = torch.transpose(bag_rep, 1, 0)
+        input_tensor = torch.matmul(ppl, bag_rep).cuda()
+        b4_training.append(input_tensor)
+        output = model(input_tensor)
+        labels = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
+        ipdb.set_trace()
+        # test_outputs.append(input_tensor)
+        preds = outputs[:, 0, :]
+        preds, cm, res = test_for_bag(preds, labels, before_training, 0, get_num_classes(hparams.bag_type))
+        save_bag_outputs(preds, labels, cm, res)
+        prec, rec = get_average_metrics(res)
     return {"acc": res["accuracy"],
             "precision": prec,
             "recall": rec}
 
-    def save_bag_outputs(self, preds, labels, cm, res):
-        res = {self.bag_type: {"preds": preds,
-                               "labels": labels,
-                               "cm": cm,
-                               "res": res}
-               }
-        tgt_file = os.path.join(self.data_dir, "OUTPUTS_" + self.description + ".pkl")
-        with open(tgt_file, 'wb') as f:
-            pkl.dump(res, f)
 
-    def save_outputs(self, ci_preds, cie_labels, ci_cm, ci_res,
-                     cl_preds, clus_labels, cl_cm, cl_res,
-                     d_preds, dpt_labels, d_cm, d_res):
-        res = {"cie": {"preds": ci_preds,
-                       "labels": cie_labels,
-                       "cm": ci_cm,
-                       "res": ci_res},
-               "clus": {"preds": cl_preds,
-                        "labels": clus_labels,
-                        "cm": cl_cm,
-                        "res": cl_res},
-               "dpt": {"preds": d_preds,
-                       "labels": dpt_labels,
-                       "cm": d_cm,
-                       "res": d_res},
-               "ppl": self.test_ppl_id
-               }
-        tgt_file = os.path.join(self.data_dir, "OUTPUTS_" + self.description + ".pkl")
-        with open(tgt_file, 'wb') as f:
-            pkl.dump(res, f)
-
-    def get_labels(self, batch):
-        if self.type == "poly":
-            tmp_labels = [batch[2], batch[3], batch[4]]
-        elif self.type == "spe":
-            if self.bag_type == "cie":
-                tmp_labels = [batch[2]]
-            elif self.bag_type == "clus":
-                offset = self.num_cie
-                tmp_labels = [[i - offset for i in batch[2]]]
-            elif self.bag_type == "dpt":
-                offset = self.num_cie + self.num_clus
-                tmp_labels = [[i - offset for i in batch[2]]]
-            else:
-                raise Exception("Wrong bag type specified: " + str(self.bag_type))
-        else:
-            raise Exception("Wrong model type specified: " + str(self.type) + ", can be either \"poly\" or \"spe\"")
-        return tmp_labels
-
-    def get_input_tensor(self, batch):
-        if len(batch[1].shape) > 2:
-            profiles = batch[1].squeeze(1)
-        else:
-            profiles = batch[1]
-        if self.input_type == "matMul":
-            bag_rep = torch.transpose(batch[-1], 1, 0)
-            input_tensor = torch.matmul(profiles, bag_rep)
-            ipdb.set_trace()
-        elif self.input_type == "concat":
-            raise NotImplementedError
-        elif self.input_type == "hadamard":
-            b_size = profiles.shape[0]
-            bag_rep = batch[-1]
-            expanded_bag_rep = bag_rep.expand(b_size, bag_rep.shape[0], bag_rep.shape[-1])
-            prof = profiles.unsqueeze(1)
-            expanded_profiles = prof.expand(b_size, bag_rep.shape[0], bag_rep.shape[-1])
-            tmp = expanded_bag_rep * expanded_profiles
-            input_tensor = tmp.view(b_size, -1)
-        elif self.input_type == "userOriented":
-            input_tensor = (batch[-1], profiles)
-        elif self.input_type == "userOnly":
-            input_tensor = profiles
-        else:
-            raise Exception("Wrong input data specified: " + str(self.input_type))
-        return input_tensor
-
-    def get_num_classes(self):
-        if self.type == "spe":
-            if self.bag_type == "cie":
-                return self.num_cie
-            elif self.bag_type == "clus":
-                return self.num_clus
-            elif self.bag_type == "dpt":
-                return self.num_dpt
-        else:
-            return self.num_cie + self.num_clus + self.num_dpt
+def get_num_classes(self, bag_type):
+    if type == "spe":
+        if bag_type == "cie":
+            return num_cie
+        elif bag_type == "clus":
+            return num_clus
+        elif bag_type == "dpt":
+            return num_dpt
+    else:
+        return num_cie + num_clus + num_dpt
 
 
 def test_for_bag(preds, labels, b4_training, offset, num_classes):
@@ -265,19 +110,6 @@ def load_datasets(hparams, splits):
 
     return datasets
 
-
-def get_labels(self, batch):
-    if self.bag_type == "cie":
-        tmp_labels = [batch[2]]
-    elif self.bag_type == "clus":
-        offset = self.num_cie
-        tmp_labels = [[i - offset for i in batch[2]]]
-    elif self.bag_type == "dpt":
-        offset = self.num_cie + self.num_clus
-        tmp_labels = [[i - offset for i in batch[2]]]
-    else:
-        raise Exception("Wrong bag type specified: " + str(self.bag_type))
-    return tmp_labels
 
 
 if __name__ == "__main__":
