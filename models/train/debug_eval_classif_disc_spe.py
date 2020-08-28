@@ -21,7 +21,6 @@ def main(hparams):
         # Load datasets
         xp_title = "disc_spe_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" +\
                    hparams.input_type + "_bs1"
-        print(hparams.auto_lr_find)
         datasets = load_datasets(hparams, ["TEST"])
         dataset_test = datasets[0]
 
