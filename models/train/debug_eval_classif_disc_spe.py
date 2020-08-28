@@ -22,13 +22,13 @@ def main(hparams):
         # Load datasets
         xp_title = "disc_spe_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
             hparams.b_size) + "_lr" + str(hparams.lr)
-        datasets = load_datasets(hparams, ["TEST"])
+        datasets = load_datasets(hparams, ["TRAIN"])
         dataset_test = datasets[0]
 
         # initiate model
         in_size, out_size = dataset_test.get_num_bag(), dataset_test.get_num_bag()
         test_loader = DataLoader(dataset_test, batch_size=1, collate_fn=collate_for_disc_spe_model,
-                                 num_workers=16, shuffle=True)
+                                 num_workers=0, shuffle=True)
         arguments = {'in_size': in_size,
                      'out_size': out_size,
                      'hparams': hparams,

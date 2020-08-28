@@ -33,8 +33,8 @@ class DiscriminativeSpecializedDataset(Dataset):
         self.select_relevant_tuples(bag_type, self.all_tuples)
 
         ##### debug
-        # tmp = self.tuples[:1000]
-        # self.tuples = tmp
+        tmp = self.tuples[:2000]
+        self.tuples = tmp
 
         print("Discriminative Specialized Dataset for split " + split + " loaded.")
         print("Dataset Length: " + str(len(self.tuples)))
