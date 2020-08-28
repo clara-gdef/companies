@@ -9,7 +9,7 @@ from tqdm import tqdm
 from data.datasets import DiscriminativeSpecializedDataset
 from models.classes import DebugClassifierDisc
 from utils.models import collate_for_disc_spe_model
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import confusion_matrix, classification_report, f1_score, accuracy_score, precision_score, recall_score
 import numpy as np
 
 
@@ -63,12 +63,20 @@ def test(hparams, model, test_loader):
         outputs.append(output)
         preds.append(torch.argmax(output, dim=1).item())
         labels.append(tmp_labels[0])
-    preds, cm, res_trained, res_b4_training = test_for_bag(preds, labels, b4_training, 0, get_num_classes(hparams.bag_type))
-    prec, rec = get_average_metrics(res)
+    # preds, cm, res_trained, res_b4_training = test_for_bag(preds, labels, b4_training, 0, get_num_classes(hparams.bag_type))
+    # prec_trained, rec_trained = get_average_metrics(res_trained)
+    # prec_b4_training, rec_b4_training = get_average_metrics(res_b4_training)
+    res_dict = {"acc_trained": accuracy_score(preds, labels),
+                "acc_b4_training": accuracy_score(b4_training, labels),
+                "precision_trained": precision_score(preds, labels),
+                "precision_b4_training": precision_score(b4_training, labels),
+                "recall_trained": recall_score(preds, labels),
+                "recall_b4_training": recall_score(b4_training, labels),
+                "f1_trained": f1_score(preds, labels),
+                "f1_b4_training": f1_score(b4_training, labels)}
+    print(res_dict)
     ipdb.set_trace()
-    return {"acc": res["accuracy"],
-            "precision": prec,
-            "recall": rec}
+    return res_dict
 
 
 def get_num_classes(bag_type):
