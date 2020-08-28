@@ -88,7 +88,7 @@ def train(train_loader, model, crit, optim, epoch):
         labels = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
         # the model is specialized
         ipdb.set_trace()
-        loss = crit(torch.softmax(output, dim=1), labels)
+        loss = crit(output, labels)
         loss_list.append(loss)
         loss.backward()
         optim.step()
@@ -105,7 +105,7 @@ def valid(valid_loader, model, crit, epoch):
         output = model(input_tensor)
         labels = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
         # the model is specialized
-        loss = crit(torch.softmax(output, dim=1), labels)
+        loss = crit(output, labels)
         loss_list.append(loss)
 
     return {'CE': torch.mean(torch.stack(loss_list)).item()}
