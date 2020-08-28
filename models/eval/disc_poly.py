@@ -43,8 +43,8 @@ def test(hparams):
 
     model.eval()
 
-    dataset = load_datasets(hparams, ["TEST"], hparams.load_dataset)
-    test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_poly_model, num_workers=32)
+    dataset = load_datasets(hparams, ["TRAIN"], hparams.load_dataset)
+    test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_poly_model, num_workers=32, shuffle=True)
     model_path = os.path.join(CFG['modeldir'], "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type)
     model_files = glob.glob(os.path.join(model_path, "*"))
     latest_file = max(model_files, key=os.path.getctime)
@@ -78,6 +78,8 @@ def get_model_params(rep_dim, num_bag):
     elif hparams.input_type == "userOriented":
         in_size = rep_dim
         out_size = rep_dim
+    elif hparams.input_type == "userOnly":
+        in_size = rep_dim
     else:
         raise Exception("Wrong input data specified: " + str(hparams.input_type))
 
@@ -112,7 +114,7 @@ if __name__ == "__main__":
     parser.add_argument("--gpus", type=int, default=[0])
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--b_size", type=int, default=64)
-    parser.add_argument("--input_type", type=str, default="userOriented")
+    parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     hparams = parser.parse_args()

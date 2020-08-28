@@ -28,15 +28,15 @@ def train(hparams):
                          checkpoint_callback=checkpoint_callback,
                          early_stop_callback=early_stop_callback,
                          logger=logger,
-                         auto_lr_find=False
+                         auto_lr_find=hparams.auto_lr_find
                          )
     datasets = load_datasets(hparams, ["TRAIN", "VALID"])
     dataset_train, dataset_valid = datasets[0], datasets[1]
     in_size, out_size = get_model_params(dataset_train.rep_dim, dataset_train.get_num_bag())
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model,
-                              num_workers=32)
+                              num_workers=16, shuffle=True)
     valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model,
-                              num_workers=32)
+                              num_workers=16)
     arguments = {'in_size': in_size,
                  'out_size': out_size,
                  'hparams': hparams,
@@ -101,7 +101,7 @@ def init_lightning(xp_title):
 
     early_stop_callback = EarlyStopping(
         monitor='val_loss',
-        min_delta=0.001,
+        min_delta=0.00,
         patience=10,
         verbose=False,
         mode='min'
@@ -115,12 +115,12 @@ if __name__ == "__main__":
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
-    parser.add_argument("--gpus", type=int, default=[0])
-    parser.add_argument("--b_size", type=int, default=64)
-    parser.add_argument("--input_type", type=str, default="userOnly")
+    parser.add_argument("--gpus", type=int, default=1)
+    parser.add_argument("--b_size", type=int, default=2)
+    parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--bag_type", type=str, default="cie")
-    parser.add_argument("--lr", type=float, default=1e-5)
+    parser.add_argument("--lr", type=float, default=1e-7)
     parser.add_argument("--auto_lr_find", type=bool, default=False)
     parser.add_argument("--epochs", type=int, default=50)
     hparams = parser.parse_args()

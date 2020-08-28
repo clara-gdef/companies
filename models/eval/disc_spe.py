@@ -48,6 +48,7 @@ def test(hparams):
     model_path = os.path.join(CFG['modeldir'], "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type)
     model_files = glob.glob(os.path.join(model_path, "*"))
     latest_file = max(model_files, key=os.path.getctime)
+    print("Evaluating: " + latest_file)
     trainer.test(test_dataloaders=test_loader, ckpt_path=latest_file, model=model)
 
 
@@ -109,7 +110,7 @@ if __name__ == "__main__":
     parser.add_argument("--rep_type", type=str, default='sk')
     parser.add_argument("--gpus", type=int, default=[0])
     parser.add_argument("--bag_type", type=str, default="cie")
-    parser.add_argument("--input_type", type=str, default="userOnly")
+    parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--b_size", type=int, default=64)

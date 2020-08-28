@@ -18,7 +18,7 @@ def main(hparams):
 
 
 def train(hparams):
-    xp_title = "NormedDisc_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
+    xp_title = "disc_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size)
     logger, checkpoint_callback, early_stop_callback = init_lightning(xp_title)
     trainer = pl.Trainer(gpus=[hparams.gpus],
@@ -26,15 +26,16 @@ def train(hparams):
                          checkpoint_callback=checkpoint_callback,
                          early_stop_callback=early_stop_callback,
                          logger=logger,
-                         auto_lr_find=False
+                         auto_lr_find=hparams.auto_lr_find
                          )
     datasets = load_datasets(hparams, ["TRAIN", "VALID"], hparams.load_dataset)
     dataset_train, dataset_valid = datasets[0], datasets[1]
     in_size, out_size = get_model_params(dataset_train.rep_dim, len(dataset_train.bag_rep))
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
-                              num_workers=16)
+                              num_workers=16, shuffle=True)
     valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
                               num_workers=16)
+    ipdb.set_trace()
     arguments = {'in_size': in_size,
                  'out_size': out_size,
                  'hparams': hparams,
@@ -85,7 +86,7 @@ def get_model_params(rep_dim, num_bag):
 
 
 def init_lightning(xp_title):
-    model_path = os.path.join(CFG['modeldir'], "NormedDisc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type)
+    model_path = os.path.join(CFG['modeldir'], "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type)
 
     logger = TensorBoardLogger(
         save_dir='./models/logs',
@@ -116,13 +117,14 @@ if __name__ == "__main__":
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rep_type", type=str, default='sk')
-    parser.add_argument("--gpus", type=int, default=1)
-    parser.add_argument("--b_size", type=int, default=64)
+    parser.add_argument("--rep_type", type=str, default='ft')
+    parser.add_argument("--gpus", type=int, default=0)
+    parser.add_argument("--b_size", type=int, default=2)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", type=bool, default=True)
+    parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
-    parser.add_argument("--lr", type=float, default=1e-5)
+    parser.add_argument("--lr", type=float, default=1e-6)
     parser.add_argument("--epochs", type=int, default=50)
     hparams = parser.parse_args()
     main(hparams)
