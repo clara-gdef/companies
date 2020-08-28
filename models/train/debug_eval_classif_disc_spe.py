@@ -6,10 +6,12 @@ import argparse
 from torch.utils.data import DataLoader
 import yaml
 from tqdm import tqdm
-from tensorboardX import SummaryWriter
 from data.datasets import DiscriminativeSpecializedDataset
 from models.classes import DebugClassifierDisc
 from utils.models import collate_for_disc_spe_model
+from sklearn.metrics import confusion_matrix, classification_report
+import numpy as np
+
 
 num_cie = 207
 num_clus = 30
@@ -57,19 +59,19 @@ def test(hparams, model, test_loader):
         output = model(input_tensor)
 
         ids.append(identifier)
-        b4_training.append(input_tensor)
+        b4_training.append(torch.argmax(input_tensor, dim=1).item())
         outputs.append(output)
         preds.append(torch.argmax(output, dim=1).item())
         labels.append(tmp_labels[0])
-    ipdb.set_trace()
-    preds, cm, res = test_for_bag(preds, labels, before_training, 0, get_num_classes(hparams.bag_type))
+    preds, cm, res_trained, res_b4_training = test_for_bag(preds, labels, b4_training, 0, get_num_classes(hparams.bag_type))
     prec, rec = get_average_metrics(res)
+    ipdb.set_trace()
     return {"acc": res["accuracy"],
             "precision": prec,
             "recall": rec}
 
 
-def get_num_classes(self, bag_type):
+def get_num_classes(bag_type):
     if type == "spe":
         if bag_type == "cie":
             return num_cie
@@ -83,9 +85,11 @@ def get_num_classes(self, bag_type):
 
 def test_for_bag(preds, labels, b4_training, offset, num_classes):
     predicted_classes = [i + offset for i in preds]
+    preds_b4 = [i + offset for i in b4_training]
     cm = confusion_matrix(labels.cpu().numpy(), np.asarray(predicted_classes))
-    results = classification_report(predicted_classes, labels.cpu(), output_dict=True, labels=range(num_classes))
-    return predicted_classes, cm, results
+    results_trained = classification_report(predicted_classes, labels, output_dict=True, labels=range(num_classes))
+    res_b4_training = classification_report(preds_b4, labels, output_dict=True, labels=range(num_classes))
+    return predicted_classes, cm, results_trained, res_b4_training
 
 
 def get_average_metrics(res_dict):
