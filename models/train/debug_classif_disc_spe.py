@@ -72,7 +72,7 @@ def main_for_one_epoch(hparams, epoch, model, optim, critetion,
     file_name = "debug_disc_spe_" + str(hparams.rep_type) + "_" + str(hparams.bag_type) + "_" + str(hparams.lr)
     file_path = os.path.join(CFG["modeldir"], file_name)
     if valid_loss['CE'] < best_val_loss:
-        torch.save(model.state_dict, file_path)
+        torch.save(model.state_dict(), file_path)
         best_val_loss = valid_loss['CE']
 
     dictionary = {**train_loss, **valid_loss, 'best_val_loss': best_val_loss}
@@ -136,7 +136,7 @@ if __name__ == "__main__":
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--bag_type", type=str, default="cie")
-    parser.add_argument("--lr", type=float, default=1e-7)
+    parser.add_argument("--lr", type=float, default=1e-6)
     parser.add_argument("--epochs", type=int, default=50)
     hparams = parser.parse_args()
     main(hparams)
