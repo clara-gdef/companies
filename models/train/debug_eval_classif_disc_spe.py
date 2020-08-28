@@ -68,12 +68,12 @@ def test(hparams, model, test_loader):
     # prec_b4_training, rec_b4_training = get_average_metrics(res_b4_training)
     res_dict = {"acc_trained": accuracy_score(preds, labels),
                 "acc_b4_training": accuracy_score(b4_training, labels),
-                "precision_trained": precision_score(preds, labels),
-                "precision_b4_training": precision_score(b4_training, labels),
-                "recall_trained": recall_score(preds, labels),
-                "recall_b4_training": recall_score(b4_training, labels),
-                "f1_trained": f1_score(preds, labels),
-                "f1_b4_training": f1_score(b4_training, labels)}
+                "precision_trained": precision_score(preds, labels, average='weighted'),
+                "precision_b4_training": precision_score(b4_training, labels, average='weighted'),
+                "recall_trained": recall_score(preds, labels, average='weighted'),
+                "recall_b4_training": recall_score(b4_training, labels, average='weighted'),
+                "f1_trained": f1_score(preds, labels, average='weighted'),
+                "f1_b4_training": f1_score(b4_training, labels, average='weighted')}
     print(res_dict)
     ipdb.set_trace()
     return res_dict
