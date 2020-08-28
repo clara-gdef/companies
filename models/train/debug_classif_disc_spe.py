@@ -10,6 +10,7 @@ from tensorboardX import SummaryWriter
 from data.datasets import DiscriminativeSpecializedDataset
 from models.classes import DebugClassifierDisc
 from utils.models import collate_for_disc_spe_model
+from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
 
 num_cie = 207
 num_clus = 30
@@ -55,8 +56,8 @@ def main(hparams):
 
 
 def main_for_one_epoch(epoch, model, optim, critetion,
-                                      best_val_loss, train_loader, valid_loader,
-                                    train_writer, valid_writer, xp_title):
+                       best_val_loss, train_loader, valid_loader,
+                       train_writer, valid_writer, xp_title):
     print("Training and validating for epoch " + str(epoch))
 
     train_loss = train(train_loader, model, critetion, optim, epoch)
@@ -80,8 +81,12 @@ def main_for_one_epoch(epoch, model, optim, critetion,
 
 def train(train_loader, model, crit, optim, epoch):
     loss_list = []
+    b4_training = []
+    labs = []
+    preds = []
+    num_classes = num_cie
     for ids, ppl, tmp_labels, bag_rep in tqdm(train_loader, desc="Training for epoch " + str(
-                                                                                   epoch) + "..."):
+            epoch) + "..."):
         bag_rep = torch.transpose(bag_rep, 1, 0)
         input_tensor = torch.matmul(ppl, bag_rep).cuda()
         output = model(input_tensor)
@@ -92,13 +97,33 @@ def train(train_loader, model, crit, optim, epoch):
         loss.backward()
         optim.step()
 
-    return {'CE': torch.mean(torch.stack(loss_list)).item()}
+        ipdb.set_trace()
+        
+        b4_training.append(torch.argmax(input_tensor, dim=1).item())
+        preds.append(torch.argmax(output, dim=1).item())
+        labs.append(tmp_labels[0])
+        preds.append(torch.argmax(output, dim=1).item())
+
+    res_dict = {"acc_trained": accuracy_score(preds, labels) * 100,
+                "acc_b4_training": accuracy_score(b4_training, labels) * 100,
+                "precision_trained": precision_score(preds, labels, average='weighted',
+                                                     labels=range(num_classes)) * 100,
+                "precision_b4_training": precision_score(b4_training, labels, average='weighted',
+                                                         labels=range(num_classes)) * 100,
+                "recall_trained": recall_score(preds, labels, average='weighted', labels=range(num_classes)) * 100,
+                "recall_b4_training": recall_score(b4_training, labels, average='weighted',
+                                                   labels=range(num_classes)) * 100,
+                "f1_trained": f1_score(preds, labels, average='weighted', labels=range(num_classes)) * 100,
+                "f1_b4_training": f1_score(b4_training, labels, average='weighted', labels=range(num_classes)) * 100,
+                'CE': torch.mean(torch.stack(loss_list)).item()}
+
+    return res_dict
 
 
 def valid(valid_loader, model, crit, epoch):
     loss_list = []
     for ids, ppl, tmp_labels, bag_rep in tqdm(valid_loader, desc="Validating for epoch " + str(
-                                                                                   epoch) + "..."):
+            epoch) + "..."):
         bag_rep = torch.transpose(bag_rep, 1, 0)
         input_tensor = torch.matmul(ppl, bag_rep).cuda()
         output = model(input_tensor)
@@ -139,4 +164,3 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", type=int, default=100)
     hparams = parser.parse_args()
     main(hparams)
-
