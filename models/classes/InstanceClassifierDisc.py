@@ -57,13 +57,13 @@ class InstanceClassifierDisc(pl.LightningModule):
         else:
             # the model is specialized
             loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
-        tensorboard_logs = {'train_loss': loss}
         self.training_losses.append(loss.item())
 
         preds = [i.item() for i in torch.argmax(output, dim=1)]
         res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes())
+        tensorboard_logs = {**res_dict, 'train_loss': loss}
 
-        return {**res_dict, 'loss': loss, 'log': tensorboard_logs}
+        return {'loss': loss, 'log': tensorboard_logs}
 
     def validation_step(self, batch, batch_nb):
         if self.input_type != "userOriented":
@@ -82,12 +82,12 @@ class InstanceClassifierDisc(pl.LightningModule):
         else:
             # the model is specialized
             val_loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
-        tensorboard_logs = {'val_loss': val_loss}
 
         preds = [i.item() for i in torch.argmax(output, dim=1)]
         res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes())
+        tensorboard_logs = {**res_dict, 'val_loss': val_loss}
 
-        return {**res_dict, 'loss': val_loss, 'log': tensorboard_logs}
+        return {'loss': val_loss, 'log': tensorboard_logs}
 
 
     def epoch_end(self):
