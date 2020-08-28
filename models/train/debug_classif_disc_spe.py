@@ -82,7 +82,7 @@ def main_for_one_epoch(epoch, model, optim, critetion,
 def train(train_loader, model, crit, optim, epoch):
     loss_list = []
     b4_training = []
-    labs = []
+    labels = []
     preds = []
     num_classes = num_cie
     for ids, ppl, tmp_labels, bag_rep in tqdm(train_loader, desc="Training for epoch " + str(
@@ -90,17 +90,16 @@ def train(train_loader, model, crit, optim, epoch):
         bag_rep = torch.transpose(bag_rep, 1, 0)
         input_tensor = torch.matmul(ppl, bag_rep).cuda()
         output = model(input_tensor)
-        labels = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
+        labs = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
         # the model is specialized
-        loss = crit(output, labels)
+        loss = crit(output, labs)
         loss_list.append(loss)
         loss.backward()
         optim.step()
 
-
         b4_training.extend(torch.argmax(input_tensor, dim=1))
         preds.extend(torch.argmax(output, dim=1))
-        labs.extend(tmp_labels)
+        labels.extend(tmp_labels)
 
     res_dict = {"acc_trained": accuracy_score(preds, labels) * 100,
                 "acc_b4_training": accuracy_score(b4_training, labels) * 100,
@@ -121,7 +120,7 @@ def train(train_loader, model, crit, optim, epoch):
 def valid(valid_loader, model, crit, epoch):
     loss_list = []
     b4_training = []
-    labs = []
+    labels = []
     preds = []
     num_classes = num_cie
     for ids, ppl, tmp_labels, bag_rep in tqdm(valid_loader, desc="Validating for epoch " + str(
@@ -129,14 +128,14 @@ def valid(valid_loader, model, crit, epoch):
         bag_rep = torch.transpose(bag_rep, 1, 0)
         input_tensor = torch.matmul(ppl, bag_rep).cuda()
         output = model(input_tensor)
-        labels = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
+        labs = torch.LongTensor(tmp_labels).view(output.shape[0]).cuda()
         # the model is specialized
-        loss = crit(output, labels)
+        loss = crit(output, labs)
         loss_list.append(loss)
 
         b4_training.extend(torch.argmax(input_tensor, dim=1))
         preds.extend(torch.argmax(output, dim=1))
-        labs.extend(tmp_labels)
+        labels.extend(tmp_labels)
     res_dict = {"acc_trained": accuracy_score(preds, labels) * 100,
                 "acc_b4_training": accuracy_score(b4_training, labels) * 100,
                 "precision_trained": precision_score(preds, labels, average='weighted',
