@@ -5,15 +5,16 @@ import pytorch_lightning as pl
 import numpy as np
 import pickle as pkl
 from utils.models import labels_to_one_hot
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
 
 
 class InstanceClassifierDisc(pl.LightningModule):
 
-
     def __init__(self, in_size, out_size, hparams, dataset, datadir, desc):
         super().__init__()
         self.lin = torch.nn.Linear(in_size, out_size)
+        torch.nn.init.eye_(self.lin.weight)
+        torch.nn.init.zeros_(self.lin.bias)
 
         self.training_losses = []
         self.test_outputs = []
@@ -58,6 +59,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
         tensorboard_logs = {'train_loss': loss}
         self.training_losses.append(loss.item())
+        
         return {'loss': loss, 'log': tensorboard_logs}
 
     def validation_step(self, batch, batch_nb):
