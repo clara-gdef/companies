@@ -25,6 +25,7 @@ def main(hparams):
         dataset_train, dataset_valid = datasets[0], datasets[1]
 
         # initiate model
+        best_val_loss = 1e+300
         in_size, out_size = dataset_train.get_num_bag(), dataset_train.get_num_bag()
         train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model,
                                   num_workers=16, shuffle=True)
