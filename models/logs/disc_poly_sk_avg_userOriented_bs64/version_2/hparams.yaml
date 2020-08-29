@@ -1,8 +1,0 @@
-b_size: 64
-data_agg_type: avg
-gpus:
-- 0
-input_type: userOriented
-load_dataset: true
-lr: 0.001
-rep_type: sk

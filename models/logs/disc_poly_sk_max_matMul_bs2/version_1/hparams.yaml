@@ -1,8 +1,0 @@
-b_size: 2
-data_agg_type: max
-epochs: 50
-gpus: 1
-input_type: matMul
-load_dataset: false
-lr: 1.9054607179632475e-07
-rep_type: sk
