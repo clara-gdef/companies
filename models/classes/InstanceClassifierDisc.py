@@ -167,12 +167,8 @@ class InstanceClassifierDisc(pl.LightningModule):
         ipdb.set_trace()
         preds = outputs[:, 0, :]
         labels = torch.LongTensor([i[0][0] for i in self.test_labels]).cuda()
-        preds, cm, res = test_for_bag(preds, labels, self.before_training, 0, self.get_num_classes())
-        self.save_bag_outputs(preds, labels, cm, res)
-        prec, rec = get_average_metrics(res)
-        return {"acc": res["accuracy"],
-                "precision": prec,
-                "recall": rec}
+        res_dict = get_metrics(preds, labels, self.get_num_classes(), "test")
+        return res_dict
 
     def save_bag_outputs(self, preds, labels, cm, res):
         res = {self.bag_type: {"preds": preds,
