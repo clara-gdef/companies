@@ -7,6 +7,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
+import torch
 import glob
 from data.datasets import DiscriminativeSpecializedDataset
 from models.classes import InstanceClassifierDisc
@@ -45,17 +46,11 @@ def test(hparams):
 
     dataset = load_datasets(hparams, ["TEST"])
     test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_spe_model, num_workers=32)
-    model_path = os.path.join(CFG['modeldir'], "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type)
+    model_path = os.path.join(CFG['modeldir'], "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type)
     model_files = glob.glob(os.path.join(model_path, "*"))
     latest_file = max(model_files, key=os.path.getctime)
-    ipdb.set_trace()
-    model = InstanceClassifierDisc.load_from_checkpoint(
-        checkpoint_path=latest_file,
-        hparams_file='/path/to/test_tube/experiment/version/hparams.yaml',
-        map_location=None
-    )
-    print("Evaluating: " + latest_file)
-    trainer.test(test_dataloaders=test_loader, ckpt_path=latest_file, model=model)
+    model.load_state_dict(torch.load(latest_file)["state_dict"])
+    trainer.test(test_dataloaders=test_loader, model=model)
 
 
 def load_datasets(hparams, splits):
