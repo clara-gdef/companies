@@ -48,6 +48,12 @@ def test(hparams):
     model_path = os.path.join(CFG['modeldir'], "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type)
     model_files = glob.glob(os.path.join(model_path, "*"))
     latest_file = max(model_files, key=os.path.getctime)
+    ipdb.set_trace()
+    model = InstanceClassifierDisc.load_from_checkpoint(
+        checkpoint_path=latest_file,
+        hparams_file='/path/to/test_tube/experiment/version/hparams.yaml',
+        map_location=None
+    )
     print("Evaluating: " + latest_file)
     trainer.test(test_dataloaders=test_loader, ckpt_path=latest_file, model=model)
 

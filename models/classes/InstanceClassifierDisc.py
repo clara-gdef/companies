@@ -108,9 +108,6 @@ class InstanceClassifierDisc(pl.LightningModule):
             labels_one_hot = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.get_num_classes())
             self.test_outputs.append(self.forward(input_tensor))
             self.before_training.append(input_tensor)
-            ##### B4 training #####
-            # self.test_outputs.append(input_tensor)
-
         else:
             bag_matrix, profiles = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
