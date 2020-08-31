@@ -84,6 +84,7 @@ class InstanceClassifierDisc(pl.LightningModule):
                                                          torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
 
         preds = [i.item() for i in torch.argmax(output, dim=1)]
+        ipdb.set_trace()
         res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "val")
         tensorboard_logs = {**res_dict, 'val_loss': val_loss}
 
@@ -164,7 +165,7 @@ class InstanceClassifierDisc(pl.LightningModule):
                 }
 
     def test_spe(self, outputs):
-        preds = torch.argmax(outputs, dim=1).squeeze(-1)
+        preds = torch.argmax(outputs.view(-1, self.get_num_classes()), dim=1)
         labels = torch.LongTensor([i[0][0] for i in self.test_labels]).cuda()
         res_dict = get_metrics(preds.cpu(), labels.cpu(), self.get_num_classes(), "test")
         return res_dict
