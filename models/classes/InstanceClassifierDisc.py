@@ -12,8 +12,6 @@ class InstanceClassifierDisc(pl.LightningModule):
     def __init__(self, in_size, out_size, hparams, dataset, datadir, desc):
         super().__init__()
         self.lin = torch.nn.Linear(in_size, out_size)
-        torch.nn.init.eye_(self.lin.weight)
-        torch.nn.init.zeros_(self.lin.bias)
 
         self.training_losses = []
         self.test_outputs = []
@@ -23,6 +21,8 @@ class InstanceClassifierDisc(pl.LightningModule):
         self.type = desc.split("_")[1]
         if self.type == 'spe':
             self.bag_type = desc.split("_")[2]
+            torch.nn.init.eye_(self.lin.weight)
+            torch.nn.init.zeros_(self.lin.bias)
 
         self.input_type = hparams.input_type
         self.num_cie = dataset.num_cie
@@ -82,12 +82,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             # the model is specialized
             val_loss = torch.nn.functional.cross_entropy(output,
                                                          torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
-
-        preds = [i.item() for i in torch.argmax(output, dim=1)]
-        ipdb.set_trace()
-        res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "val")
-        tensorboard_logs = {**res_dict, 'val_loss': val_loss}
-
+        tensorboard_logs = {'val_loss': val_loss}
         return {'loss': val_loss, 'log': tensorboard_logs}
 
     def epoch_end(self):
@@ -99,7 +94,11 @@ class InstanceClassifierDisc(pl.LightningModule):
         return outputs[-1]
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
+        wd = 0
+        if self.type == "spe":
+            if self.bag_type == "clus":
+                wd = .8
+        return torch.optim.Adam(self.parameters(), lr=self.hparams.lr, weight_decay=wd)
 
     def test_step(self, batch, batch_idx):
         if self.input_type != "userOriented":
@@ -131,6 +130,9 @@ class InstanceClassifierDisc(pl.LightningModule):
             cie_preds = outputs[:, 0, :self.num_cie]
             clus_preds = outputs[:, 0, self.num_cie: self.num_cie + self.num_clus]
             dpt_preds = outputs[:, 0, -self.num_dpt:]
+            cie_b4 = torch.stack(self.before_training)[:, 0, :self.num_cie]
+            clus_b4 = torch.stack(self.before_training)[:, 0, self.num_cie: self.num_cie + self.num_clus]
+            dpt_b4 = torch.stack(self.before_training)[:, 0, -self.num_dpt:]
         else:
             cie_preds = outputs[:, :self.num_cie, 0]
             clus_preds = outputs[:, self.num_cie: self.num_cie + self.num_clus, 0]
@@ -140,32 +142,21 @@ class InstanceClassifierDisc(pl.LightningModule):
         clus_labels = torch.LongTensor([i[1][0] for i in self.test_labels]).cuda()
         dpt_labels = torch.LongTensor([i[2][0] for i in self.test_labels]).cuda()
 
-        ci_preds, ci_cm, ci_res = test_for_bag(cie_preds, cie_labels, offset=0)
-        cl_preds, cl_cm, cl_res = test_for_bag(clus_preds, clus_labels, offset=self.num_cie)
-        d_preds, d_cm, d_res = test_for_bag(dpt_preds, dpt_labels, offset=self.num_cie + self.num_clus)
-        # self.save_outputs(ci_preds, cie_labels, ci_cm, ci_res,
-        #                   cl_preds, clus_labels, cl_cm, cl_res,
-        #                   d_preds, dpt_labels, d_cm, d_res)
-
-        ci_avg_prec, ci_avg_rec = get_average_metrics(ci_res)
-        cl_avg_prec, cl_avg_rec = get_average_metrics(cl_res)
-        d_avg_prec, d_avg_rec = get_average_metrics(d_res)
-        return {"cie_acc": ci_res["accuracy"],
-                "cie_precision": ci_avg_prec,
-                "cie_recall": ci_avg_rec,
-                "clus_acc": cl_res["accuracy"],
-                "clus_precision": cl_avg_prec,
-                "clus_recall": cl_avg_rec,
-                "dpt_acc": d_res["accuracy"],
-                "dpt_precision": d_avg_prec,
-                "dpt_recall": d_avg_rec
-                }
+        ipdb.set_trace()
+        cie_res = test_for_bag(cie_preds, cie_labels, cie_b4, 0, self.num_cie, "cie")
+        clus_res = test_for_bag(clus_preds, clus_labels, clus_b4, self.num_cie, self.num_clus, "clus")
+        dpt_res = test_for_bag(dpt_preds, dpt_labels, dpt_b4, self.num_cie + self.num_clus, self.num_dpt, "dpt")
+        return {**cie_res, **clus_res, **dpt_res}
 
     def test_spe(self, outputs):
         preds = torch.argmax(outputs.view(-1, self.get_num_classes()), dim=1)
         labels = torch.LongTensor([i[0][0] for i in self.test_labels]).cuda()
-        res_dict = get_metrics(preds.cpu(), labels.cpu(), self.get_num_classes(), "test")
-        return res_dict
+        b4_training = torch.argmax(torch.stack(self.before_training)[:, 0, :], dim=1)
+        res_dict_trained = get_metrics(preds.cpu(), labels.cpu(), self.get_num_classes(), self.bag_type + "_trained")
+        res_dict_b4_training = get_metrics(b4_training.cpu(), labels.cpu(), self.get_num_classes(), self.bag_type + "_b4")
+
+        return {**res_dict_b4_training, **res_dict_trained}
+
 
     def save_bag_outputs(self, preds, labels, cm, res):
         res = {self.bag_type: {"preds": preds,
@@ -254,14 +245,13 @@ class InstanceClassifierDisc(pl.LightningModule):
             return self.num_cie + self.num_clus + self.num_dpt
 
 
-def test_for_bag(preds, labels, b4_training, offset, num_classes):
+def test_for_bag(preds, labels, b4_training, offset, num_classes, bag_type):
     tmp = [i.item() for i in torch.argmax(preds, dim=1)]
-    tmp2 = [i.item() for i in torch.argmax(torch.stack(b4_training)[:, 0, :], dim=1)]
-    ipdb.set_trace()
+    b4_train = [i.item() + offset for i in torch.argmax(b4_training, dim=1)]
     predicted_classes = [i + offset for i in tmp]
-    cm = confusion_matrix(labels.cpu().numpy(), np.asarray(predicted_classes))
-    results = classification_report(predicted_classes, labels.cpu(), output_dict=True, labels=range(num_classes))
-    return predicted_classes, cm, results
+    res_dict_trained = get_metrics(predicted_classes, labels.cpu(), num_classes, bag_type + "_trained")
+    res_dict_b4_training = get_metrics(b4_train, labels.cpu(), num_classes, bag_type + "_b4")
+    return {**res_dict_b4_training, **res_dict_trained}
 
 
 def get_average_metrics(res_dict):

@@ -49,6 +49,7 @@ def test(hparams):
     model_path = os.path.join(CFG['modeldir'], "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type)
     model_files = glob.glob(os.path.join(model_path, "*"))
     latest_file = max(model_files, key=os.path.getctime)
+    print("Evaluating model: " + str(latest_file))
     model.load_state_dict(torch.load(latest_file)["state_dict"])
     trainer.test(test_dataloaders=test_loader, model=model)
 

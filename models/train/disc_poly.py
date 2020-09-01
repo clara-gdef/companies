@@ -26,7 +26,7 @@ def train(hparams):
                          checkpoint_callback=checkpoint_callback,
                          early_stop_callback=early_stop_callback,
                          logger=logger,
-                         auto_lr_find=hparams.auto_lr_find
+                         auto_lr_find=False
                          )
     datasets = load_datasets(hparams, ["TRAIN", "VALID"], hparams.load_dataset)
     dataset_train, dataset_valid = datasets[0], datasets[1]
@@ -35,7 +35,6 @@ def train(hparams):
                               num_workers=16, shuffle=True)
     valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
                               num_workers=16)
-    ipdb.set_trace()
     arguments = {'in_size': in_size,
                  'out_size': out_size,
                  'hparams': hparams,
@@ -119,7 +118,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=0)
-    parser.add_argument("--b_size", type=int, default=2)
+    parser.add_argument("--b_size", type=int, default=16)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--auto_lr_find", type=bool, default=True)

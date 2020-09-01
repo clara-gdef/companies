@@ -8,6 +8,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
 import glob
+import torch
 from data.datasets import DiscriminativePolyvalentDataset
 from models.classes import InstanceClassifierDisc
 from utils.models import collate_for_disc_poly_model
@@ -41,14 +42,16 @@ def test(hparams):
     model = InstanceClassifierDisc(**arguments)
     print("Model Loaded.")
 
-    model.eval()
-
-    dataset = load_datasets(hparams, ["TRAIN"], hparams.load_dataset)
-    test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_poly_model, num_workers=32, shuffle=True)
+    dataset = load_datasets(hparams, ["TEST"], hparams.load_dataset)
+    test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_poly_model, num_workers=32)
     model_path = os.path.join(CFG['modeldir'], "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type)
     model_files = glob.glob(os.path.join(model_path, "*"))
     latest_file = max(model_files, key=os.path.getctime)
-    trainer.test(test_dataloaders=test_loader, ckpt_path=latest_file, model=model)
+    print("Evaluating model: " + str(latest_file))
+    model.load_state_dict(torch.load(latest_file)["state_dict"])
+    model.eval()
+
+    trainer.test(test_dataloaders=test_loader, model=model.cuda())
 
 
 def load_datasets(hparams, splits, load):
@@ -113,7 +116,7 @@ if __name__ == "__main__":
     parser.add_argument("--rep_type", type=str, default='sk')
     parser.add_argument("--gpus", type=int, default=[0])
     parser.add_argument("--lr", type=float, default=1e-3)
-    parser.add_argument("--b_size", type=int, default=64)
+    parser.add_argument("--b_size", type=int, default=16)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
