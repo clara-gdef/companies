@@ -248,6 +248,7 @@ class InstanceClassifierDisc(pl.LightningModule):
 
 
 def test_for_bag(preds, labels, b4_training, offset, num_classes, bag_type):
+    ipdb.set_trace()
     tmp = [i.item() for i in torch.argmax(preds, dim=1)]
     b4_train = [i.item() + offset for i in torch.argmax(b4_training, dim=1)]
     predicted_classes = [i + offset for i in tmp]
