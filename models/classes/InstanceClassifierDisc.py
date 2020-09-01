@@ -133,6 +133,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             cie_b4 = torch.stack(self.before_training)[:, 0, :self.num_cie]
             clus_b4 = torch.stack(self.before_training)[:, 0, self.num_cie: self.num_cie + self.num_clus]
             dpt_b4 = torch.stack(self.before_training)[:, 0, -self.num_dpt:]
+            ipdb.set_trace()
         else:
             cie_preds = outputs[:, :self.num_cie, 0]
             clus_preds = outputs[:, self.num_cie: self.num_cie + self.num_clus, 0]
@@ -152,6 +153,7 @@ class InstanceClassifierDisc(pl.LightningModule):
         preds = torch.argmax(outputs.view(-1, self.get_num_classes()), dim=1)
         labels = torch.LongTensor([i[0][0] for i in self.test_labels]).cuda()
         b4_training = torch.argmax(torch.stack(self.before_training)[:, 0, :], dim=1)
+        ipdb.set_trace()
         res_dict_trained = get_metrics(preds.cpu(), labels.cpu(), self.get_num_classes(), self.bag_type + "_trained")
         res_dict_b4_training = get_metrics(b4_training.cpu(), labels.cpu(), self.get_num_classes(), self.bag_type + "_b4")
 
