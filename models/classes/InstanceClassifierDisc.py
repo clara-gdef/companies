@@ -54,7 +54,8 @@ class InstanceClassifierDisc(pl.LightningModule):
                 tmp = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
             if self.input_type != "bagTransformer":
-                ipdb.set_trace()
+                tmp = torch.matmul(self.forward(bag_matrix).squeeze(1), torch.transpose(profiles, 1, 0))
+                output = torch.transpose(tmp, 1, 0)
         if self.type == "poly":
             loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
         else:
@@ -69,7 +70,7 @@ class InstanceClassifierDisc(pl.LightningModule):
         return {'loss': loss, 'log': tensorboard_logs}
 
     def validation_step(self, batch, batch_nb):
-        if self.input_type != "userOriented":
+        if self.input_type != "userOriented" and self.input_type != "bagTransformer":
             input_tensor = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
             output = self.forward(input_tensor)
@@ -78,8 +79,12 @@ class InstanceClassifierDisc(pl.LightningModule):
             bag_matrix, profiles = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
             labels = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
-            tmp = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
-            output = torch.transpose(tmp, 1, 0)
+            if self.input_type != "userOriented":
+                tmp = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
+                output = torch.transpose(tmp, 1, 0)
+            if self.input_type != "bagTransformer":
+                tmp = torch.matmul(self.forward(bag_matrix).squeeze(1), torch.transpose(profiles, 1, 0))
+                output = torch.transpose(tmp, 1, 0)
         if self.type == "poly":
             val_loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
         else:
