@@ -33,12 +33,13 @@ def main(args):
 
 
 def get_nn_estimator():
+    ft_model = None
     estimator = NearestNeighbors(n_neighbors=10, radius=1.0)
     if not args.load_nn_estimator:
         estimator, ft_model = fit_nearest_neighbors(estimator)
     else:
         with open(os.path.join(CFG["modeldir"], "NN_estimator"), 'rb') as f_name:
-            est_params, ft_model = pkl.load(f_name)
+            est_params = pkl.load(f_name)
         estimator.set_params(est_params)
     return estimator, ft_model
 
@@ -100,7 +101,7 @@ def build_vocab():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--load_nn_estimator", type=bool, default=True)
+    parser.add_argument("--load_nn_estimator", type=bool, default=False)
     parser.add_argument("--load_lookup_vocabulary", type=bool, default=False)
     parser.add_argument("--load_vocabulary", type=bool, default=True)
 
