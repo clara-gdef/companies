@@ -6,7 +6,7 @@ import ipdb
 
 
 def main():
-    with ipdb.launch_ipdb_on_excpetion():
+    with ipdb.launch_ipdb_on_exception():
         print("Loading data...")
         with open(os.path.join(CFG["gpudatadir"], "lookup_ppl.pkl"), 'rb') as f_name:
             ppl_lookup = pkl.load(f_name)
