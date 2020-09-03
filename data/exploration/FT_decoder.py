@@ -40,8 +40,7 @@ def get_nn_estimator():
         estimator, ft_model = fit_nearest_neighbors(estimator)
     else:
         with open(os.path.join(CFG["modeldir"], "NN_estimator"), 'rb') as f_name:
-            est_params = pkl.load(f_name)
-        estimator.set_params(est_params)
+            estimator = pkl.load(f_name)
     return estimator, ft_model
 
 
@@ -68,7 +67,7 @@ def fit_nearest_neighbors(estimator):
     estimator.fit(input_matrix)
     print("Estimator learned.")
     with open(os.path.join(CFG["modeldir"], "NN_estimator"), 'wb') as f_name:
-        pkl.dump(estimator.get_params(), f_name)
+        pkl.dump(estimator, f_name)
     return estimator, ft_model
 
 
