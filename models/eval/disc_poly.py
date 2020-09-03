@@ -24,14 +24,14 @@ def main(hparams):
 def test(hparams):
     xp_title = "disc_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size)
-    logger, checkpoint_callback = init_lightning(xp_title)
+    logger, checkpoint_callback = init_lightning(hparams, xp_title)
     trainer = pl.Trainer(gpus=hparams.gpus,
                          checkpoint_callback=checkpoint_callback,
                          logger=logger,
                          )
     datasets = load_datasets(hparams, ["TRAIN"], True)
     dataset_train = datasets[0]
-    in_size, out_size = get_model_params(dataset_train.rep_dim, len(dataset_train.bag_rep))
+    in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, len(dataset_train.bag_rep))
 
     arguments = {'in_size': in_size,
                  'out_size': out_size,
@@ -75,7 +75,7 @@ def load_datasets(hparams, splits, load):
     return datasets
 
 
-def get_model_params(rep_dim, num_bag):
+def get_model_params(hparams, rep_dim, num_bag):
     out_size = num_bag
     if hparams.input_type == "hadamard" or hparams.input_type == "concat":
         in_size = rep_dim * num_bag
@@ -92,7 +92,7 @@ def get_model_params(rep_dim, num_bag):
     return in_size, out_size
 
 
-def init_lightning(xp_title):
+def init_lightning(hparams, xp_title):
     model_path = os.path.join(CFG['modeldir'], "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
                               str(hparams.b_size) + "/" + str(hparams.lr))
 
