@@ -39,7 +39,6 @@ class InstanceClassifierDisc(pl.LightningModule):
 
     def forward(self, x):
         if self.input_type == "bagTransformer":
-            ipdb.set_trace()
             return x * self.lin.weights + self.bias
         else:
             return self.lin(x)
@@ -92,7 +91,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             if self.input_type == "bagTransformer":
                 out = []
                 for line in bag_matrix:
-                    out.append(torch.matmul(self.forward(line).squeeze(1), torch.transpose(profiles, 1, 0)))
+                    out.append(torch.matmul(self.forward(line.T).squeeze(1), torch.transpose(profiles, 1, 0)))
                     tmp = torch.stack(out).squeeze(0)
                     ipdb.set_trace()
             output = torch.transpose(tmp, 1, 0)
