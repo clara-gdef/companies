@@ -130,9 +130,10 @@ class InstanceClassifierDisc(pl.LightningModule):
             cie_preds = outputs[:, 0, :self.num_cie]
             clus_preds = outputs[:, 0, self.num_cie: self.num_cie + self.num_clus]
             dpt_preds = outputs[:, 0, -self.num_dpt:]
-            cie_b4 = torch.stack(self.before_training)[:, 0, :self.num_cie]
-            clus_b4 = torch.stack(self.before_training)[:, 0, self.num_cie: self.num_cie + self.num_clus]
-            dpt_b4 = torch.stack(self.before_training)[:, 0, -self.num_dpt:]
+            # cie_b4 = torch.stack(self.before_training)[:, 0, :self.num_cie]
+            # clus_b4 = torch.stack(self.before_training)[:, 0, self.num_cie: self.num_cie + self.num_clus]
+            # dpt_b4 = torch.stack(self.before_training)[:, 0, -self.num_dpt:]
+            cie_b4, clus_b4, dpt_b4 = [], [], []
         else:
             cie_preds = outputs[:, :self.num_cie, 0]
             clus_preds = outputs[:, self.num_cie: self.num_cie + self.num_clus, 0]
@@ -145,6 +146,7 @@ class InstanceClassifierDisc(pl.LightningModule):
         cie_res = test_for_bag(cie_preds, cie_labels, cie_b4, 0, self.num_cie, "cie")
         clus_res = test_for_bag(clus_preds, clus_labels, clus_b4, self.num_cie, self.num_clus, "clus")
         dpt_res = test_for_bag(dpt_preds, dpt_labels, dpt_b4, self.num_cie + self.num_clus, self.num_dpt, "dpt")
+
         return {**cie_res, **clus_res, **dpt_res}
 
     def test_spe(self, outputs):
@@ -249,10 +251,11 @@ class InstanceClassifierDisc(pl.LightningModule):
 def test_for_bag(preds, labels, b4_training, offset, num_classes, bag_type):
     tmp = [i.item() for i in torch.argmax(preds, dim=1)]
     predicted_classes = [i + offset for i in tmp]
-    b4_train = torch.LongTensor([i + offset for i in torch.argmax(b4_training, dim=1)])
-    res_dict_trained = get_metrics(predicted_classes, labels.cpu(), num_classes, bag_type + "_trained", offset)
-    res_dict_b4_training = get_metrics(b4_train, labels.cpu(), num_classes, bag_type + "_b4", offset)
-    return {**res_dict_b4_training, **res_dict_trained}
+    res_dict_trained = get_metrics(predicted_classes, labels.cpu(), num_classes, bag_type, offset)
+    return res_dict_trained
+    #b4_train = torch.LongTensor([i + offset for i in torch.argmax(b4_training, dim=1)])
+    # res_dict_b4_training = get_metrics(b4_train, labels.cpu(), num_classes, bag_type + "_b4", offset)
+    # return {**res_dict_b4_training, **res_dict_trained}
 
 
 def get_average_metrics(res_dict):
