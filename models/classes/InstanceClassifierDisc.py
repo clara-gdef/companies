@@ -59,7 +59,7 @@ class InstanceClassifierDisc(pl.LightningModule):
         self.training_losses.append(loss.item())
 
         preds = [i.item() for i in torch.argmax(output, dim=1)]
-        res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "train")
+        res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "train", 0)
         tensorboard_logs = {**res_dict, 'train_loss': loss}
 
         return {'loss': loss, 'log': tensorboard_logs}
@@ -133,7 +133,6 @@ class InstanceClassifierDisc(pl.LightningModule):
             cie_b4 = torch.stack(self.before_training)[:, 0, :self.num_cie]
             clus_b4 = torch.stack(self.before_training)[:, 0, self.num_cie: self.num_cie + self.num_clus]
             dpt_b4 = torch.stack(self.before_training)[:, 0, -self.num_dpt:]
-            ipdb.set_trace()
         else:
             cie_preds = outputs[:, :self.num_cie, 0]
             clus_preds = outputs[:, self.num_cie: self.num_cie + self.num_clus, 0]
@@ -143,7 +142,6 @@ class InstanceClassifierDisc(pl.LightningModule):
         clus_labels = torch.LongTensor([i[1][0] for i in self.test_labels]).cuda()
         dpt_labels = torch.LongTensor([i[2][0] for i in self.test_labels]).cuda()
 
-        ipdb.set_trace()
         cie_res = test_for_bag(cie_preds, cie_labels, cie_b4, 0, self.num_cie, "cie")
         clus_res = test_for_bag(clus_preds, clus_labels, clus_b4, self.num_cie, self.num_clus, "clus")
         dpt_res = test_for_bag(dpt_preds, dpt_labels, dpt_b4, self.num_cie + self.num_clus, self.num_dpt, "dpt")
@@ -152,13 +150,14 @@ class InstanceClassifierDisc(pl.LightningModule):
     def test_spe(self, outputs):
         preds = torch.argmax(outputs.view(-1, self.get_num_classes()), dim=1)
         labels = torch.LongTensor([i[0][0] for i in self.test_labels]).cuda()
-        b4_training = torch.argmax(torch.stack(self.before_training)[:, 0, :], dim=1)
-        ipdb.set_trace()
-        res_dict_trained = get_metrics(preds.cpu(), labels.cpu(), self.get_num_classes(), self.bag_type + "_trained")
-        res_dict_b4_training = get_metrics(b4_training.cpu(), labels.cpu(), self.get_num_classes(), self.bag_type + "_b4")
+        res_dict_trained = get_metrics(preds.cpu(), labels.cpu(), self.get_num_classes(), self.bag_type + "_trained", 0)
+        if self.input_type != "userOriented":
+            b4_training = torch.argmax(torch.stack(self.before_training)[:, 0, :], dim=1)
+            res_dict_b4_training = get_metrics(b4_training.cpu(), labels.cpu(), self.get_num_classes(), self.bag_type + "_b4", 0)
 
-        return {**res_dict_b4_training, **res_dict_trained}
-
+            return {**res_dict_b4_training, **res_dict_trained}
+        else:
+            return res_dict_trained
 
     def save_bag_outputs(self, preds, labels, cm, res):
         res = {self.bag_type: {"preds": preds,
@@ -248,12 +247,11 @@ class InstanceClassifierDisc(pl.LightningModule):
 
 
 def test_for_bag(preds, labels, b4_training, offset, num_classes, bag_type):
-    ipdb.set_trace()
     tmp = [i.item() for i in torch.argmax(preds, dim=1)]
-    b4_train = [i.item() + offset for i in torch.argmax(b4_training, dim=1)]
     predicted_classes = [i + offset for i in tmp]
-    res_dict_trained = get_metrics(predicted_classes, labels.cpu(), num_classes, bag_type + "_trained")
-    res_dict_b4_training = get_metrics(b4_train, labels.cpu(), num_classes, bag_type + "_b4")
+    b4_train = torch.LongTensor([i + offset for i in torch.argmax(b4_training, dim=1)])
+    res_dict_trained = get_metrics(predicted_classes, labels.cpu(), num_classes, bag_type + "_trained", offset)
+    res_dict_b4_training = get_metrics(b4_train, labels.cpu(), num_classes, bag_type + "_b4", offset)
     return {**res_dict_b4_training, **res_dict_trained}
 
 
@@ -267,11 +265,12 @@ def get_average_metrics(res_dict):
     return np.mean(precision), np.mean(recall)
 
 
-def get_metrics(preds, labels, num_classes, handle):
+def get_metrics(preds, labels, num_classes, handle, offset):
+    num_c = range(offset, offset + num_classes)
     res_dict = {
         "acc_" + handle: accuracy_score(preds, labels) * 100,
         "precision_" + handle: precision_score(preds, labels, average='weighted',
-                                               labels=range(num_classes)) * 100,
-        "recall_" + handle: recall_score(preds, labels, average='weighted', labels=range(num_classes)) * 100,
-        "f1_" + handle: f1_score(preds, labels, average='weighted', labels=range(num_classes)) * 100}
+                                               labels=num_c) * 100,
+        "recall_" + handle: recall_score(preds, labels, average='weighted', labels=num_c) * 100,
+        "f1_" + handle: f1_score(preds, labels, average='weighted', labels=num_c) * 100}
     return res_dict
