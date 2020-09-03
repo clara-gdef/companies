@@ -85,6 +85,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             if self.input_type != "bagTransformer":
                 tmp = torch.matmul(self.forward(bag_matrix).squeeze(1), torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
+                ipdb.set_trace()
         if self.type == "poly":
             val_loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
         else:
