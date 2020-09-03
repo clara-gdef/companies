@@ -19,10 +19,12 @@ class InstanceClassifierDisc(pl.LightningModule):
         self.test_labels = []
         self.test_ppl_id = []
         self.type = desc.split("_")[1]
+        torch.nn.init.eye_(self.lin.weight)
+        torch.nn.init.zeros_(self.lin.bias)
+
         if self.type == 'spe':
             self.bag_type = desc.split("_")[2]
-            torch.nn.init.eye_(self.lin.weight)
-            torch.nn.init.zeros_(self.lin.bias)
+
 
         self.input_type = hparams.input_type
         self.num_cie = dataset.num_cie
@@ -228,7 +230,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             expanded_profiles = prof.expand(b_size, bag_rep.shape[0], bag_rep.shape[-1])
             tmp = expanded_bag_rep * expanded_profiles
             input_tensor = tmp.view(b_size, -1)
-        elif self.input_type == "userOriented":
+        elif self.input_type == "userOriented" or self.input_type == "bagTransformer":
             input_tensor = (batch[-1], profiles)
         elif self.input_type == "userOnly":
             input_tensor = profiles

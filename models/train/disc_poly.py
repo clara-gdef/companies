@@ -20,7 +20,7 @@ def main(hparams):
 
 
 def train(hparams):
-    xp_title = "disc_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_" + \
+    xp_title = "disc_poly_w_init_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_" + \
                str(hparams.b_size) + "_" + str(hparams.lr)
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, xp_title)
     trainer = pl.Trainer(gpus=[hparams.gpus],
@@ -76,7 +76,7 @@ def get_model_params(hparams, rep_dim, num_bag):
         in_size = rep_dim * num_bag
     elif hparams.input_type == "matMul":
         in_size = num_bag
-    elif hparams.input_type == "userOriented":
+    elif hparams.input_type == "userOriented" or hparams.input_type == "bagTransformer":
         in_size = rep_dim
         out_size = rep_dim
     elif hparams.input_type == "userOnly":
@@ -88,7 +88,7 @@ def get_model_params(hparams, rep_dim, num_bag):
 
 
 def init_lightning(hparams, xp_title):
-    model_path = os.path.join(CFG['modeldir'], "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
+    model_path = os.path.join(CFG['modeldir'], "disc_poly_w_init/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
                               str(hparams.b_size) + "/" + str(hparams.lr))
 
     logger = TensorBoardLogger(
@@ -108,7 +108,7 @@ def init_lightning(hparams, xp_title):
     early_stop_callback = EarlyStopping(
         monitor='val_loss',
         min_delta=0.000,
-        patience=5,
+        patience=10,
         verbose=False,
         mode='min'
     )
@@ -120,7 +120,7 @@ if __name__ == "__main__":
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=0)
     parser.add_argument("--b_size", type=int, default=16)
-    parser.add_argument("--input_type", type=str, default="matMul")
+    parser.add_argument("--input_type", type=str, default="bagTransformer")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
