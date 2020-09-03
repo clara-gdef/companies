@@ -17,6 +17,7 @@ def grid_search(hparams):
             dico['lr'] = lr
             dico["b_size"] = b_size
             arg = DotDict(dico)
+            ipdb.set_trace()
             train.disc_poly.main(arg)
             test_results[lr][b_size] = eval.disc_poly.main(arg)
     ipdb.set_trace()
