@@ -40,7 +40,7 @@ def get_nn_estimator():
         estimator, ft_model = fit_nearest_neighbors(estimator)
     else:
         with open(os.path.join(CFG["modeldir"], "NN_estimator"), 'rb') as f_name:
-            estimator = pkl.load(f_name, protocol=4)
+            estimator = pkl.load(f_name)
     return estimator, ft_model
 
 
