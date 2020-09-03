@@ -26,8 +26,8 @@ def main(args):
 
         key = 708432
         person_rep = ppl_lookup[key]["ft"].view(1, -1).numpy()
-        dist, neigh = estimator.kneighbors(person_rep, n_neighbors=5)
-        for n in neigh:
+        dist, neigh = estimator.kneighbors(person_rep, n_neighbors=10)
+        for n in neigh[0]:
             print(vocab[n])
         ipdb.set_trace()
 
