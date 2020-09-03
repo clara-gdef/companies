@@ -1,0 +1,9 @@
+auto_lr_find: true
+b_size: 16
+data_agg_type: avg
+epochs: 50
+gpus: 0
+input_type: matMul
+load_dataset: true
+lr: 7.585775750291837e-08
+rep_type: ft
