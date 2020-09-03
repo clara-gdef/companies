@@ -2,6 +2,7 @@ import argparse
 import os
 import pickle as pkl
 import yaml
+import ipdb
 from models import train, eval
 from utils import DotDict
 
@@ -9,15 +10,16 @@ from utils import DotDict
 def grid_search(hparams):
     test_results = {}
     dico = init_args(hparams)
-    for lr in [1e-4, 1e-6, 1e-8]:
+    for lr in [1e-4]:
         test_results[lr] = {}
-        for b_size in [16, 64, 512]:
+        for b_size in [16]:
             print("Grid Search for couple (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
             dico['lr'] = lr
             dico["b_size"] = b_size
             arg = DotDict(dico)
             # train.disc_poly.main(arg)
             test_results[lr][b_size] = eval.disc_poly.main(arg)
+    ipdb.set_trace()
     res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
     with open(res_path, "wb") as f:
         pkl.dump(test_results, f)
