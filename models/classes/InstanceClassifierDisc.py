@@ -38,7 +38,12 @@ class InstanceClassifierDisc(pl.LightningModule):
         self.before_training = []
 
     def forward(self, x):
-        return self.lin(x)
+        if self.input_type == "bagTransformer":
+            ipdb.set_trace()
+            return x * self.lin.weights + self.bias
+        else:
+            return self.lin(x)
+
 
     def training_step(self, batch, batch_nb):
         if self.input_type != "userOriented" and self.input_type != "bagTransformer":
@@ -87,8 +92,9 @@ class InstanceClassifierDisc(pl.LightningModule):
             if self.input_type == "bagTransformer":
                 out = []
                 for line in bag_matrix:
-                    out.append(torch.matmul(self.forward(line.T).squeeze(1), torch.transpose(profiles, 1, 0)))
+                    out.append(torch.matmul(self.forward(line).squeeze(1), torch.transpose(profiles, 1, 0)))
                     tmp = torch.stack(out).squeeze(0)
+                    ipdb.set_trace()
             output = torch.transpose(tmp, 1, 0)
         if self.type == "poly":
             val_loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
