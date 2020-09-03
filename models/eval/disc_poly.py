@@ -15,6 +15,9 @@ from utils.models import collate_for_disc_poly_model
 
 
 def main(hparams):
+    global CFG
+    with open("config.yaml", "r") as ymlfile:
+        CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     return test(hparams)
 
 
@@ -110,9 +113,6 @@ def init_lightning(xp_title):
 
 
 if __name__ == "__main__":
-    global CFG
-    with open("config.yaml", "r") as ymlfile:
-        CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='sk')
     parser.add_argument("--gpus", type=int, default=[0])
