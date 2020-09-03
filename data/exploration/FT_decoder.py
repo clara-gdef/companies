@@ -16,7 +16,7 @@ def main(args):
         with open("config.yaml", "r") as ymlfile:
             CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
 
-        estimator = get_nn_estimator()
+        estimator, ft_model = get_nn_estimator()
         vocab_lookup, vocab = get_vocab_lookup()
 
 
