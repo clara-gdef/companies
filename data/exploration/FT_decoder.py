@@ -16,8 +16,8 @@ def main(args):
         with open("config.yaml", "r") as ymlfile:
             CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
 
-        estimator, ft_model = get_nn_estimator()
-        vocab_lookup = get_vocab_lookup(ft_model)
+        estimator = get_nn_estimator()
+        vocab_lookup, vocab = get_vocab_lookup()
 
 
         print("Loading data...")
@@ -25,10 +25,11 @@ def main(args):
             ppl_lookup = pkl.load(f_name)
         print("Data loaded.")
 
-
         key = 708432
-        person_rep = ppl_lookup[key]["ft"]
-
+        person_rep = ppl_lookup[key]["ft"].view(1, -1).numpy()
+        dist, neigh = estimator.kneighbors(person_rep, n_neighbors=5)
+        for n in neigh:
+            print(vocab[n])
         ipdb.set_trace()
 
 
@@ -44,13 +45,18 @@ def get_nn_estimator():
     return estimator, ft_model
 
 
-def get_vocab_lookup(ft_model):
+def get_vocab_lookup():
+    print("Loading model...")
+    ft_model = fastText.load_model("/net/big/gainondefor/work/trained_models/companies/ft_fs.bin")
+    print("Model loaded.")
     if not args.load_lookup_vocabulary:
-        vocab_lookup = build_voc_lookup(ft_model)
+        vocab_lookup, vocab = build_voc_lookup(ft_model)
     else:
         with open(os.path.join(CFG["gpudatadir"], "ft_vocab_lookup.pkl"), "rb") as f:
             vocab_lookup = pkl.load(f)
-    return vocab_lookup
+        with open(os.path.join(CFG["gpudatadir"], "ft_vocab.pkl"), "rb") as f:
+            vocab = pkl.load(f)
+    return vocab_lookup, vocab
 
 
 def fit_nearest_neighbors(estimator):
@@ -78,7 +84,7 @@ def build_voc_lookup(ft_model):
 
     with open(os.path.join(CFG["gpudatadir"], "ft_vocab_lookup.pkl"), "wb") as f:
         pkl.dump(vocab_lookup, f)
-    return vocab_lookup
+    return vocab_lookup, vocab
 
 
 def build_vocab():
@@ -101,8 +107,8 @@ def build_vocab():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--load_nn_estimator", type=bool, default=False)
-    parser.add_argument("--load_lookup_vocabulary", type=bool, default=False)
+    parser.add_argument("--load_nn_estimator", type=bool, default=True)
+    parser.add_argument("--load_lookup_vocabulary", type=bool, default=True)
     parser.add_argument("--load_vocabulary", type=bool, default=True)
 
     args = parser.parse_args()
