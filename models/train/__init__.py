@@ -1,2 +1,2 @@
-from .disc_spe import *
-from .disc_poly import *
+from .disc_spe import main
+from .disc_poly import main
