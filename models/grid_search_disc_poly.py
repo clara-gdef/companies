@@ -10,9 +10,9 @@ from utils import DotDict
 def grid_search(hparams):
     test_results = {}
     dico = init_args(hparams)
-    for lr in [1e-4]:
+    for lr in [1e-4, 1e-6, 1e-8]:
         test_results[lr] = {}
-        for b_size in [16]:
+        for b_size in [16, 64, 512]:
             print("Grid Search for couple (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
             dico['lr'] = lr
             dico["b_size"] = b_size
