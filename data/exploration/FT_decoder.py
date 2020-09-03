@@ -16,9 +16,8 @@ def main(args):
         with open("config.yaml", "r") as ymlfile:
             CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
 
-        estimator, ft_model = get_nn_estimator()
         vocab_lookup, vocab = get_vocab_lookup()
-
+        estimator, ft_model = get_nn_estimator(vocab_lookup)
 
         print("Loading data...")
         with open(os.path.join(CFG["gpudatadir"], "lookup_ppl.pkl"), 'rb') as f_name:
@@ -33,11 +32,11 @@ def main(args):
         ipdb.set_trace()
 
 
-def get_nn_estimator():
+def get_nn_estimator(vocab_lookup):
     ft_model = None
     estimator = NearestNeighbors(n_neighbors=10, radius=1.0)
     if not args.load_nn_estimator:
-        estimator, ft_model = fit_nearest_neighbors(estimator)
+        estimator, ft_model = fit_nearest_neighbors(estimator, vocab_lookup)
     else:
         with open(os.path.join(CFG["modeldir"], "NN_estimator"), 'rb') as f_name:
             estimator = pkl.load(f_name)
@@ -58,17 +57,16 @@ def get_vocab_lookup():
     return vocab_lookup, vocab
 
 
-def fit_nearest_neighbors(estimator):
-    print("Loading model...")
-    ft_model = fastText.load_model("/net/big/gainondefor/work/trained_models/companies/ft_fs.bin")
-    input_matrix = ft_model.get_input_matrix()
-    print("Model loaded.")
+def fit_nearest_neighbors(estimator, vocab_lookup):
+    input_matrix = np.zeros(shape=(len(vocab_lookup), 300))
+    for pos, word_rep in enumerate(vocab_lookup.values()):
+        input_matrix[pos, :] = word_rep
     print("Fitting estimator...")
     estimator.fit(input_matrix)
     print("Estimator learned.")
     with open(os.path.join(CFG["modeldir"], "NN_estimator"), 'wb') as f_name:
         pkl.dump(estimator, f_name, protocol=4)
-    return estimator, ft_model
+    return estimator
 
 
 def build_voc_lookup(ft_model):
