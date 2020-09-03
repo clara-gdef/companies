@@ -73,7 +73,7 @@ def build_voc_lookup(ft_model):
         with open(os.path.join(CFG["gpudatadir"], "ft_vocab.pkl"), "rb") as f:
             vocab = pkl.load(f)
     for ind, word in tqdm(enumerate(vocab), desc="Building vocab lookup..."):
-        vocab_lookup[ind] = ft_model.get_word_vector(word)
+        vocab_lookup[ind] = ft_model.get_word_vector(str(word))
 
     with open(os.path.join(CFG["gpudatadir"], "ft_vocab_lookup.pkl"), "wb") as f:
         pkl.dump(vocab_lookup, f)
@@ -100,9 +100,9 @@ def build_vocab():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--load_nn_estimator", type=bool, default=False)
+    parser.add_argument("--load_nn_estimator", type=bool, default=True)
     parser.add_argument("--load_lookup_vocabulary", type=bool, default=False)
-    parser.add_argument("--load_vocabulary", type=bool, default=False)
+    parser.add_argument("--load_vocabulary", type=bool, default=True)
 
     args = parser.parse_args()
     main(args)
