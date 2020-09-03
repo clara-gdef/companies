@@ -15,8 +15,7 @@ from utils.models import collate_for_disc_poly_model
 
 
 def main(hparams):
-    with ipdb.launch_ipdb_on_exception():
-        test(hparams)
+    return test(hparams)
 
 
 def test(hparams):
@@ -52,7 +51,7 @@ def test(hparams):
     model.load_state_dict(torch.load(latest_file)["state_dict"])
     model.eval()
 
-    trainer.test(test_dataloaders=test_loader, model=model.cuda())
+    return trainer.test(test_dataloaders=test_loader, model=model.cuda())
 
 
 def load_datasets(hparams, splits, load):
