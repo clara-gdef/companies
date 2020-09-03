@@ -57,11 +57,11 @@ class InstanceClassifierDisc(pl.LightningModule):
             if self.input_type == "userOriented":
                 tmp = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
             if self.input_type == "bagTransformer":
-                out = []
+                out_bags = []
                 for line in bag_matrix:
-                    out.append(torch.matmul(self.forward(line.T).squeeze(1), torch.transpose(profiles, 1, 0)))
-                    tmp = torch.stack(out).squeeze(0)
-                    ipdb.set_trace()
+                    out_bags.append(self(line)[0])
+                new_bags = torch.stack(out_bags)
+                tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
             output = torch.transpose(tmp, 1, 0)
         if self.type == "poly":
             loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
@@ -89,11 +89,11 @@ class InstanceClassifierDisc(pl.LightningModule):
             if self.input_type == "userOriented":
                 tmp = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
             if self.input_type == "bagTransformer":
-                out = []
+                out_bags = []
                 for line in bag_matrix:
-                    out.append(torch.matmul(self.forward(line.T).squeeze(1), torch.transpose(profiles, 1, 0)))
-                tmp = torch.stack(out).squeeze(0)
-                ipdb.set_trace()
+                    out_bags.append(self(line)[0])
+                new_bags = torch.stack(out_bags)
+                tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
             output = torch.transpose(tmp, 1, 0)
         if self.type == "poly":
             val_loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
