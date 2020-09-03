@@ -1,19 +1,26 @@
 import argparse
+import os
+import pickle as pkl
 import yaml
-from models.train import disc_poly
+from models import train, eval
 from utils import DotDict
 
 
 def grid_search(hparams):
+    test_results = {}
     dico = init_args(hparams)
-
     for lr in [1e-4, 1e-6, 1e-8]:
+        test_results[lr] = {}
         for b_size in [16, 64, 512]:
             print("Grid Search for couple (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
             dico['lr'] = lr
             dico["b_size"] = b_size
             arg = DotDict(dico)
-            disc_poly.main(arg)
+            # train.disc_poly.main(arg)
+            test_results[lr][b_size] = eval.disc_poly.main(arg)
+    res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
+    with open(res_path, "wb") as f:
+        pkl.dump(test_results, f)
 
 
 def init_args(hparams):
