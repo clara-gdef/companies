@@ -8,7 +8,7 @@ from utils import DotDict
 
 
 def grid_search(hparams):
-    with ipdb.launch_ipdn_on_exception():
+    with ipdb.launch_ipdb_on_exception():
         test_results = {}
         dico = init_args(hparams)
         for lr in [1e-4, 1e-6, 1e-8]:
