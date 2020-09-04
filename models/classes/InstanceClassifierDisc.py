@@ -39,8 +39,9 @@ class InstanceClassifierDisc(pl.LightningModule):
 
     def forward(self, x):
         if self.input_type == "bagTransformer":
-            out = x.T * self.lin.weight + self.lin.bias.view(-1, x.shape[1])
-            if out.T.shape != (x.shape[0], 300):
+            mat = torch.diag(self.lin.weight)
+            out = x * mat + self.lin.bias.view(-1, x.shape[0])
+            if out.T.shape != (x.shape[0], x.shape[1]):
                 ipdb.set_trace()
             return out.T
         else:
