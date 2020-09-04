@@ -18,7 +18,7 @@ def grid_search(hparams):
                 dico['lr'] = lr
                 dico["b_size"] = b_size
                 arg = DotDict(dico)
-                # train.disc_poly.main(arg)
+                train.disc_poly.main(arg)
                 test_results[lr][b_size] = eval.disc_poly.main(arg)
         res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_all_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
         with open(res_path, "wb") as f:
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=1)
-    parser.add_argument("--input_type", type=str, default="matMul")
+    parser.add_argument("--input_type", type=str, default="bagTransformer")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
