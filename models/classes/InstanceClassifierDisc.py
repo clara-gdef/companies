@@ -159,15 +159,15 @@ class InstanceClassifierDisc(pl.LightningModule):
             clus_preds = outputs[:, self.num_cie: self.num_cie + self.num_clus, 0]
             dpt_preds = outputs[:, -self.num_dpt:, 0]
 
-        cie_labels = torch.LongTensor([i[0][0] for i in self.test_labels]).cuda()
-        clus_labels = torch.LongTensor([i[1][0] for i in self.test_labels]).cuda()
-        dpt_labels = torch.LongTensor([i[2][0] for i in self.test_labels]).cuda()
+        cie_labels = torch.LongTensor([i[0][0] for i in self.test_labels])
+        clus_labels = torch.LongTensor([i[1][0] for i in self.test_labels])
+        dpt_labels = torch.LongTensor([i[2][0] for i in self.test_labels])
 
         cie_res = test_for_bag(cie_preds, cie_labels, cie_b4, 0, self.num_cie, "cie")
         clus_res = test_for_bag(clus_preds, clus_labels, clus_b4, self.num_cie, self.num_clus, "clus")
         dpt_res = test_for_bag(dpt_preds, dpt_labels, dpt_b4, self.num_cie + self.num_clus, self.num_dpt, "dpt")
-        ipdb.set_trace()
-        general_res = test_for_bag(outputs[:, 0, :], self.test_labels, self.num_cie + self.num_clus + self.num_dpt, "all")
+        num_classes = self.num_cie + self.num_clus + self.num_dpt
+        general_res = test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds, dpt_preds, num_classes)
         return {**cie_res, **clus_res, **dpt_res, **general_res}
 
     def test_spe(self, outputs):
@@ -269,6 +269,23 @@ class InstanceClassifierDisc(pl.LightningModule):
                 return self.num_dpt
         else:
             return self.num_cie + self.num_clus + self.num_dpt
+
+
+def test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds, dpt_preds, num_classes):
+    all_labels = []
+    for tup in zip(cie_labels, clus_labels, dpt_labels):
+        all_labels.append([tup[0].item(), tup[1].item(), tup[2].item()])
+    all_preds = []
+    cie_preds = [i.item() for i in torch.argmax(cie_preds, dim=1)]
+    clus_preds = [i.item() + 207 for i in torch.argmax(clus_preds, dim=1)]
+    dpt_preds = [i.item() + 237 for i in torch.argmax(dpt_preds, dim=1)]
+    for tup in zip(cie_preds, clus_preds, dpt_preds):
+        all_preds.append([tup[0], tup[1], tup[2]])
+
+    general_res = test_for_bag(np.array(all_preds).reshape(-1, 1), np.array(all_labels).reshape(-1, 1), [],
+                               0, num_classes, "all")
+
+    return general_res
 
 
 def test_for_bag(preds, labels, b4_training, offset, num_classes, bag_type):
