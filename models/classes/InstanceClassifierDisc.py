@@ -275,16 +275,15 @@ def test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds
     all_labels = []
     for tup in zip(cie_labels, clus_labels, dpt_labels):
         all_labels.append([tup[0].item(), tup[1].item(), tup[2].item()])
-    all_preds = []
     cie_preds = [i.item() for i in torch.argmax(cie_preds, dim=1)]
     clus_preds = [i.item() + 207 for i in torch.argmax(clus_preds, dim=1)]
     dpt_preds = [i.item() + 237 for i in torch.argmax(dpt_preds, dim=1)]
+    all_preds = []
     for tup in zip(cie_preds, clus_preds, dpt_preds):
         all_preds.append([tup[0], tup[1], tup[2]])
 
     general_res = test_for_bag(np.array(all_preds).reshape(-1, 1), np.array(all_labels).reshape(-1, 1), [],
                                0, num_classes, "all")
-
     return general_res
 
 
