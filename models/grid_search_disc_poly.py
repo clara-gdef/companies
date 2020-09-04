@@ -8,21 +8,20 @@ from utils import DotDict
 
 
 def grid_search(hparams):
-    with ipdb.launch_ipdb_on_exception():
-        test_results = {}
-        dico = init_args(hparams)
-        for lr in [1e-4, 1e-6, 1e-8]:
-            test_results[lr] = {}
-            for b_size in [16, 64, 512]:
-                print("Grid Search for couple (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
-                dico['lr'] = lr
-                dico["b_size"] = b_size
-                arg = DotDict(dico)
-                train.disc_poly.main(arg)
-                test_results[lr][b_size] = eval.disc_poly.main(arg)
-        res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_all_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
-        with open(res_path, "wb") as f:
-            pkl.dump(test_results, f)
+    test_results = {}
+    dico = init_args(hparams)
+    for lr in [1e-4, 1e-6, 1e-8]:
+        test_results[lr] = {}
+        for b_size in [16, 64, 512]:
+            print("Grid Search for couple (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
+            dico['lr'] = lr
+            dico["b_size"] = b_size
+            arg = DotDict(dico)
+            train.disc_poly.main(arg)
+            test_results[lr][b_size] = eval.disc_poly.main(arg)
+    res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_all_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
+    with open(res_path, "wb") as f:
+        pkl.dump(test_results, f)
 
 
 def init_args(hparams):
