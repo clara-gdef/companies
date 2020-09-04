@@ -40,7 +40,7 @@ class InstanceClassifierDisc(pl.LightningModule):
     def forward(self, x):
         if self.input_type == "bagTransformer":
             out = x.T * self.lin.weight + self.lin.bias.view(-1, 1)
-            if out.T.shape != (1, 300):
+            if out.T.shape != (6125, 300):
                 ipdb.set_trace()
             return out.T
         else:
@@ -93,9 +93,10 @@ class InstanceClassifierDisc(pl.LightningModule):
                 tmp = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
             if self.input_type == "bagTransformer":
                 out_bags = []
-                for line in bag_matrix:
-                    out_bags.append(self(line)[0])
-                new_bags = torch.stack(out_bags)
+                # for line in bag_matrix:
+                #    out_bags.append(self(line)[0])
+                # new_bags = torch.stack(out_bags)
+                new_bags = self(bag_matrix)
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
             output = torch.transpose(tmp, 1, 0)
         if self.type == "poly":
@@ -116,11 +117,7 @@ class InstanceClassifierDisc(pl.LightningModule):
         return outputs[-1]
 
     def configure_optimizers(self):
-        wd = 0
-        if self.type == "spe":
-            if self.bag_type == "clus":
-                wd = .8
-        return torch.optim.Adam(self.parameters(), lr=self.hparams.lr, weight_decay=wd)
+        return torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
 
     def test_step(self, batch, batch_idx):
         if self.input_type != "userOriented":
