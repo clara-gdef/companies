@@ -39,8 +39,8 @@ class InstanceClassifierDisc(pl.LightningModule):
 
     def forward(self, x):
         if self.input_type == "bagTransformer":
-            out = x.T * self.lin.weight + self.lin.bias.view(-1, 1)
-            if out.T.shape != (6125, 300):
+            out = x.T * self.lin.weight + self.lin.bias.view(-1, x.shape[1])
+            if out.T.shape != (x.shape[0], 300):
                 ipdb.set_trace()
             return out.T
         else:
@@ -96,7 +96,7 @@ class InstanceClassifierDisc(pl.LightningModule):
                 # for line in bag_matrix:
                 #    out_bags.append(self(line)[0])
                 # new_bags = torch.stack(out_bags)
-                new_bags = self(bag_matrix)
+                new_bags = self(bag_matrix.T)
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
             output = torch.transpose(tmp, 1, 0)
         if self.type == "poly":
@@ -253,7 +253,7 @@ class InstanceClassifierDisc(pl.LightningModule):
         elif self.input_type == "userOriented":
             input_tensor = (batch[-1], profiles)
         elif self.input_type == "bagTransformer":
-            input_tensor = (batch[-1].unsqueeze(1), profiles)
+            input_tensor = (batch[-1], profiles)
         elif self.input_type == "userOnly":
             input_tensor = profiles
         else:
