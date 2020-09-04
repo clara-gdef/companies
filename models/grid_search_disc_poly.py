@@ -19,7 +19,6 @@ def grid_search(hparams):
             arg = DotDict(dico)
             train.disc_poly.main(arg)
             test_results[lr][b_size] = eval.disc_poly.main(arg)
-    ipdb.set_trace()
     res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
     with open(res_path, "wb") as f:
         pkl.dump(test_results, f)

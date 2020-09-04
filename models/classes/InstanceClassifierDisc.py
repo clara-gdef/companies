@@ -39,6 +39,7 @@ class InstanceClassifierDisc(pl.LightningModule):
 
     def forward(self, x):
         if self.input_type == "bagTransformer":
+            ipdb.set_trace()
             return x * self.lin.weight + self.lin.bias
         else:
             return self.lin(x)
