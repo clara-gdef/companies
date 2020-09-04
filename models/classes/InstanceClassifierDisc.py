@@ -166,8 +166,9 @@ class InstanceClassifierDisc(pl.LightningModule):
         cie_res = test_for_bag(cie_preds, cie_labels, cie_b4, 0, self.num_cie, "cie")
         clus_res = test_for_bag(clus_preds, clus_labels, clus_b4, self.num_cie, self.num_clus, "clus")
         dpt_res = test_for_bag(dpt_preds, dpt_labels, dpt_b4, self.num_cie + self.num_clus, self.num_dpt, "dpt")
-
-        return {**cie_res, **clus_res, **dpt_res}
+        ipdb.set_trace()
+        general_res = test_for_bag(outputs[:, 0, :], self.test_labels, self.num_cie + self.num_clus + self.num_dpt, "all")
+        return {**cie_res, **clus_res, **dpt_res, **general_res}
 
     def test_spe(self, outputs):
         preds = torch.argmax(outputs.view(-1, self.get_num_classes()), dim=1)
