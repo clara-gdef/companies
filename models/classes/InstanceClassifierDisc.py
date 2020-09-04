@@ -166,6 +166,7 @@ class InstanceClassifierDisc(pl.LightningModule):
         cie_res = test_for_bag(cie_preds, cie_labels, cie_b4, 0, self.num_cie, "cie")
         clus_res = test_for_bag(clus_preds, clus_labels, clus_b4, self.num_cie, self.num_clus, "clus")
         dpt_res = test_for_bag(dpt_preds, dpt_labels, dpt_b4, self.num_cie + self.num_clus, self.num_dpt, "dpt")
+
         num_classes = self.num_cie + self.num_clus + self.num_dpt
         general_res = test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds, dpt_preds, num_classes)
         return {**cie_res, **clus_res, **dpt_res, **general_res}
