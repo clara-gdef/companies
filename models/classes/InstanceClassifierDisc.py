@@ -284,8 +284,7 @@ def test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds
     for tup in zip(cie_preds, clus_preds, dpt_preds):
         all_preds.append([tup[0], tup[1], tup[2]])
 
-    general_res = get_metrics(np.array(all_preds).reshape(-1, 1), np.array(all_labels).reshape(-1, 1), [],
-                               0, num_classes, "all")
+    general_res = get_metrics(np.array(all_preds).reshape(-1, 1), np.array(all_labels).reshape(-1, 1), num_classes, "all", 0)
     return general_res
 
 
