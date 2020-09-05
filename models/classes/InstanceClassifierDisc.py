@@ -61,10 +61,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             if self.input_type == "userOriented":
                 tmp = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
             if self.input_type == "bagTransformer":
-                out_bags = []
-                for line in bag_matrix:
-                    out_bags.append(self(line)[0])
-                new_bags = torch.stack(out_bags)
+                new_bags = self(bag_matrix.T)
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
             output = torch.transpose(tmp, 1, 0)
         if self.type == "poly":
@@ -93,10 +90,6 @@ class InstanceClassifierDisc(pl.LightningModule):
             if self.input_type == "userOriented":
                 tmp = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
             if self.input_type == "bagTransformer":
-                out_bags = []
-                # for line in bag_matrix:
-                #    out_bags.append(self(line)[0])
-                # new_bags = torch.stack(out_bags)
                 new_bags = self(bag_matrix.T)
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
             output = torch.transpose(tmp, 1, 0)
