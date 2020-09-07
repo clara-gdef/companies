@@ -81,7 +81,7 @@ def get_model_params(hparams, rep_dim, num_bag):
         in_size = rep_dim * num_bag
     elif hparams.input_type == "matMul":
         in_size = num_bag
-    elif hparams.input_type == "userOriented":
+    elif hparams.input_type == "userOriented" or hparams.input_type == "bagTransformer":
         in_size = rep_dim
         out_size = rep_dim
     elif hparams.input_type == "userOnly":
