@@ -16,10 +16,9 @@ from utils.models import collate_for_disc_poly_model
 
 def main(hparams):
     global CFG
-    with ipdb.launch_ipdb_on_exception():
-        with open("config.yaml", "r") as ymlfile:
-            CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
-        return test(hparams)
+    with open("config.yaml", "r") as ymlfile:
+        CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
+    return test(hparams)
 
 
 def test(hparams):
