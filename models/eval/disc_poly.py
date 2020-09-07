@@ -27,7 +27,7 @@ def test(hparams):
         hparams.b_size)
     logger, checkpoint_callback = init_lightning(hparams, xp_title)
     trainer = pl.Trainer(gpus=hparams.gpus,
-                         checkpoint_callback=checkpoint_callback,
+                         checkpoint_callback=None,
                          logger=logger,
                          )
     datasets = load_datasets(hparams, ["TRAIN"], True)
@@ -94,23 +94,12 @@ def get_model_params(hparams, rep_dim, num_bag):
 
 
 def init_lightning(hparams, xp_title):
-    model_path = os.path.join(CFG['modeldir'], "disc_poly_w_init/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
-                              str(hparams.b_size) + "/" + str(hparams.lr))
-
     logger = TensorBoardLogger(
         save_dir='./models/logs',
         name=xp_title)
     print("Logger initiated.")
 
-    checkpoint_callback = ModelCheckpoint(
-        filepath=os.path.join(model_path, '{epoch:02d}'),
-        save_top_k=True,
-        verbose=True,
-        monitor='val_loss',
-        mode='min',
-        prefix=''
-    )
-    return logger, checkpoint_callback
+    return logger
 
 
 if __name__ == "__main__":
