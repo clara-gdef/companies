@@ -93,7 +93,7 @@ def get_model_params(hparams, rep_dim, num_bag):
 
 
 def init_lightning(hparams, xp_title):
-    model_path = os.path.join(CFG['modeldir'], "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
+    model_path = os.path.join(CFG['modeldir'], "disc_poly_w_init/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
                               str(hparams.b_size) + "/" + str(hparams.lr))
 
     logger = TensorBoardLogger(
