@@ -43,7 +43,8 @@ def train(hparams):
                  'hparams': hparams,
                  'dataset': dataset_train,
                  'datadir': CFG["gpudatadir"],
-                 'desc': xp_title}
+                 'desc': xp_title,
+                 "middle_size": hparams.middle_size}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = InstanceClassifierDisc(**arguments)
@@ -119,7 +120,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=0)
-    parser.add_argument("--b_size", type=int, default=16)
+    parser.add_argument("--b_size", type=int, default=64)
+    parser.add_argument("--middle_size", type=int, default=250)
     parser.add_argument("--input_type", type=str, default="bagTransformer")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--auto_lr_find", type=bool, default=True)

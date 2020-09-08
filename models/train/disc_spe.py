@@ -14,6 +14,9 @@ from utils.models import collate_for_disc_spe_model
 
 
 def main(hparams):
+    global CFG
+    with open("config.yaml", "r") as ymlfile:
+        CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     with ipdb.launch_ipdb_on_exception():
         train(hparams)
 
@@ -21,7 +24,7 @@ def main(hparams):
 def train(hparams):
     xp_title = "disc_spe_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size)
-    logger, checkpoint_callback, early_stop_callback = init_lightning(xp_title)
+    logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, CFG, xp_title)
     print(hparams.auto_lr_find)
     trainer = pl.Trainer(gpus=hparams.gpus,
                          max_epochs=hparams.epochs,
@@ -30,9 +33,9 @@ def train(hparams):
                          logger=logger,
                          auto_lr_find=hparams.auto_lr_find
                          )
-    datasets = load_datasets(hparams, ["TRAIN", "VALID"])
+    datasets = load_datasets(hparams, CFG, ["TRAIN", "VALID"])
     dataset_train, dataset_valid = datasets[0], datasets[1]
-    in_size, out_size = get_model_params(dataset_train.rep_dim, dataset_train.get_num_bag())
+    in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, dataset_train.get_num_bag())
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model,
                               num_workers=16, shuffle=True)
     valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model,
@@ -42,7 +45,8 @@ def train(hparams):
                  'hparams': hparams,
                  'dataset': dataset_train,
                  'datadir': CFG["gpudatadir"],
-                 'desc': xp_title}
+                 'desc': xp_title,
+                 "middle_size": hparams.middle_size}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = InstanceClassifierDisc(**arguments)
@@ -51,7 +55,7 @@ def train(hparams):
     trainer.fit(model, train_loader, valid_loader)
 
 
-def load_datasets(hparams, splits):
+def load_datasets(hparams, CFG, splits):
     datasets = []
     common_hparams = {
         "data_dir": CFG["gpudatadir"],
@@ -65,13 +69,13 @@ def load_datasets(hparams, splits):
     return datasets
 
 
-def get_model_params(rep_dim, num_bag):
+def get_model_params(hparams, rep_dim, num_bag):
     out_size = num_bag
     if hparams.input_type == "hadamard" or hparams.input_type == "concat":
         in_size = rep_dim * num_bag
     elif hparams.input_type == "matMul":
         in_size = num_bag
-    elif hparams.input_type == "userOriented":
+    elif hparams.input_type == "userOriented" or hparams.input_type == "bagTransformer":
         in_size = rep_dim
         out_size = rep_dim
     elif hparams.input_type == "userOnly":
@@ -82,7 +86,7 @@ def get_model_params(rep_dim, num_bag):
     return in_size, out_size
 
 
-def init_lightning(xp_title):
+def init_lightning(hparams, CFG, xp_title):
     model_path = os.path.join(CFG['modeldir'], "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type)
 
     logger = TensorBoardLogger(
@@ -102,7 +106,7 @@ def init_lightning(xp_title):
     early_stop_callback = EarlyStopping(
         monitor='val_loss',
         min_delta=0.00,
-        patience=15,
+        patience=10,
         verbose=False,
         mode='min'
     )
@@ -110,15 +114,13 @@ def init_lightning(xp_title):
 
 
 if __name__ == "__main__":
-    global CFG
-    with open("config.yaml", "r") as ymlfile:
-        CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--b_size", type=int, default=32)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--data_agg_type", type=str, default="avg")
+    parser.add_argument("--middle_size", type=int, default=250)
     parser.add_argument("--bag_type", type=str, default="cie")
     parser.add_argument("--lr", type=float, default=1e-7)
     parser.add_argument("--auto_lr_find", type=bool, default=False)

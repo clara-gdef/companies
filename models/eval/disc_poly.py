@@ -25,12 +25,12 @@ def main(hparams):
 def test(hparams):
     xp_title = "disc_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size)
-    logger, checkpoint_callback = init_lightning(hparams, xp_title)
+    logger = init_lightning(hparams, xp_title)
     trainer = pl.Trainer(gpus=hparams.gpus,
                          checkpoint_callback=None,
                          logger=logger,
                          )
-    datasets = load_datasets(hparams, ["TRAIN"], True)
+    datasets = load_datasets(hparams, CFG, ["TRAIN"], True)
     dataset_train = datasets[0]
     in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, len(dataset_train.bag_rep))
 
@@ -39,13 +39,14 @@ def test(hparams):
                  'hparams': hparams,
                  'dataset': dataset_train,
                  'datadir': CFG["gpudatadir"],
-                 'desc': xp_title}
+                 'desc': xp_title,
+                 "middle_size": hparams.middle_size}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = InstanceClassifierDisc(**arguments)
     print("Model Loaded.")
 
-    dataset = load_datasets(hparams, ["TEST"], hparams.load_dataset)
+    dataset = load_datasets(hparams, CFG, ["TEST"], hparams.load_dataset)
     test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_poly_model, num_workers=32)
     model_path = os.path.join(CFG['modeldir'], "disc_poly_w_init/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
                               str(hparams.b_size) + "/" + str(hparams.lr))
@@ -58,7 +59,7 @@ def test(hparams):
     return trainer.test(test_dataloaders=test_loader, model=model.cuda())
 
 
-def load_datasets(hparams, splits, load):
+def load_datasets(hparams, CFG, splits, load):
     datasets = []
     common_hparams = {
         "data_dir": CFG["gpudatadir"],
@@ -108,6 +109,7 @@ if __name__ == "__main__":
     parser.add_argument("--gpus", type=int, default=[0])
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--b_size", type=int, default=16)
+    parser.add_argument("--middle_size", type=int, default=250)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")

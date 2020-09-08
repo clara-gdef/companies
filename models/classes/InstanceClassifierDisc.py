@@ -4,35 +4,39 @@ import os
 import pytorch_lightning as pl
 import numpy as np
 import pickle as pkl
+from tqdm import tqdm
 from utils.models import labels_to_one_hot
-from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
+from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score, confusion_matrix
 
 
 class InstanceClassifierDisc(pl.LightningModule):
-    def __init__(self, in_size, out_size, hparams, dataset, datadir, desc):
+    def __init__(self, in_size, out_size, hparams, dataset, datadir, desc, middle_size=None):
         super().__init__()
-        self.lin = torch.nn.Linear(in_size, out_size)
+        self.input_type = hparams.input_type
+        self.num_cie = dataset.num_cie
+        self.num_clus = dataset.num_clus
+        self.num_dpt = dataset.num_dpt
+        self.type = desc.split("_")[1]
+        if self.type == 'spe':
+            self.bag_type = desc.split("_")[2]
+
+        self.hparams = hparams
+        self.data_dir = datadir
+        self.description = desc
+
+        if self.input_type == "hadamard":
+            self.lin_1 = torch.nn.Linear(in_size, middle_size)
+            self.lin_2 = torch.nn.Linear(middle_size, out_size)
+        else:
+            self.lin = torch.nn.Linear(in_size, out_size)
+            torch.nn.init.eye_(self.lin.weight)
+            torch.nn.init.zeros_(self.lin.bias)
 
         self.training_losses = []
         self.test_outputs = []
         self.test_labels_one_hot = []
         self.test_labels = []
         self.test_ppl_id = []
-        self.type = desc.split("_")[1]
-        torch.nn.init.eye_(self.lin.weight)
-        torch.nn.init.zeros_(self.lin.bias)
-
-        if self.type == 'spe':
-            self.bag_type = desc.split("_")[2]
-
-        self.input_type = hparams.input_type
-        self.num_cie = dataset.num_cie
-        self.num_clus = dataset.num_clus
-        self.num_dpt = dataset.num_dpt
-
-        self.hparams = hparams
-        self.data_dir = datadir
-        self.description = desc
 
         ### debug
         self.before_training = []
@@ -44,9 +48,11 @@ class InstanceClassifierDisc(pl.LightningModule):
             if out.T.shape != (x.shape[1], x.shape[0]):
                 ipdb.set_trace()
             return out.T
+        elif self.input_type == "hadamard":
+            out_1 = torch.relu(self.lin_1(x))
+            return self.lin_2(out_1)
         else:
             return self.lin(x)
-
 
     def training_step(self, batch, batch_nb):
         if self.input_type != "userOriented" and self.input_type != "bagTransformer":
@@ -114,17 +120,24 @@ class InstanceClassifierDisc(pl.LightningModule):
         return torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
 
     def test_step(self, batch, batch_idx):
-        if self.input_type != "userOriented":
+        if self.input_type == "userOriented":
+            bag_matrix, profiles = self.get_input_tensor(batch)
+            tmp_labels = self.get_labels(batch)
+            labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
+            self.test_outputs.append(torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0)).cuda())
+        elif self.input_type == "bagTransformer":
+            bag_matrix, profiles = self.get_input_tensor(batch)
+            tmp_labels = self.get_labels(batch)
+            labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
+            new_bags = self(bag_matrix.T)
+            tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
+            self.test_outputs.append(torch.transpose(tmp, 1, 0))
+        else:
             input_tensor = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
             labels_one_hot = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.get_num_classes())
             self.test_outputs.append(self.forward(input_tensor))
             self.before_training.append(input_tensor)
-        else:
-            bag_matrix, profiles = self.get_input_tensor(batch)
-            tmp_labels = self.get_labels(batch)
-            labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
-            self.test_outputs.append(torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0)).cuda())
         self.test_labels_one_hot.append(labels_one_hot)
         self.test_labels.append(tmp_labels)
         self.test_ppl_id.append(batch[0])
@@ -143,9 +156,6 @@ class InstanceClassifierDisc(pl.LightningModule):
             cie_preds = outputs[:, 0, :self.num_cie]
             clus_preds = outputs[:, 0, self.num_cie: self.num_cie + self.num_clus]
             dpt_preds = outputs[:, 0, -self.num_dpt:]
-            # cie_b4 = torch.stack(self.before_training)[:, 0, :self.num_cie]
-            # clus_b4 = torch.stack(self.before_training)[:, 0, self.num_cie: self.num_cie + self.num_clus]
-            # dpt_b4 = torch.stack(self.before_training)[:, 0, -self.num_dpt:]
             cie_b4, clus_b4, dpt_b4 = [], [], []
         else:
             cie_preds = outputs[:, :self.num_cie, 0]
@@ -264,6 +274,34 @@ class InstanceClassifierDisc(pl.LightningModule):
                 return self.num_dpt
         else:
             return self.num_cie + self.num_clus + self.num_dpt
+
+    def get_outputs_and_labels(self, test_loader):
+        for batch in tqdm(test_loader, desc="Testing..."):
+            self.test_step(batch, 0)
+        outputs = torch.stack(self.test_outputs)
+        if self.input_type != "userOriented":
+            cie_preds = outputs[:, 0, :self.num_cie]
+            clus_preds = outputs[:, 0, self.num_cie: self.num_cie + self.num_clus]
+            dpt_preds = outputs[:, 0, -self.num_dpt:]
+        else:
+            cie_preds = outputs[:, :self.num_cie, 0]
+            clus_preds = outputs[:, self.num_cie: self.num_cie + self.num_clus, 0]
+            dpt_preds = outputs[:, -self.num_dpt:, 0]
+
+        cie_labels = torch.LongTensor([i[0][0] for i in self.test_labels])
+        clus_labels = torch.LongTensor([i[1][0] for i in self.test_labels])
+        dpt_labels = torch.LongTensor([i[2][0] for i in self.test_labels])
+
+        return {"preds":
+                    {"cie" : cie_preds,
+                     "clus": clus_preds,
+                     "dpt": dpt_preds},
+                "labels":
+                    {"cie": cie_labels,
+                     "clus": clus_labels,
+                     "dpt": dpt_labels},
+                }
+
 
 
 def test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds, dpt_preds, num_classes):

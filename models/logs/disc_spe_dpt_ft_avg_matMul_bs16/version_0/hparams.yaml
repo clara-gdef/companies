@@ -1,0 +1,9 @@
+auto_lr_find: false
+b_size: 16
+bag_type: dpt
+data_agg_type: avg
+epochs: 50
+gpus: 1
+input_type: matMul
+lr: 1.0e-06
+rep_type: ft
