@@ -71,23 +71,6 @@ def load_datasets(hparams, CFG,  splits):
     return datasets
 
 
-def get_model_params(hparams, rep_dim, num_bag):
-    out_size = num_bag
-    if hparams.input_type == "hadamard" or hparams.input_type == "concat":
-        in_size = rep_dim * num_bag
-    elif hparams.input_type == "matMul":
-        in_size = num_bag
-    elif hparams.input_type == "userOriented" or :
-        in_size = rep_dim
-        out_size = rep_dim
-    elif hparams.input_type == "userOnly":
-        in_size = rep_dim
-    else:
-        raise Exception("Wrong input data specified: " + str(hparams.input_type))
-
-    return in_size, out_size
-
-
 def init_lightning(hparams, CFG, xp_title):
     model_path = os.path.join(CFG['modeldir'], "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type)
 
