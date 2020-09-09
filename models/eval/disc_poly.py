@@ -25,7 +25,7 @@ def main(hparams):
 def test(hparams):
     xp_title = "disc_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size)
-    logger = init_lightning(hparams, xp_title)
+    logger = init_lightning(hparams, CFG, xp_title)
     trainer = pl.Trainer(gpus=hparams.gpus,
                          checkpoint_callback=None,
                          logger=logger,
@@ -94,7 +94,7 @@ def get_model_params(hparams, rep_dim, num_bag):
     return in_size, out_size
 
 
-def init_lightning(hparams, xp_title):
+def init_lightning(hparams, CFG, xp_title):
     logger = TensorBoardLogger(
         save_dir='./models/logs',
         name=xp_title)
