@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 import yaml
 from data.datasets import DiscriminativeSpecializedDataset
 from models.classes import InstanceClassifierDisc
-from utils.models import collate_for_disc_spe_model
+from utils.models import collate_for_disc_spe_model, get_model_params
 
 
 def main(hparams):
@@ -67,23 +67,6 @@ def load_datasets(hparams, CFG, splits):
         datasets.append(DiscriminativeSpecializedDataset(**common_hparams, split=split))
 
     return datasets
-
-
-def get_model_params(hparams, rep_dim, num_bag):
-    out_size = num_bag
-    if hparams.input_type == "hadamard" or hparams.input_type == "concat":
-        in_size = rep_dim * num_bag
-    elif hparams.input_type == "matMul":
-        in_size = num_bag
-    elif hparams.input_type == "userOriented" or hparams.input_type == "bagTransformer":
-        in_size = rep_dim
-        out_size = rep_dim
-    elif hparams.input_type == "userOnly":
-        in_size = rep_dim
-    else:
-        raise Exception("Wrong input data specified: " + str(hparams.input_type))
-
-    return in_size, out_size
 
 
 def init_lightning(hparams, CFG, xp_title):

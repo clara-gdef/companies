@@ -11,7 +11,7 @@ import torch
 import glob
 from data.datasets import DiscriminativeSpecializedDataset
 from models.classes import InstanceClassifierDisc
-from utils.models import collate_for_disc_spe_model
+from utils.models import collate_for_disc_spe_model, get_model_params
 
 
 def main(hparams):
@@ -77,7 +77,7 @@ def get_model_params(hparams, rep_dim, num_bag):
         in_size = rep_dim * num_bag
     elif hparams.input_type == "matMul":
         in_size = num_bag
-    elif hparams.input_type == "userOriented":
+    elif hparams.input_type == "userOriented" or :
         in_size = rep_dim
         out_size = rep_dim
     elif hparams.input_type == "userOnly":
