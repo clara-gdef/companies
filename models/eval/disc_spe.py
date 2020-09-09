@@ -15,21 +15,24 @@ from utils.models import collate_for_disc_spe_model
 
 
 def main(hparams):
+    global CFG
+    with open("config.yaml", "r") as ymlfile:
+        CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     with ipdb.launch_ipdb_on_exception():
-        test(hparams)
+        test(hparams, CFG)
 
 
-def test(hparams):
+def test(hparams, CFG):
     xp_title = "disc_spe_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size)
-    logger, checkpoint_callback = init_lightning(xp_title)
+    logger, checkpoint_callback = init_lightning(hparams, CFG, xp_title)
     trainer = pl.Trainer(gpus=hparams.gpus,
                          checkpoint_callback=checkpoint_callback,
                          logger=logger,
                          )
-    datasets = load_datasets(hparams, ["TRAIN"])
+    datasets = load_datasets(hparams, CFG, ["TRAIN"])
     dataset_train = datasets[0]
-    in_size, out_size = get_model_params(dataset_train.rep_dim, len(dataset_train.bag_rep))
+    in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, len(dataset_train.bag_rep))
 
     arguments = {'in_size': in_size,
                  'out_size': out_size,
@@ -44,7 +47,7 @@ def test(hparams):
 
     model.eval()
 
-    dataset = load_datasets(hparams, ["TEST"])
+    dataset = load_datasets(hparams, CFG, ["TEST"])
     test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_spe_model, num_workers=32)
     model_path = os.path.join(CFG['modeldir'], "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type)
     model_files = glob.glob(os.path.join(model_path, "*"))
@@ -54,7 +57,7 @@ def test(hparams):
     trainer.test(test_dataloaders=test_loader, model=model)
 
 
-def load_datasets(hparams, splits):
+def load_datasets(hparams, CFG,  splits):
     datasets = []
     common_hparams = {
         "data_dir": CFG["gpudatadir"],
@@ -68,7 +71,7 @@ def load_datasets(hparams, splits):
     return datasets
 
 
-def get_model_params(rep_dim, num_bag):
+def get_model_params(hparams, rep_dim, num_bag):
     out_size = num_bag
     if hparams.input_type == "hadamard" or hparams.input_type == "concat":
         in_size = rep_dim * num_bag
@@ -85,7 +88,7 @@ def get_model_params(rep_dim, num_bag):
     return in_size, out_size
 
 
-def init_lightning(xp_title):
+def init_lightning(hparams, CFG, xp_title):
     model_path = os.path.join(CFG['modeldir'], "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type)
 
     logger = TensorBoardLogger(
@@ -105,9 +108,7 @@ def init_lightning(xp_title):
 
 
 if __name__ == "__main__":
-    global CFG
-    with open("config.yaml", "r") as ymlfile:
-        CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='sk')
     parser.add_argument("--gpus", type=int, default=[0])
