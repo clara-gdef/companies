@@ -39,7 +39,8 @@ def test(hparams, CFG):
                  'hparams': hparams,
                  'dataset': dataset_train,
                  'datadir': CFG["gpudatadir"],
-                 'desc': xp_title}
+                 'desc': xp_title,
+                 "middle_size": hparams.middle_size}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = InstanceClassifierDisc(**arguments)
