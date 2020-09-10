@@ -51,7 +51,8 @@ def test(hparams):
     model_path = os.path.join(CFG['modeldir'], "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
                               str(hparams.b_size) + "/" + str(hparams.lr))
     model_files = glob.glob(os.path.join(model_path, "*"))
-    latest_file = max(model_files, key=os.path.getctime)
+    #latest_file = max(model_files, key=os.path.getctime)
+    latest_file = "/net/big/gainondefor/work/trained_models/companies/disc_poly_ce/ft/avg/matMul/512/1e-06/epoch=00.ckpt"
     print("Evaluating model: " + str(latest_file))
     model.load_state_dict(torch.load(latest_file)["state_dict"])
     model.eval()
@@ -94,7 +95,7 @@ if __name__ == "__main__":
     parser.add_argument("--b_size", type=int, default=16)
     parser.add_argument("--middle_size", type=int, default=250)
     parser.add_argument("--input_type", type=str, default="matMul")
-    parser.add_argument("--load_dataset", type=bool, default=False)
+    parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     hparams = parser.parse_args()
     main(hparams)

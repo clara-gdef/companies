@@ -78,7 +78,16 @@ class InstanceClassifierDisc(pl.LightningModule):
             if self.input_type == "hadamard":
                 output = self((bag_matrix, profiles))
         if self.type == "poly":
-            loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
+            cie_preds = output[:, :self.num_cie]
+            cie_labels = torch.LongTensor(tmp_labels[0]).cuda()
+            clus_preds = output[:, self.num_cie: self.num_cie + self.num_clus]
+            clus_labels = torch.LongTensor(tmp_labels[1]).cuda() - self.num_cie
+            dpt_preds = output[:, -self.num_dpt:]
+            dpt_labels = torch.LongTensor(tmp_labels[2]).cuda() - (self.num_cie + self.num_clus)
+            loss = torch.nn.functional.cross_entropy(cie_preds, cie_labels) + \
+                   torch.nn.functional.cross_entropy(clus_preds, clus_labels) +\
+                   torch.nn.functional.cross_entropy(dpt_preds, dpt_labels)
+            #loss = torch.nn.functional.binary_cross_entropy_with_logits(output, labels.cuda())
         else:
             # the model is specialized
             loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
@@ -110,7 +119,16 @@ class InstanceClassifierDisc(pl.LightningModule):
             if self.input_type == "hadamard":
                 output = self((bag_matrix, profiles))
         if self.type == "poly":
-            val_loss = torch.nn.functional.binary_cross_entropy(torch.sigmoid(output), labels.cuda())
+            cie_preds = output[:, :self.num_cie]
+            cie_labels = torch.LongTensor(tmp_labels[0]).cuda()
+            clus_preds = output[:, self.num_cie: self.num_cie + self.num_clus]
+            clus_labels = torch.LongTensor(tmp_labels[1]).cuda() - self.num_cie
+            dpt_preds = output[:, -self.num_dpt:]
+            dpt_labels = torch.LongTensor(tmp_labels[2]).cuda() - (self.num_cie + self.num_clus)
+            val_loss = torch.nn.functional.cross_entropy(cie_preds, cie_labels) + \
+                   torch.nn.functional.cross_entropy(clus_preds, clus_labels) +\
+                   torch.nn.functional.cross_entropy(dpt_preds, dpt_labels)
+            # val_loss = torch.nn.functional.binary_cross_entropy_with_logits(output, labels.cuda())
         else:
             # the model is specialized
             val_loss = torch.nn.functional.cross_entropy(output,
@@ -258,7 +276,7 @@ class InstanceClassifierDisc(pl.LightningModule):
         else:
             profiles = batch[1]
         if self.input_type == "matMul":
-            bag_rep = torch.transpose(batch[-1], 1, 0)
+            bag_rep = batch[-1].T
             input_tensor = torch.matmul(profiles, bag_rep)
         elif self.input_type == "concat":
             raise NotImplementedError

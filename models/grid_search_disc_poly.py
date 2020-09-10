@@ -31,7 +31,7 @@ def init_args(hparams):
             'load_dataset': True,
             'auto_lr_find': False,
             'data_agg_type': 'avg',
-            'epochs': 50,
+            'epochs': 10,
             "middle_size": hparams.middle_size}
     return dico
 
