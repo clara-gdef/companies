@@ -10,7 +10,7 @@ from utils import DotDict
 def grid_search(hparams):
     test_results = {}
     dico = init_args(hparams)
-    for bag_type in ["cie", "clus", "dpt"]:
+    for bag_type in ["cie", "clus"]:
         test_results[bag_type] = {}
         for lr in [1e-4, 1e-6, 1e-8]:
             test_results[bag_type][lr] = {}
