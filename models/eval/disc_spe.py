@@ -25,9 +25,9 @@ def main(hparams):
 def test(hparams, CFG):
     xp_title = "disc_spe_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size)
-    logger, checkpoint_callback = init_lightning(hparams, CFG, xp_title)
+    logger = init_lightning(xp_title)
     trainer = pl.Trainer(gpus=hparams.gpus,
-                         checkpoint_callback=checkpoint_callback,
+                         checkpoint_callback=None,
                          logger=logger,
                          )
     datasets = load_datasets(hparams, CFG, ["TRAIN"])
@@ -50,7 +50,8 @@ def test(hparams, CFG):
 
     dataset = load_datasets(hparams, CFG, ["TEST"])
     test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_spe_model, num_workers=32)
-    model_path = os.path.join(CFG['modeldir'], "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type)
+    model_path = os.path.join(CFG['modeldir'], "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
+                              str(hparams.b_size) + "/" + str(hparams.lr))
     model_files = glob.glob(os.path.join(model_path, "*"))
     latest_file = max(model_files, key=os.path.getctime)
     print("Evaluating model: " + str(latest_file))
@@ -72,23 +73,12 @@ def load_datasets(hparams, CFG,  splits):
     return datasets
 
 
-def init_lightning(hparams, CFG, xp_title):
-    model_path = os.path.join(CFG['modeldir'], "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
-                              str(hparams.b_size) + "/" + str(hparams.lr))
+def init_lightning(xp_title):
     logger = TensorBoardLogger(
         save_dir='./models/logs',
         name=xp_title)
     print("Logger initiated.")
-
-    checkpoint_callback = ModelCheckpoint(
-        filepath=os.path.join(model_path, '{epoch:02d}'),
-        save_top_k=True,
-        verbose=True,
-        monitor='val_loss',
-        mode='min',
-        prefix=''
-    )
-    return logger, checkpoint_callback
+    return logger
 
 
 if __name__ == "__main__":
