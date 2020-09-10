@@ -49,7 +49,7 @@ if __name__ == "__main__":
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
-    parser.add_argument("--middle_size", type=int, default=200)
+    parser.add_argument("--middle_size", type=int, default=100)
     parser.add_argument("--epochs", type=int, default=100)
     hparams = parser.parse_args()
     grid_search(hparams)
