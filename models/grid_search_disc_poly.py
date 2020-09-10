@@ -10,16 +10,16 @@ from utils import DotDict
 def grid_search(hparams):
     test_results = {}
     dico = init_args(hparams)
-    for lr in [1e-4, 1e-6, 1e-8]:
+    for lr in [1e-6, 1e-7, 1e-8]:
         test_results[lr] = {}
-        for b_size in [16, 64, 512]:
+        for b_size in [64, 128, 512]:
             print("Grid Search for couple (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
             dico['lr'] = lr
             dico["b_size"] = b_size
             arg = DotDict(dico)
             train.disc_poly.main(arg)
             test_results[lr][b_size] = eval.disc_poly.main(arg)
-    res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_DEBUG_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
+    res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_debug_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
     with open(res_path, "wb") as f:
         pkl.dump(test_results, f)
 
@@ -48,6 +48,6 @@ if __name__ == "__main__":
     parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--middle_size", type=int, default=50)
-    parser.add_argument("--epochs", type=int, default=100)
+    parser.add_argument("--epochs", type=int, default=20)
     hparams = parser.parse_args()
     grid_search(hparams)

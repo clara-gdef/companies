@@ -48,11 +48,11 @@ def test(hparams):
 
     dataset = load_datasets(hparams, CFG, ["TEST"], hparams.load_dataset)
     test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_poly_model, num_workers=32)
-    model_path = os.path.join(CFG['modeldir'], "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
+    model_path = os.path.join(CFG['modeldir'], "disc_poly_ce/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
                               str(hparams.b_size) + "/" + str(hparams.lr))
     model_files = glob.glob(os.path.join(model_path, "*"))
-    #latest_file = max(model_files, key=os.path.getctime)
-    latest_file = "/net/big/gainondefor/work/trained_models/companies/disc_poly_ce/ft/avg/matMul/512/1e-06/epoch=00.ckpt"
+    latest_file = max(model_files, key=os.path.getctime)
+    # latest_file = "/net/big/gainondefor/work/trained_models/companies/disc_poly_ce/ft/avg/matMul/512/1e-06/epoch=00.ckpt"
     print("Evaluating model: " + str(latest_file))
     model.load_state_dict(torch.load(latest_file)["state_dict"])
     model.eval()
