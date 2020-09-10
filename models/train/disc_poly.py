@@ -20,7 +20,7 @@ def main(hparams):
 
 
 def train(hparams):
-    xp_title = "disc_poly_w_init_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_" + \
+    xp_title = "disc_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_" + \
                str(hparams.b_size) + "_" + str(hparams.lr)
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, xp_title)
     trainer = pl.Trainer(gpus=[hparams.gpus],
@@ -49,8 +49,8 @@ def train(hparams):
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = InstanceClassifierDisc(**arguments)
     print("Model Loaded.")
-    print("Starting training...")
-    trainer.fit(model, train_loader, valid_loader)
+    print("Starting training for " + xp_title + "...")
+    trainer.fit(model.cuda(), train_loader, valid_loader)
 
 
 def load_datasets(hparams, splits, load):
@@ -72,7 +72,7 @@ def load_datasets(hparams, splits, load):
 
 
 def init_lightning(hparams, xp_title):
-    model_path = os.path.join(CFG['modeldir'], "disc_poly_w_init/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
+    model_path = os.path.join(CFG['modeldir'], "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
                               str(hparams.b_size) + "/" + str(hparams.lr))
 
     logger = TensorBoardLogger(
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=0)
-    parser.add_argument("--b_size", type=int, default=64)
+    parser.add_argument("--b_size", type=int, default=512)
     parser.add_argument("--middle_size", type=int, default=20)
     parser.add_argument("--input_type", type=str, default="bagTransformer")
     parser.add_argument("--load_dataset", type=bool, default=True)

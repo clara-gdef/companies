@@ -56,7 +56,7 @@ def test(hparams, CFG):
     latest_file = max(model_files, key=os.path.getctime)
     print("Evaluating model: " + str(latest_file))
     model.load_state_dict(torch.load(latest_file)["state_dict"])
-    trainer.test(test_dataloaders=test_loader, model=model)
+    return trainer.test(test_dataloaders=test_loader, model=model)
 
 
 def load_datasets(hparams, CFG,  splits):

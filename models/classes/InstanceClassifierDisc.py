@@ -195,7 +195,7 @@ class InstanceClassifierDisc(pl.LightningModule):
     def test_spe(self, outputs):
         preds = torch.argmax(outputs.view(-1, self.get_num_classes()), dim=1)
         labels = torch.LongTensor([i[0][0] for i in self.test_labels]).cuda()
-        res_dict_trained = get_metrics(preds.cpu(), labels.cpu(), self.get_num_classes(), self.bag_type + "_trained", 0)
+        res_dict_trained = get_metrics(preds.cpu(), labels.cpu(), self.get_num_classes(), self.bag_type, 0)
         # if self.input_type != "userOriented":
         #     b4_training = torch.argmax(torch.stack(self.before_training)[:, 0, :], dim=1)
         #     res_dict_b4_training = get_metrics(b4_training.cpu(), labels.cpu(), self.get_num_classes(), self.bag_type + "_b4", 0)
@@ -359,7 +359,7 @@ def get_metrics(preds, labels, num_classes, handle, offset):
     res_dict = {
         "acc_" + handle: accuracy_score(preds, labels) * 100,
         "precision_" + handle: precision_score(preds, labels, average='weighted',
-                                               labels=num_c) * 100,
-        "recall_" + handle: recall_score(preds, labels, average='weighted', labels=num_c) * 100,
-        "f1_" + handle: f1_score(preds, labels, average='weighted', labels=num_c) * 100}
+                                               labels=num_c, zero_division=0) * 100,
+        "recall_" + handle: recall_score(preds, labels, average='weighted', labels=num_c, zero_division=0) * 100,
+        "f1_" + handle: f1_score(preds, labels, average='weighted', labels=num_c, zero_division=0) * 100}
     return res_dict
