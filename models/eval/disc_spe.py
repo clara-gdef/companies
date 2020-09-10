@@ -98,6 +98,7 @@ if __name__ == "__main__":
     parser.add_argument("--gpus", type=int, default=[0])
     parser.add_argument("--bag_type", type=str, default="cie")
     parser.add_argument("--input_type", type=str, default="matMul")
+    parser.add_argument("--middle_size", type=int, default=50)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--b_size", type=int, default=64)
