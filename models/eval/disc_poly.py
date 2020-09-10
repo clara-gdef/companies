@@ -46,8 +46,8 @@ def test(hparams):
     model = InstanceClassifierDisc(**arguments)
     print("Model Loaded.")
 
-    # dataset = load_datasets(hparams, CFG, ["TEST"], hparams.load_dataset)
-    test_loader = DataLoader(dataset_train, batch_size=1, collate_fn=collate_for_disc_poly_model, num_workers=32)
+    dataset = load_datasets(hparams, CFG, ["TEST"], hparams.load_dataset)
+    test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_poly_model, num_workers=32)
     model_path = os.path.join(CFG['modeldir'], "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
                               str(hparams.b_size) + "/" + str(hparams.lr))
     model_files = glob.glob(os.path.join(model_path, "*"))
@@ -89,12 +89,12 @@ def init_lightning(hparams, CFG, xp_title):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='sk')
-    parser.add_argument("--gpus", type=int, default=[0])
+    parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--b_size", type=int, default=16)
     parser.add_argument("--middle_size", type=int, default=250)
     parser.add_argument("--input_type", type=str, default="matMul")
-    parser.add_argument("--load_dataset", type=bool, default=True)
+    parser.add_argument("--load_dataset", type=bool, default=False)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     hparams = parser.parse_args()
     main(hparams)
