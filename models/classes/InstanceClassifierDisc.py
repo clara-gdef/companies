@@ -142,6 +142,13 @@ class InstanceClassifierDisc(pl.LightningModule):
             new_bags = self(bag_matrix.T)
             tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
             self.test_outputs.append(torch.transpose(tmp, 1, 0))
+        elif self.input_type == "hadamard":
+            bag_matrix, profiles = self.get_input_tensor(batch)
+            tmp_labels = self.get_labels(batch)
+            labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
+            output = self((bag_matrix, profiles))
+            self.test_outputs.append(torch.transpose(output, 1, 0))
+
         else:
             input_tensor = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
