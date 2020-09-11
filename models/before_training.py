@@ -16,10 +16,10 @@ def main(hparams):
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     with ipdb.launch_ipdb_on_exception():
-        train(hparams)
+        main(hparams)
 
 
-def train(hparams):
+def main(hparams):
     xp_title = "disc_poly_b4_training_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_" + \
                str(hparams.b_size) + "_" + str(hparams.lr)
     datasets = load_datasets(hparams, ["TRAIN", "TEST"], hparams.load_dataset)
