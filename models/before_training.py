@@ -1,4 +1,5 @@
 import ipdb
+import torch
 import os
 import argparse
 from torch.utils.data import DataLoader
@@ -61,7 +62,14 @@ def load_datasets(hparams, splits, load):
     return datasets
 
 def get_well_classified_outputs(res_dict):
+    preds = {}
+    for k in res_dict["preds"].keys():
+        preds[k] = get_predicted_classes(res_dict["preds"][k])
     ipdb.set_trace()
+
+
+def get_predicted_classes(outvectors):
+    return [i.item() for i in torch.argmax(outvectors, dim=-1)]
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
