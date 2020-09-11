@@ -11,7 +11,7 @@ from utils.models import collate_for_disc_poly_model, get_model_params
 from sklearn.metrics import f1_score
 
 
-def main(hparams):
+def init(hparams):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
@@ -100,4 +100,4 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default=1e-6)
     parser.add_argument("--epochs", type=int, default=20)
     hparams = parser.parse_args()
-    main(hparams)
+    init(hparams)
