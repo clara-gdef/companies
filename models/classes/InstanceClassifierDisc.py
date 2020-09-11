@@ -153,6 +153,9 @@ class InstanceClassifierDisc(pl.LightningModule):
             tmp_labels = self.get_labels(batch)
             labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
             self.test_outputs.append(torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0)).cuda())
+        elif self.input_type == "b4Training":
+            input_tensor = self.get_input_tensor(batch)
+            self.test_outputs.append(input_tensor)
         elif self.input_type == "bagTransformer":
             bag_matrix, profiles = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
@@ -274,7 +277,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             profiles = batch[1].squeeze(1)
         else:
             profiles = batch[1]
-        if self.input_type == "matMul":
+        if self.input_type == "matMul" or self.input_type == "b4Training":
             bag_rep = batch[-1].T
             input_tensor = torch.matmul(profiles, bag_rep)
         elif self.input_type == "concat":
@@ -293,6 +296,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             input_tensor = (batch[-1], profiles)
         elif self.input_type == "userOnly":
             input_tensor = profiles
+
         else:
             raise Exception("Wrong input data specified: " + str(self.input_type))
         return input_tensor
@@ -326,7 +330,7 @@ class InstanceClassifierDisc(pl.LightningModule):
         dpt_labels = torch.LongTensor([i[2][0] for i in self.test_labels])
 
         return {"preds":
-                    {"cie" : cie_preds,
+                    {"cie": cie_preds,
                      "clus": clus_preds,
                      "dpt": dpt_preds},
                 "labels":
