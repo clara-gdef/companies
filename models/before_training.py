@@ -8,7 +8,7 @@ import pickle as pkl
 from data.datasets import DiscriminativePolyvalentDataset
 from models.classes import InstanceClassifierDisc
 from utils.models import collate_for_disc_poly_model, get_model_params
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score,  accuracy_score, precision_score, recall_score
 
 
 def init(hparams):
@@ -67,7 +67,11 @@ def get_well_classified_outputs(res_dict):
     well_classified = {}
     for k, offset in zip(res_dict["preds"].keys(), [0, 207, 237]):
         predicted_classes = get_predicted_classes(res_dict["preds"][k], offset)
-        print(f1_score(predicted_classes, res_dict["labels"][k], average="weighted", zero_division=0) * 100)
+        print("F1 for " + str(k) + ': ' + str(f1_score(predicted_classes, res_dict["labels"][k], average="weighted", zero_division=0) * 100))
+        print("Acc for " + str(k) + ': ' + str(accuracy_score(predicted_classes, res_dict["labels"][k], average="weighted") * 100))
+        print("Prec for " + str(k) + ': ' + str(precision_score(predicted_classes, res_dict["labels"][k], average="weighted", zero_division=0) * 100))
+        print("Rec for " + str(k) + ': ' + str(recall_score(predicted_classes, res_dict["labels"][k], average="weighted", zero_division=0) * 100))
+
         good_outputs, labels, good_idx = find_well_classified_outputs(predicted_classes, res_dict["preds"][k], res_dict["labels"][k], res_dict["indices"])
         well_classified[k] = {v: (k.numpy(), j.item()) for v, k, j in zip(good_idx, good_outputs, labels)}
     return well_classified
