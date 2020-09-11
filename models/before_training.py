@@ -68,7 +68,7 @@ def get_well_classified_outputs(res_dict):
     for k, offset in zip(res_dict["preds"].keys(), [0, 207, 237]):
         predicted_classes = get_predicted_classes(res_dict["preds"][k], offset)
         print("F1 for " + str(k) + ': ' + str(f1_score(predicted_classes, res_dict["labels"][k], average="weighted", zero_division=0) * 100))
-        print("Acc for " + str(k) + ': ' + str(accuracy_score(predicted_classes, res_dict["labels"][k], average="weighted") * 100))
+        print("Acc for " + str(k) + ': ' + str(accuracy_score(predicted_classes, res_dict["labels"][k]) * 100))
         print("Prec for " + str(k) + ': ' + str(precision_score(predicted_classes, res_dict["labels"][k], average="weighted", zero_division=0) * 100))
         print("Rec for " + str(k) + ': ' + str(recall_score(predicted_classes, res_dict["labels"][k], average="weighted", zero_division=0) * 100))
 
