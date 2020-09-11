@@ -67,7 +67,7 @@ def get_well_classified_outputs(res_dict):
     well_classified = {}
     for k, offset in zip(res_dict["preds"].keys(), [0, 207, 237]):
         predicted_classes = get_predicted_classes(res_dict["preds"][k], offset)
-        print(f1_score(predicted_classes, res_dict["labels"][k], zero_division=0))
+        print(f1_score(predicted_classes, res_dict["labels"][k], average="weighted", zero_division=0))
         good_outputs, labels, good_idx = find_well_classified_outputs(predicted_classes, res_dict["preds"][k], res_dict["labels"][k], res_dict["indices"])
         well_classified[k] = {v: (k.numpy(), j.item()) for v, k, j in zip(good_idx, good_outputs, labels)}
     return well_classified
