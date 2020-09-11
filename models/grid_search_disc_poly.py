@@ -10,7 +10,7 @@ from utils import DotDict
 def grid_search(hparams):
     test_results = {}
     dico = init_args(hparams)
-    for lr in [1e-7, 1e-8, 1e-9]:
+    for lr in [1e-7, 1e-8]:
         test_results[lr] = {}
         for b_size in [512, 1024]:
             print("Grid Search for couple (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
@@ -31,7 +31,7 @@ def init_args(hparams):
             'load_dataset': True,
             'auto_lr_find': False,
             'data_agg_type': 'avg',
-            'epochs': 50,
+            'epochs': hparams.epochs,
             "middle_size": hparams.middle_size}
     return dico
 
@@ -43,11 +43,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=1)
-    parser.add_argument("--input_type", type=str, default="bagTransformer")
+    parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--middle_size", type=int, default=50)
-    parser.add_argument("--epochs", type=int, default=20)
+    parser.add_argument("--epochs", type=int, default=50)
     hparams = parser.parse_args()
     grid_search(hparams)
