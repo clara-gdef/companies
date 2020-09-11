@@ -20,7 +20,7 @@ def main(hparams):
 
 
 def train(hparams):
-    xp_title = "disc_poly_ce_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_" + \
+    xp_title = "disc_poly_wd_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_" + \
                str(hparams.b_size) + "_" + str(hparams.lr)
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, xp_title)
     trainer = pl.Trainer(gpus=[hparams.gpus],
@@ -72,7 +72,7 @@ def load_datasets(hparams, splits, load):
 
 
 def init_lightning(hparams, xp_title):
-    model_path = os.path.join(CFG['modeldir'], "disc_poly_ce/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
+    model_path = os.path.join(CFG['modeldir'], "disc_poly_wd/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
                               str(hparams.b_size) + "/" + str(hparams.lr))
 
     logger = TensorBoardLogger(

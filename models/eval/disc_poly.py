@@ -23,7 +23,7 @@ def main(hparams):
 
 
 def test(hparams):
-    xp_title = "disc_poly_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
+    xp_title = "disc_poly_wd_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size)
     logger = init_lightning(hparams, CFG, xp_title)
     trainer = pl.Trainer(gpus=hparams.gpus,
@@ -48,7 +48,7 @@ def test(hparams):
 
     dataset = load_datasets(hparams, CFG, ["TEST"], hparams.load_dataset)
     test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_poly_model, num_workers=32)
-    model_path = os.path.join(CFG['modeldir'], "disc_poly_ce/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
+    model_path = os.path.join(CFG['modeldir'], "disc_poly_wd/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
                               str(hparams.b_size) + "/" + str(hparams.lr))
     model_files = glob.glob(os.path.join(model_path, "*"))
     latest_file = max(model_files, key=os.path.getctime)
