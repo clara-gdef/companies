@@ -315,7 +315,9 @@ class InstanceClassifierDisc(pl.LightningModule):
             return self.num_cie + self.num_clus + self.num_dpt
 
     def get_outputs_and_labels(self, test_loader):
+        idx = []
         for batch in tqdm(test_loader, desc="Testing..."):
+            idx.append(batch[0][0])
             self.test_step(batch, 0)
         outputs = torch.stack(self.test_outputs)
         if self.input_type != "userOriented":
@@ -331,7 +333,8 @@ class InstanceClassifierDisc(pl.LightningModule):
         clus_labels = torch.LongTensor([i[1][0] for i in self.test_labels])
         dpt_labels = torch.LongTensor([i[2][0] for i in self.test_labels])
 
-        return {"preds":
+        return {"indices": idx,
+                "preds":
                     {"cie": cie_preds,
                      "clus": clus_preds,
                      "dpt": dpt_preds},

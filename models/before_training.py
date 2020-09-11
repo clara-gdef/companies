@@ -61,15 +61,26 @@ def load_datasets(hparams, splits, load):
 
     return datasets
 
+
 def get_well_classified_outputs(res_dict):
-    preds = {}
+    well_classified = {}
     for k in res_dict["preds"].keys():
-        preds[k] = get_predicted_classes(res_dict["preds"][k])
+        preds = get_predicted_classes(res_dict["preds"][k])
+        good_outputs, labels, good_idx = find_well_classified_outputs(preds, res_dict["labels"][k], res_dict["indices"])
+        well_classified[k] = {v: k for v, k in zip(good_idx, labels)}
     ipdb.set_trace()
 
 
 def get_predicted_classes(outvectors):
     return [i.item() for i in torch.argmax(outvectors, dim=-1)]
+
+
+def find_well_classified_outputs(preds, labels, idx):
+    indices = []
+    for index, pred, lab in enumerate(zip(preds, labels)):
+        if pred == lab:
+            indices.append(index)
+    return preds[indices], labels[indices], idx[indices]
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
