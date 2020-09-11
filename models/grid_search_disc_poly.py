@@ -12,14 +12,14 @@ def grid_search(hparams):
     dico = init_args(hparams)
     for lr in [1e-7, 1e-8, 1e-9]:
         test_results[lr] = {}
-        for b_size in [128, 512, 1024]:
+        for b_size in [512, 1024]:
             print("Grid Search for couple (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
             dico['lr'] = lr
             dico["b_size"] = b_size
             arg = DotDict(dico)
             train.disc_poly.main(arg)
             test_results[lr][b_size] = eval.disc_poly.main(arg)
-    res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_debug2_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
+    res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_debug3_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
     with open(res_path, "wb") as f:
         pkl.dump(test_results, f)
 
@@ -31,7 +31,7 @@ def init_args(hparams):
             'load_dataset': True,
             'auto_lr_find': False,
             'data_agg_type': 'avg',
-            'epochs': 10,
+            'epochs': 50,
             "middle_size": hparams.middle_size}
     return dico
 
