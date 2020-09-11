@@ -80,7 +80,10 @@ def find_well_classified_outputs(preds, labels, idx):
     for index, tup in enumerate(zip(preds, labels)):
         if tup[0] == tup[1].item():
             indices.append(index)
-    return preds[indices], labels[indices], idx[indices]
+    good_preds = [preds[i] for i in indices]
+    good_labels = [labels[i] for i in indices]
+    good_indices = [idx[i] for i in indices]
+    return good_preds, good_labels, good_indices
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
