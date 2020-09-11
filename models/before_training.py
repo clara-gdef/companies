@@ -64,13 +64,14 @@ def load_datasets(hparams, splits, load):
 
 def get_well_classified_outputs(res_dict):
     well_classified = {}
-    for k in res_dict["preds"].keys():
+    for k, offest in zip(res_dict["preds"].keys(), [0, 207, 237]):
         predicted_classes = get_predicted_classes(res_dict["preds"][k])
         good_outputs, labels, good_idx = find_well_classified_outputs(predicted_classes, res_dict["preds"][k], res_dict["labels"][k], res_dict["indices"])
         well_classified[k] = {v: (k.numpy(), j.item()) for v, k, j in zip(good_idx, good_outputs, labels)}
     return well_classified
 
-def get_predicted_classes(outvectors):
+
+def get_predicted_classes(outvectors, offset):
     return [i.item() for i in torch.argmax(outvectors, dim=-1)]
 
 
