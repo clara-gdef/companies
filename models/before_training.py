@@ -77,8 +77,8 @@ def get_predicted_classes(outvectors):
 
 def find_well_classified_outputs(preds, labels, idx):
     indices = []
-    for index, pred, lab in enumerate(zip(preds, labels)):
-        if pred == lab:
+    for index, tup in enumerate(zip(preds, labels)):
+        if tup[0] == tup[1].item():
             indices.append(index)
     return preds[indices], labels[indices], idx[indices]
 
