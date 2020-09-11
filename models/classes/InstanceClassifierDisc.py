@@ -156,6 +156,8 @@ class InstanceClassifierDisc(pl.LightningModule):
         elif self.input_type == "b4Training":
             input_tensor = self.get_input_tensor(batch)
             self.test_outputs.append(input_tensor)
+            tmp_labels = self.get_labels(batch)
+            labels_one_hot = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.get_num_classes())
         elif self.input_type == "bagTransformer":
             bag_matrix, profiles = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
