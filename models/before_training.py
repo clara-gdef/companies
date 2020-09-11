@@ -8,7 +8,7 @@ import pickle as pkl
 from data.datasets import DiscriminativePolyvalentDataset
 from models.classes import InstanceClassifierDisc
 from utils.models import collate_for_disc_poly_model, get_model_params
-from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score, confusion_matrix
+from sklearn.metrics import f1_score
 
 
 def main(hparams):
