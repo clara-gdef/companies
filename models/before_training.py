@@ -41,7 +41,7 @@ def train(hparams):
     preds_and_labels = model.get_outputs_and_labels(test_loader)
     well_classified = get_well_classified_outputs(preds_and_labels)
     with open(os.path.join(CFG["gpudatadir"], "OUTPUTS_well_classified_" + xp_title), 'wb') as f:
-        pkl.dump(preds_and_labels, f)
+        pkl.dump(well_classified, f)
 
 
 def load_datasets(hparams, splits, load):
@@ -65,19 +65,18 @@ def load_datasets(hparams, splits, load):
 def get_well_classified_outputs(res_dict):
     well_classified = {}
     for k in res_dict["preds"].keys():
-        preds = get_predicted_classes(res_dict["preds"][k])
-        good_outputs, labels, good_idx = find_well_classified_outputs(preds, res_dict["labels"][k], res_dict["indices"])
-        well_classified[k] = {v: k for v, k in zip(good_idx, labels)}
-    ipdb.set_trace()
-
+        predicted_classes = get_predicted_classes(res_dict["preds"][k])
+        good_outputs, labels, good_idx = find_well_classified_outputs(predicted_classes, res_dict["preds"][k], res_dict["labels"][k], res_dict["indices"])
+        well_classified[k] = {v: (k, j.item()) for v, k, j in zip(good_idx, good_outputs, labels)}
+    return well_classified
 
 def get_predicted_classes(outvectors):
     return [i.item() for i in torch.argmax(outvectors, dim=-1)]
 
 
-def find_well_classified_outputs(preds, labels, idx):
+def find_well_classified_outputs(predicted_classes, preds, labels, idx):
     indices = []
-    for index, tup in enumerate(zip(preds, labels)):
+    for index, tup in enumerate(zip(predicted_classes, labels)):
         if tup[0] == tup[1].item():
             indices.append(index)
     good_preds = [preds[i] for i in indices]
