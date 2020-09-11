@@ -52,6 +52,6 @@ if __name__ == "__main__":
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--middle_size", type=int, default=100)
     parser.add_argument("--epochs", type=int, default=100)
-    parser.add_argument("--bag_types", nargs='+', type=list, default=["cie", "clus"])
+    parser.add_argument("--bag_types", nargs='+', default=["cie", "clus"])
     hparams = parser.parse_args()
     grid_search(hparams)
