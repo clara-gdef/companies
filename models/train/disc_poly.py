@@ -1,3 +1,4 @@
+import glob
 import os
 import ipdb
 import argparse
@@ -6,6 +7,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
+import torch
 from data.datasets import DiscriminativePolyvalentDataset
 from models.classes import InstanceClassifierDisc
 from utils.models import collate_for_disc_poly_model, get_model_params
@@ -49,7 +51,16 @@ def train(hparams):
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = InstanceClassifierDisc(**arguments)
     print("Model Loaded.")
-    print("Starting training for " + xp_title + "...")
+    if hparams.load_from_checkpoint:
+        print("Loading from previous checkpoint...")
+        model_path = os.path.join(CFG['modeldir'],
+                                  "disc_poly_wd/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
+                                  str(hparams.b_size) + "/" + str(hparams.lr))
+        model_file = os.path.join(model_path, "epoch=" + str(hparams.checkpoint) + ".ckpt")
+        model.load_state_dict(torch.load(model_file)["state_dict"])
+        print("Resuming training from checkpoint : " + model_file + ".")
+    else:
+        print("Starting training for " + xp_title + "...")
     trainer.fit(model.cuda(), train_loader, valid_loader)
 
 
@@ -108,6 +119,8 @@ if __name__ == "__main__":
     parser.add_argument("--input_type", type=str, default="bagTransformer")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--auto_lr_find", type=bool, default=False)
+    parser.add_argument("--load_from_checkpoint", type=bool, default=True)
+    parser.add_argument("--checkpoint", type=int, default=499)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--lr", type=float, default=1e-6)
     parser.add_argument("--epochs", type=int, default=20)
