@@ -113,6 +113,7 @@ if __name__ == "__main__":
     parser.add_argument("--b_size", type=int, default=32)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--data_agg_type", type=str, default="avg")
+    parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--middle_size", type=int, default=250)
     parser.add_argument("--load_from_checkpoint", type=bool, default=True)
     parser.add_argument("--checkpoint", type=int, default=49)
