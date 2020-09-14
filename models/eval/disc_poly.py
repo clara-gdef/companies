@@ -18,8 +18,8 @@ def main(hparams):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
-    with ipdb.launch_ipdb_on_exception():
-        return test(hparams)
+    # with ipdb.launch_ipdb_on_exception():
+    return test(hparams)
 
 
 def test(hparams):
