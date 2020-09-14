@@ -116,7 +116,7 @@ if __name__ == "__main__":
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--middle_size", type=int, default=250)
-    parser.add_argument("--load_from_checkpoint", type=bool, default=True)
+    parser.add_argument("--load_from_checkpoint", type=bool, default=False)
     parser.add_argument("--checkpoint", type=int, default=49)
     parser.add_argument("--bag_type", type=str, default="cie")
     parser.add_argument("--lr", type=float, default=1e-7)

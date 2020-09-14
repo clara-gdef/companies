@@ -36,6 +36,7 @@ def init_args(hparams):
             'data_agg_type': 'avg',
             'epochs': 50,
             "wd": 0.,
+            "load_from_checkpoint": False,
             "middle_size": hparams.middle_size}
     return dico
 
