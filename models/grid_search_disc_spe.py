@@ -20,10 +20,9 @@ def grid_search(hparams):
                     dico["b_size"] = b_size
                     dico["bag_type"] = bag_type
                     arg = DotDict(dico)
-                    train.disc_spe.main(arg)
+                    # train.disc_spe.main(arg)
                     test_results[lr][b_size] = eval.disc_spe.test(arg, CFG)
-            res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_all_disc_spe_" + bag_type + "_" + hparams.rep_type + "_" + hparams.input_type + "_"+
-                                    str(b_size) + "_" + str(lr))
+            res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_all_disc_spe_" + bag_type + "_" + hparams.rep_type + "_" + hparams.input_type)
             with open(res_path, "wb") as f:
                 pkl.dump(test_results, f)
 
