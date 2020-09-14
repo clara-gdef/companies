@@ -51,7 +51,16 @@ def train(hparams):
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = InstanceClassifierDisc(**arguments)
     print("Model Loaded.")
-    print("Starting training " + xp_title)
+    if hparams.load_from_checkpoint:
+        print("Loading from previous checkpoint...")
+        model_path = os.path.join(CFG['modeldir'],
+                                  "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type
+                                  + "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr))
+        model_file = os.path.join(model_path, "epoch=" + str(hparams.checkpoint) + ".ckpt")
+        model.load_state_dict(torch.load(model_file)["state_dict"])
+        print("Resuming training from checkpoint : " + model_file + ".")
+    else:
+        print("Starting training " + xp_title)
     trainer.fit(model, train_loader, valid_loader)
 
 
@@ -105,6 +114,8 @@ if __name__ == "__main__":
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--middle_size", type=int, default=250)
+    parser.add_argument("--load_from_checkpoint", type=bool, default=True)
+    parser.add_argument("--checkpoint", type=int, default=49)
     parser.add_argument("--bag_type", type=str, default="cie")
     parser.add_argument("--lr", type=float, default=1e-7)
     parser.add_argument("--auto_lr_find", type=bool, default=False)
