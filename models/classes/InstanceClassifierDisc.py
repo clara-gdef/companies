@@ -10,9 +10,10 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 
 
 class InstanceClassifierDisc(pl.LightningModule):
-    def __init__(self, in_size, out_size, hparams, dataset, datadir, desc, middle_size=None):
+    def __init__(self, in_size, out_size, hparams, dataset, datadir, desc, wd, middle_size=None):
         super().__init__()
         self.middle_size = middle_size
+        self.wd = wd
         self.input_type = hparams.input_type
         self.num_cie = dataset.num_cie
         self.num_clus = dataset.num_clus
@@ -145,7 +146,7 @@ class InstanceClassifierDisc(pl.LightningModule):
         return outputs[-1]
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
+        return torch.optim.Adam(self.parameters(), lr=self.hparams.lr, weight_decay=self.wd)
 
     def test_step(self, batch, batch_idx):
         if self.input_type == "userOriented":

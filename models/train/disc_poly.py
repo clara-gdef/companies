@@ -23,7 +23,7 @@ def main(hparams):
 
 def train(hparams):
     xp_title = "disc_poly_wd_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_" + \
-               str(hparams.b_size) + "_" + str(hparams.lr)
+               str(hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, xp_title)
     trainer = pl.Trainer(gpus=[hparams.gpus],
                          max_epochs=hparams.epochs,
@@ -46,6 +46,7 @@ def train(hparams):
                  'dataset': dataset_train,
                  'datadir': CFG["gpudatadir"],
                  'desc': xp_title,
+                 "wd": hparams.wd,
                  "middle_size": hparams.middle_size}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
@@ -55,7 +56,7 @@ def train(hparams):
         print("Loading from previous checkpoint...")
         model_path = os.path.join(CFG['modeldir'],
                                   "disc_poly_wd/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
-                                  str(hparams.b_size) + "/" + str(hparams.lr))
+                                  str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd))
         model_file = os.path.join(model_path, "epoch=" + str(hparams.checkpoint) + ".ckpt")
         model.load_state_dict(torch.load(model_file)["state_dict"])
         print("Resuming training from checkpoint : " + model_file + ".")
@@ -116,13 +117,14 @@ if __name__ == "__main__":
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--b_size", type=int, default=1)
     parser.add_argument("--middle_size", type=int, default=20)
-    parser.add_argument("--input_type", type=str, default="bagTransformer")
+    parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--auto_lr_find", type=bool, default=False)
     parser.add_argument("--load_from_checkpoint", type=bool, default=False)
     parser.add_argument("--checkpoint", type=int, default=499)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--lr", type=float, default=1e-6)
+    parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--epochs", type=int, default=20)
     hparams = parser.parse_args()
     main(hparams)

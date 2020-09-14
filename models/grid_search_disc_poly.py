@@ -12,14 +12,17 @@ def grid_search(hparams):
     dico = init_args(hparams)
     for lr in [1e-7, 1e-8]:
         test_results[lr] = {}
-        for b_size in [512, 1024]:
-            print("Grid Search for couple (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
-            dico['lr'] = lr
-            dico["b_size"] = b_size
-            arg = DotDict(dico)
-            train.disc_poly.main(arg)
-            test_results[lr][b_size] = eval.disc_poly.main(arg)
-    res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_debug3_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
+        for b_size in [512, 768, 1024]:
+            test_results[lr][b_size] = {}
+            for wd in [.1, .5, .8]:
+                print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ", wd=" + str(wd) + ")")
+                dico['lr'] = lr
+                dico["b_size"] = b_size
+                dico["wd"] = wd
+                arg = DotDict(dico)
+                train.disc_poly.main(arg)
+                test_results[lr][b_size][wd] = eval.disc_poly.main(arg)
+    res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
     with open(res_path, "wb") as f:
         pkl.dump(test_results, f)
 
@@ -48,6 +51,6 @@ if __name__ == "__main__":
     parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--middle_size", type=int, default=50)
-    parser.add_argument("--epochs", type=int, default=50)
+    parser.add_argument("--epochs", type=int, default=100)
     hparams = parser.parse_args()
     grid_search(hparams)
