@@ -18,8 +18,8 @@ def main(hparams):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
-    with ipdb.launch_ipdb_on_exception():
-        test(hparams, CFG)
+    # with ipdb.launch_ipdb_on_exception():
+    test(hparams, CFG)
 
 
 def test(hparams, CFG):
@@ -40,6 +40,7 @@ def test(hparams, CFG):
                  'dataset': dataset_train,
                  'datadir': CFG["gpudatadir"],
                  'desc': xp_title,
+                 "wd": hparams.wd,
                  "middle_size": hparams.middle_size}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
