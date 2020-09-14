@@ -55,8 +55,9 @@ def train(hparams):
     if hparams.load_from_checkpoint:
         print("Loading from previous checkpoint...")
         model_path = os.path.join(CFG['modeldir'],
-                                  "disc_poly_wd/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
-                                  str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd))
+                                  "disc_poly_wd/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" +
+                                  hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) +
+                                  "/" + str(hparams.wd))
         model_file = os.path.join(model_path, "epoch=" + str(hparams.checkpoint) + ".ckpt")
         model.load_state_dict(torch.load(model_file)["state_dict"])
         print("Resuming training from checkpoint : " + model_file + ".")
