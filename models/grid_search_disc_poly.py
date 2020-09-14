@@ -35,7 +35,9 @@ def init_args(hparams):
             'auto_lr_find': False,
             'data_agg_type': 'avg',
             'epochs': hparams.epochs,
-            "middle_size": hparams.middle_size}
+            "load_from_checkpoint": False,
+            "middle_size": hparams.middle_size
+            }
     return dico
 
 
