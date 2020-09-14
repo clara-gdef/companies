@@ -85,8 +85,10 @@ def load_datasets(hparams, splits, load):
 
 
 def init_lightning(hparams, xp_title):
-    model_path = os.path.join(CFG['modeldir'], "disc_poly_wd/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
-                              str(hparams.b_size) + "/" + str(hparams.lr))
+    model_path = os.path.join(CFG['modeldir'],
+                              "disc_poly_wd/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" +
+                              hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) +
+                              "/" + str(hparams.wd))
 
     logger = TensorBoardLogger(
         save_dir='./models/logs',
