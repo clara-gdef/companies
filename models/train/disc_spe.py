@@ -110,7 +110,8 @@ def init_lightning(hparams, CFG, xp_title):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
-    parser.add_argument("--gpus", type=int, default=1)
+    parser.add_argument("--gpus", type=int, default=2)
+    parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--b_size", type=int, default=32)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--data_agg_type", type=str, default="avg")
