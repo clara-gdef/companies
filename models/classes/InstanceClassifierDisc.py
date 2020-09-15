@@ -51,7 +51,7 @@ class InstanceClassifierDisc(pl.LightningModule):
                 ipdb.set_trace()
             return out.T
         elif self.input_type == "hadamard":
-            transformed_input = torch.nn.ReLU(self.lin_dim_reduction(x))
+            transformed_input = torch.relu(self.lin_dim_reduction(x))
             return self.lin_class_prediction(transformed_input)
         else:
             return self.lin(x)
