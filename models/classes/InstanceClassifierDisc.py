@@ -27,8 +27,8 @@ class InstanceClassifierDisc(pl.LightningModule):
         self.description = desc
 
         if self.input_type == "hadamard":
-            self.lin_dim_reduction = torch.nn.Linear(in_size, middle_size).to('cuda:0')
-            self.lin_class_prediction = torch.nn.Linear(middle_size * self.get_num_classes(), out_size).to('cuda:1')
+            self.lin_dim_reduction = torch.nn.Linear(in_size, middle_size)
+            self.lin_class_prediction = torch.nn.Linear(middle_size, out_size)
         else:
             self.lin = torch.nn.Linear(in_size, out_size)
             torch.nn.init.eye_(self.lin.weight)
@@ -51,16 +51,13 @@ class InstanceClassifierDisc(pl.LightningModule):
                 ipdb.set_trace()
             return out.T
         elif self.input_type == "hadamard":
-            bags, profiles = x[0], x[1]
-            transformed_bag = self.lin_dim_reduction(bags.to('cuda:0'))
-            transformed_profiles = self.lin_dim_reduction(profiles.to('cuda:0'))
-            affinities = transformed_bag * transformed_profiles
-            return self.lin_class_prediction(affinities.view(-1, self.get_num_classes()*self.middle_size).to('cuda:1'))
+            transformed_input = torch.nn.ReLU(self.lin_dim_reduction(x))
+            return self.lin_class_prediction(transformed_input)
         else:
             return self.lin(x)
 
     def training_step(self, batch, batch_nb):
-        if self.input_type != "userOriented" and self.input_type != "bagTransformer" and self.input_type != "hadamard":
+        if self.input_type != "userOriented" and self.input_type != "bagTransformer":
             input_tensor = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
             output = self.forward(input_tensor)
@@ -76,8 +73,9 @@ class InstanceClassifierDisc(pl.LightningModule):
                 new_bags = self(bag_matrix.T)
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
-            if self.input_type == "hadamard":
-                output = self((bag_matrix, profiles))
+            # if self.input_type == "hadamard":
+            #
+            #     output = self((bag_matrix, profiles))
         if self.type == "poly":
             # cie_preds = output[:, :self.num_cie]
             # cie_labels = torch.LongTensor(tmp_labels[0]).cuda()
@@ -101,7 +99,7 @@ class InstanceClassifierDisc(pl.LightningModule):
         return {'loss': loss, 'log': tensorboard_logs}
 
     def validation_step(self, batch, batch_nb):
-        if self.input_type != "userOriented" and self.input_type != "bagTransformer" and self.input_type != "hadamard":
+        if self.input_type != "userOriented" and self.input_type != "bagTransformer":
             input_tensor = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
             output = self.forward(input_tensor)
@@ -117,8 +115,8 @@ class InstanceClassifierDisc(pl.LightningModule):
                 new_bags = self(bag_matrix.T)
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
-            if self.input_type == "hadamard":
-                output = self((bag_matrix, profiles))
+            # if self.input_type == "hadamard":
+            #     output = self((bag_matrix, profiles))
         if self.type == "poly":
             val_loss = torch.nn.functional.binary_cross_entropy_with_logits(output, labels.cuda())
         else:
@@ -157,12 +155,12 @@ class InstanceClassifierDisc(pl.LightningModule):
             new_bags = self(bag_matrix.T)
             tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
             self.test_outputs.append(torch.transpose(tmp, 1, 0))
-        elif self.input_type == "hadamard":
-            bag_matrix, profiles = self.get_input_tensor(batch)
-            tmp_labels = self.get_labels(batch)
-            labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
-            output = self((bag_matrix, profiles))
-            self.test_outputs.append(torch.transpose(output, 1, 0))
+        # elif self.input_type == "hadamard":
+        #     bag_matrix, profiles = self.get_input_tensor(batch)
+        #     tmp_labels = self.get_labels(batch)
+        #     labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
+        #     output = self((bag_matrix, profiles))
+        #     self.test_outputs.append(torch.transpose(output, 1, 0))
         else:
             input_tensor = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
@@ -271,19 +269,19 @@ class InstanceClassifierDisc(pl.LightningModule):
             profiles = batch[1].squeeze(1)
         else:
             profiles = batch[1]
-        if self.input_type == "matMul" or self.input_type == "b4Training":
+        if self.input_type == "matMul" or self.input_type == "b4Training" or self.input_type == "hadamard":
             bag_rep = batch[-1].T
             input_tensor = torch.matmul(profiles, bag_rep)
         elif self.input_type == "concat":
             raise NotImplementedError
-        elif self.input_type == "hadamard":
-            b_size = profiles.shape[0]
-            bag_rep = batch[-1]
-            # expanded_bag_rep = bag_rep.expand(b_size, bag_rep.shape[0], bag_rep.shape[-1])
-            prof = profiles.unsqueeze(1)
-            expanded_profiles = prof.expand(b_size, bag_rep.shape[0], bag_rep.shape[-1])
-            # tmp = expanded_bag_rep * expanded_profiles
-            input_tensor = bag_rep, expanded_profiles
+        # elif  self.input_type == "hadamard":
+        #     b_size = profiles.shape[0]
+        #     bag_rep = batch[-1]
+        #     # expanded_bag_rep = bag_rep.expand(b_size, bag_rep.shape[0], bag_rep.shape[-1])
+        #     prof = profiles.unsqueeze(1)
+        #     expanded_profiles = prof.expand(b_size, bag_rep.shape[0], bag_rep.shape[-1])
+        #     # tmp = expanded_bag_rep * expanded_profiles
+        #     input_tensor = bag_rep, expanded_profiles
         elif self.input_type == "userOriented":
             input_tensor = (batch[-1], profiles)
         elif self.input_type == "bagTransformer":
