@@ -27,8 +27,8 @@ class InstanceClassifierDisc(pl.LightningModule):
         self.description = desc
 
         if self.input_type == "hadamard":
-            self.lin_dim_reduction = torch.nn.Linear(in_size, middle_size)
-            self.lin_class_prediction = torch.nn.Linear(middle_size * self.get_num_classes(), out_size)
+            self.lin_dim_reduction = torch.nn.Linear(in_size, middle_size).to('cuda:0')
+            self.lin_class_prediction = torch.nn.Linear(middle_size * self.get_num_classes(), out_size).to('cuda:1')
         else:
             self.lin = torch.nn.Linear(in_size, out_size)
             torch.nn.init.eye_(self.lin.weight)
@@ -52,10 +52,10 @@ class InstanceClassifierDisc(pl.LightningModule):
             return out.T
         elif self.input_type == "hadamard":
             bags, profiles = x[0], x[1]
-            transformed_bag = self.lin_dim_reduction(bags)
-            transformed_profiles = self.lin_dim_reduction(profiles)
+            transformed_bag = self.lin_dim_reduction(bags.to('cuda:0'))
+            transformed_profiles = self.lin_dim_reduction(profiles.to('cuda:0'))
             affinities = transformed_bag * transformed_profiles
-            return self.lin_class_prediction(affinities.view(-1, self.get_num_classes()*self.middle_size))
+            return self.lin_class_prediction(affinities.view(-1, self.get_num_classes()*self.middle_size).to('cuda:1'))
         else:
             return self.lin(x)
 
@@ -120,15 +120,6 @@ class InstanceClassifierDisc(pl.LightningModule):
             if self.input_type == "hadamard":
                 output = self((bag_matrix, profiles))
         if self.type == "poly":
-            # cie_preds = output[:, :self.num_cie]
-            # cie_labels = torch.LongTensor(tmp_labels[0]).cuda()
-            # clus_preds = output[:, self.num_cie: self.num_cie + self.num_clus]
-            # clus_labels = torch.LongTensor(tmp_labels[1]).cuda() - self.num_cie
-            # dpt_preds = output[:, -self.num_dpt:]
-            # dpt_labels = torch.LongTensor(tmp_labels[2]).cuda() - (self.num_cie + self.num_clus)
-            # val_loss = torch.nn.functional.cross_entropy(cie_preds, cie_labels) + \
-            #        torch.nn.functional.cross_entropy(clus_preds, clus_labels) +\
-            #        torch.nn.functional.cross_entropy(dpt_preds, dpt_labels)
             val_loss = torch.nn.functional.binary_cross_entropy_with_logits(output, labels.cuda())
         else:
             # the model is specialized
