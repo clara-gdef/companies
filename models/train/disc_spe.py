@@ -17,8 +17,8 @@ def main(hparams):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
-    #with ipdb.launch_ipdb_on_exception():
-    train(hparams)
+    with ipdb.launch_ipdb_on_exception():
+        train(hparams)
 
 
 def train(hparams):
@@ -110,7 +110,7 @@ def init_lightning(hparams, CFG, xp_title):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
-    parser.add_argument("--gpus", type=int, default=2)
+    parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--b_size", type=int, default=32)
     parser.add_argument("--input_type", type=str, default="matMul")
