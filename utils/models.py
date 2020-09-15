@@ -44,12 +44,12 @@ def get_model_params(hparams, rep_dim, num_bag):
     out_size = num_bag
     if hparams.input_type == "concat":
         in_size = rep_dim * num_bag
-    elif hparams.input_type == "matMul":
+    elif hparams.input_type == "matMul" or "hadamard":
         in_size = num_bag
     elif hparams.input_type == "userOriented" or hparams.input_type == "bagTransformer":
         in_size = rep_dim
         out_size = rep_dim
-    elif hparams.input_type == "userOnly" or "hadamard":
+    elif hparams.input_type == "userOnly":
         in_size = rep_dim
     else:
         raise Exception("Wrong input data specified: " + str(hparams.input_type))
