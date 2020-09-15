@@ -20,6 +20,7 @@ def grid_search(hparams):
                         print("Grid Search for " + bag_type.upper() + " (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
                         dico['lr'] = lr
                         dico["b_size"] = b_size
+                        dico["middle_size"] = mid_size
                         dico["bag_type"] = bag_type
                         arg = DotDict(dico)
                         train.disc_spe.main(arg)
