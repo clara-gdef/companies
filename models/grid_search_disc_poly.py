@@ -10,11 +10,11 @@ from utils import DotDict
 def grid_search(hparams):
     test_results = {}
     dico = init_args(hparams)
-    for lr in [1e-7, 1e-8]:
+    for lr in [1e-7]:
         test_results[lr] = {}
-        for b_size in [512, 768, 1024]:
+        for b_size in [512, 768]:
             test_results[lr][b_size] = {}
-            for wd in [.1, .5, .8]:
+            for wd in [.4, .5, .6, .7, .8]:
                 print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ", wd=" + str(wd) + ")")
                 dico['lr'] = lr
                 dico["b_size"] = b_size
@@ -22,7 +22,7 @@ def grid_search(hparams):
                 arg = DotDict(dico)
                 train.disc_poly.main(arg)
                 test_results[lr][b_size][wd] = eval.disc_poly.main(arg)
-    res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
+    res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd2_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
     with open(res_path, "wb") as f:
         pkl.dump(test_results, f)
 
