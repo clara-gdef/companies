@@ -54,9 +54,12 @@ def train(hparams):
     print("Model Loaded.")
     if hparams.load_from_checkpoint:
         print("Loading from previous checkpoint...")
-        model_path = os.path.join(CFG['modeldir'],
-                                  "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type
-                                  + "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr))
+        model_name = "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type +\
+                     "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr)
+        if hparams.input_type == "hadamard":
+            model_name += "/" + str(hparams.middle_size)
+
+        model_path = os.path.join(CFG['modeldir'], model_name)
         model_file = os.path.join(model_path, "epoch=" + str(hparams.checkpoint) + ".ckpt")
         model.load_state_dict(torch.load(model_file)["state_dict"])
         print("Resuming training from checkpoint : " + model_file + ".")
@@ -80,8 +83,11 @@ def load_datasets(hparams, CFG, splits):
 
 
 def init_lightning(hparams, CFG, xp_title):
-    model_path = os.path.join(CFG['modeldir'], "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
-                              str(hparams.b_size) + "/" + str(hparams.lr))
+    model_name = "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
+                 "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr)
+    if hparams.input_type == "hadamard":
+        model_name += "/" + str(hparams.middle_size)
+    model_path = os.path.join(CFG['modeldir'], model_name)
 
     logger = TensorBoardLogger(
         save_dir='./models/logs',

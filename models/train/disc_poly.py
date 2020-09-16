@@ -17,13 +17,16 @@ def main(hparams):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
-    #with ipdb.launch_ipdb_on_exception():
+    # with ipdb.launch_ipdb_on_exception():
     train(hparams)
 
 
 def train(hparams):
     xp_title = "disc_poly_wd_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_" + \
                str(hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
+    if hparams.input_type == "hadamard":
+        xp_title += "_" + str(hparams.middle_size)
+        
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, xp_title)
     trainer = pl.Trainer(gpus=[hparams.gpus],
                          max_epochs=hparams.epochs,
@@ -54,10 +57,11 @@ def train(hparams):
     print("Model Loaded.")
     if hparams.load_from_checkpoint:
         print("Loading from previous checkpoint...")
-        model_path = os.path.join(CFG['modeldir'],
-                                  "disc_poly_wd/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" +
-                                  hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) +
-                                  "/" + str(hparams.wd))
+        model_name = "disc_poly_wd/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" + \
+                     str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
+        if hparams.input_type == "hadamard":
+            model_name += "/" + str(hparams.middle_size)
+        model_path = os.path.join(CFG['modeldir'], model_name)
         model_file = os.path.join(model_path, "epoch=" + str(hparams.checkpoint) + ".ckpt")
         model.load_state_dict(torch.load(model_file)["state_dict"])
         print("Resuming training from checkpoint : " + model_file + ".")
@@ -85,10 +89,12 @@ def load_datasets(hparams, splits, load):
 
 
 def init_lightning(hparams, xp_title):
-    model_path = os.path.join(CFG['modeldir'],
-                              "disc_poly_wd/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" +
-                              hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) +
-                              "/" + str(hparams.wd))
+    model_name = "disc_poly_wd/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" + \
+                 str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
+    if hparams.input_type == "hadamard":
+        model_name += "/" + str(hparams.middle_size)
+
+    model_path = os.path.join(CFG['modeldir'], model_name)
 
     logger = TensorBoardLogger(
         save_dir='./models/logs',
