@@ -51,8 +51,11 @@ def test(hparams, CFG):
 
     dataset = load_datasets(hparams, CFG, ["TEST"])
     test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_spe_model, num_workers=32)
-    model_path = os.path.join(CFG['modeldir'], "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" +
-                              str(hparams.b_size) + "/" + str(hparams.lr))
+    model_name = "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
+                 "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr)
+    if hparams.input_type == "hadamard":
+        model_name += "/" + str(hparams.middle_size)
+    model_path = os.path.join(CFG['modeldir'], model_name)
     model_files = glob.glob(os.path.join(model_path, "*"))
     latest_file = max(model_files, key=os.path.getctime)
     print("Evaluating model: " + str(latest_file))

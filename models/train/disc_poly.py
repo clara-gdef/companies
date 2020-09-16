@@ -26,7 +26,7 @@ def train(hparams):
                str(hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
     if hparams.input_type == "hadamard":
         xp_title += "_" + str(hparams.middle_size)
-        
+
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, xp_title)
     trainer = pl.Trainer(gpus=[hparams.gpus],
                          max_epochs=hparams.epochs,
