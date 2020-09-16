@@ -7,11 +7,9 @@ import re
 from collections import Counter
 import pandas as pd
 import unidecode
-import nltk
 from nltk.tokenize import word_tokenize
 import json
 from datetime import datetime
-from utils.Utils import getDuration
 
 
 def main(args):
