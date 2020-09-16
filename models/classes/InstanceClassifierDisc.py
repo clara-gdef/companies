@@ -355,7 +355,7 @@ def test_for_bag(preds, labels, b4_training, offset, num_classes, bag_type):
     res_dict_trained = {}
     res_dict_trained[1] = get_metrics([i.item() + offset for i in predicted_classes[:, 0]], labels.cpu(), num_classes, bag_type, offset)
     for k in [5, 10]:
-        res_dict_trained[k] = get_metrics_at_k(predicted_classes[:, k], labels.cpu(), num_classes, bag_type, offset, k)
+        res_dict_trained[k] = get_metrics_at_k(predicted_classes[:, :k].cpu(), labels.cpu(), num_classes, bag_type, offset)
     return res_dict_trained
     #b4_train = torch.LongTensor([i + offset for i in torch.argmax(b4_training, dim=1)])
     # res_dict_b4_training = get_metrics(b4_train, labels.cpu(), num_classes, bag_type + "_b4", offset)
@@ -382,5 +382,12 @@ def get_metrics(preds, labels, num_classes, handle, offset):
         "f1_" + handle: f1_score(preds, labels, average='weighted', labels=num_c, zero_division=0) * 100}
     return res_dict
 
-def get_metrics_at_k(predictions, labels, num_classes, bag_type, offset, k):
+def get_metrics_at_k(predictions, labels, num_classes, bag_type, offset):
+    transformed_predictions = []
+    for index, pred in enumerate(predictions):
+        if labels[index].item() in pred:
+            transformed_predictions.append(labels[index].item())
+        else:
+            transformed_predictions.append(pred[0])
+    print(accuracy_score(transformed_predictions, labels) * 100)
     ipdb.set_trace()
