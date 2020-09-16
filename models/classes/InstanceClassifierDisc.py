@@ -351,9 +351,13 @@ def test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds
 
 
 def test_for_bag(preds, labels, b4_training, offset, num_classes, bag_type):
-    tmp = [i.item() for i in torch.argmax(preds, dim=1)]
+    tmp = [i.item() for i in torch.argsort(preds, dim=1)]
     predicted_classes = [i + offset for i in tmp]
-    res_dict_trained = get_metrics(predicted_classes, labels.cpu(), num_classes, bag_type, offset)
+    res_dict_trained = {}
+    ipdb.set_trace()
+    res_dict_trained[1] = get_metrics(predicted_classes[:1], labels.cpu(), num_classes, bag_type, offset)
+    for k in [5, 10]:
+        res_dict_trained[k] = get_metrics_at_k(predicted_classes[:k], labels.cpu(), num_classes, bag_type, offset, k)
     return res_dict_trained
     #b4_train = torch.LongTensor([i + offset for i in torch.argmax(b4_training, dim=1)])
     # res_dict_b4_training = get_metrics(b4_train, labels.cpu(), num_classes, bag_type + "_b4", offset)
@@ -370,7 +374,7 @@ def get_average_metrics(res_dict):
     return np.mean(precision), np.mean(recall)
 
 
-def get_metrics(preds, labels, num_classes, handle, offset):
+def get_metrics(preds, labels, num_classes, handle, offset, k):
     num_c = range(offset, offset + num_classes)
     res_dict = {
         "acc_" + handle: accuracy_score(preds, labels) * 100,
@@ -379,3 +383,6 @@ def get_metrics(preds, labels, num_classes, handle, offset):
         "recall_" + handle: recall_score(preds, labels, average='weighted', labels=num_c, zero_division=0) * 100,
         "f1_" + handle: f1_score(preds, labels, average='weighted', labels=num_c, zero_division=0) * 100}
     return res_dict
+
+def get_metrics_at_k(predictions, labels, num_classes, bag_type, offset, k):
+    ipdb.set_trace()
