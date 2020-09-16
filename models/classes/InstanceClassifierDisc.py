@@ -73,9 +73,9 @@ class InstanceClassifierDisc(pl.LightningModule):
                 new_bags = self(bag_matrix.T)
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
-            # if self.input_type == "hadamard":
-            #
-            #     output = self((bag_matrix, profiles))
+                # if self.input_type == "hadamard":
+                #
+                #     output = self((bag_matrix, profiles))
         if self.type == "poly":
             # cie_preds = output[:, :self.num_cie]
             # cie_labels = torch.LongTensor(tmp_labels[0]).cuda()
@@ -115,8 +115,8 @@ class InstanceClassifierDisc(pl.LightningModule):
                 new_bags = self(bag_matrix.T)
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
-            # if self.input_type == "hadamard":
-            #     output = self((bag_matrix, profiles))
+                # if self.input_type == "hadamard":
+                #     output = self((bag_matrix, profiles))
         if self.type == "poly":
             val_loss = torch.nn.functional.binary_cross_entropy_with_logits(output, labels.cuda())
         else:
@@ -200,7 +200,8 @@ class InstanceClassifierDisc(pl.LightningModule):
         dpt_res = test_for_bag(dpt_preds, dpt_labels, dpt_b4, self.num_cie + self.num_clus, self.num_dpt, "dpt")
 
         num_classes = self.num_cie + self.num_clus + self.num_dpt
-        general_res = test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds, dpt_preds, num_classes)
+        general_res = test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds, dpt_preds,
+                                        num_classes)
 
         return {**cie_res, **clus_res, **dpt_res, **general_res}
 
@@ -346,18 +347,22 @@ def test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds
     for tup in zip(cie_preds, clus_preds, dpt_preds):
         all_preds.append([tup[0], tup[1], tup[2]])
 
-    general_res = get_metrics(np.array(all_preds).reshape(-1, 1), np.array(all_labels).reshape(-1, 1), num_classes, "all", 0)
+    general_res = get_metrics(np.array(all_preds).reshape(-1, 1), np.array(all_labels).reshape(-1, 1), num_classes,
+                              "all", 0)
     return general_res
 
 
 def test_for_bag(preds, labels, b4_training, offset, num_classes, bag_type):
     predicted_classes = torch.argsort(preds, dim=1)
     res_dict_trained = {}
-    res_dict_trained[1] = get_metrics([i.item() + offset for i in predicted_classes[:, 0]], labels.cpu(), num_classes, bag_type, offset)
+    res_dict_trained[1] = get_metrics([i.item() + offset for i in predicted_classes[:, 0]], labels.cpu(), num_classes,
+                                      bag_type, offset)
     for k in [5, 10]:
-        res_dict_trained[k] = get_metrics_at_k(predicted_classes[:, :k].cpu(), labels.cpu(), num_classes, bag_type, offset)
+        res_dict_trained[k] = get_metrics_at_k(predicted_classes[:, :k].cpu(), labels.cpu(), num_classes,
+                                               bag_type + "_@" + str(k), offset)
+    ipdb.set_trace
     return res_dict_trained
-    #b4_train = torch.LongTensor([i + offset for i in torch.argmax(b4_training, dim=1)])
+    # b4_train = torch.LongTensor([i + offset for i in torch.argmax(b4_training, dim=1)])
     # res_dict_b4_training = get_metrics(b4_train, labels.cpu(), num_classes, bag_type + "_b4", offset)
     # return {**res_dict_b4_training, **res_dict_trained}
 
@@ -382,12 +387,12 @@ def get_metrics(preds, labels, num_classes, handle, offset):
         "f1_" + handle: f1_score(preds, labels, average='weighted', labels=num_c, zero_division=0) * 100}
     return res_dict
 
-def get_metrics_at_k(predictions, labels, num_classes, bag_type, offset):
+
+def get_metrics_at_k(predictions, labels, num_classes, handle, offset):
     transformed_predictions = []
     for index, pred in enumerate(predictions):
         if labels[index].item() in pred:
             transformed_predictions.append(labels[index].item())
         else:
             transformed_predictions.append(pred[0])
-    print(accuracy_score(transformed_predictions, labels) * 100)
-    ipdb.set_trace()
+    return get_metrics(transformed_predictions, labels, num_classes, handle, offset)
