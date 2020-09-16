@@ -97,6 +97,7 @@ if __name__ == "__main__":
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--b_size", type=int, default=16)
+    parser.add_argument("--wd", type=float, default=.4)
     parser.add_argument("--middle_size", type=int, default=250)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", type=bool, default=True)
