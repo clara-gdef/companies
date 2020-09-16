@@ -392,10 +392,11 @@ def get_metrics(preds, labels, num_classes, handle, offset):
 
 
 def get_metrics_at_k(predictions, labels, num_classes, handle, offset):
-    transformed_predictions = []
-    for index, pred in enumerate(predictions):
+    out_predictions = []
+    transformed_predictions = predictions + offset
+    for index, pred in enumerate(transformed_predictions):
         if labels[index].item() in pred:
-            transformed_predictions.append(labels[index].item())
+            out_predictions.append(labels[index].item())
         else:
-            transformed_predictions.append(pred[0])
-    return get_metrics(transformed_predictions, labels, num_classes, handle, offset)
+            out_predictions.append(pred[0])
+    return get_metrics(out_predictions, labels, num_classes, handle, offset)
