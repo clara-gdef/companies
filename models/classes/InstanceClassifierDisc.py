@@ -196,6 +196,7 @@ class InstanceClassifierDisc(pl.LightningModule):
         dpt_labels = torch.LongTensor([i[2][0] for i in self.test_labels])
 
         cie_res = test_for_bag(cie_preds, cie_labels, cie_b4, 0, self.num_cie, "cie")
+        ipdb.set_trace()
         clus_res = test_for_bag(clus_preds, clus_labels, clus_b4, self.num_cie, self.num_clus, "clus")
         dpt_res = test_for_bag(dpt_preds, dpt_labels, dpt_b4, self.num_cie + self.num_clus, self.num_dpt, "dpt")
 
