@@ -12,17 +12,17 @@ def grid_search(hparams):
     dico = init_args(hparams)
     for lr in [1e-8]:
         test_results[lr] = {}
-        for b_size in [512, 768]:
+        for b_size in [768]:
             test_results[lr][b_size] = {}
-            for wd in [.4, .5, .6, .7, .8]:
+            for wd in [.5, .7]:
                 print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ", wd=" + str(wd) + ")")
                 dico['lr'] = lr
                 dico["b_size"] = b_size
                 dico["wd"] = wd
                 arg = DotDict(dico)
-                # train.disc_poly.main(arg)
+                train.disc_poly.main(arg)
                 test_results[lr][b_size][wd] = eval.disc_poly.main(arg)
-    res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_topK_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
+    res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_topK_retrained_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
     with open(res_path, "wb") as f:
         pkl.dump(test_results, f)
 
@@ -35,7 +35,8 @@ def init_args(hparams):
             'auto_lr_find': False,
             'data_agg_type': 'avg',
             'epochs': hparams.epochs,
-            "load_from_checkpoint": False,
+            "load_from_checkpoint": True,
+            "checkpoint": 49,
             "DEBUG": hparams.DEBUG,
             "middle_size": hparams.middle_size
             }
