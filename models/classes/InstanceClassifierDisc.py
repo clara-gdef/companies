@@ -199,20 +199,21 @@ class InstanceClassifierDisc(pl.LightningModule):
         clus_res = test_for_bag(clus_preds, clus_labels, clus_b4, self.num_cie, self.num_clus, "clus")
         dpt_res = test_for_bag(dpt_preds, dpt_labels, dpt_b4, self.num_cie + self.num_clus, self.num_dpt, "dpt")
 
+        ipdb.set_trace()
         num_classes = self.num_cie + self.num_clus + self.num_dpt
         general_res = test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds, dpt_preds,
                                         num_classes)
-
+        ipdb.set_trace()
         return {**cie_res, **clus_res, **dpt_res, **general_res}
 
     def test_spe(self, outputs):
         preds = torch.argsort(outputs.view(-1, self.get_num_classes()), dim=-1, descending=True)
         labels = torch.LongTensor([i[0][0] for i in self.test_labels]).cuda()
-        res_dict_trained = {}
-        res_dict_trained[1] = get_metrics(preds.cpu(), labels.cpu(), self.get_num_classes(), self.bag_type, 0)
+        res_dict_trained = get_metrics(preds.cpu(), labels.cpu(), self.get_num_classes(), self.bag_type, 0)
         for k in [5, 10]:
-            res_dict_trained[k] = get_metrics_at_k(preds[:, :k].cpu(), labels.cpu(),  self.get_num_classes(),
+            tmp = get_metrics_at_k(preds[:, :k].cpu(), labels.cpu(),  self.get_num_classes(),
                                                    self.bag_type + "_@" + str(k), 0)
+        res_dict_trained = {**res_dict_trained, **tmp}
         # if self.input_type != "userOriented":
         #     b4_training = torch.argmax(torch.stack(self.before_training)[:, 0, :], dim=1)
         #     res_dict_b4_training = get_metrics(b4_training.cpu(), labels.cpu(), self.get_num_classes(), self.bag_type + "_b4", 0)
@@ -358,12 +359,13 @@ def test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds
 
 def test_for_bag(preds, labels, b4_training, offset, num_classes, bag_type):
     predicted_classes = torch.argsort(preds, dim=-1, descending=True)
-    res_dict_trained = {}
-    res_dict_trained[1] = get_metrics([i.item() + offset for i in predicted_classes[:, 0]], labels.cpu(), num_classes,
+    res_dict_trained = get_metrics([i.item() + offset for i in predicted_classes[:, 0]], labels.cpu(), num_classes,
                                       bag_type, offset)
+
     for k in [5, 10]:
-        res_dict_trained[k] = get_metrics_at_k(predicted_classes[:, :k].cpu(), labels.cpu(), num_classes,
+        tmp = get_metrics_at_k(predicted_classes[:, :k].cpu(), labels.cpu(), num_classes,
                                                bag_type + "_@" + str(k), offset)
+        res_dict_trained = {**res_dict_trained, **tmp}
     return res_dict_trained
     # b4_train = torch.LongTensor([i + offset for i in torch.argmax(b4_training, dim=1)])
     # res_dict_b4_training = get_metrics(b4_train, labels.cpu(), num_classes, bag_type + "_b4", offset)
