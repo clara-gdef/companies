@@ -36,6 +36,7 @@ def init_args(hparams):
             'data_agg_type': 'avg',
             'epochs': hparams.epochs,
             "load_from_checkpoint": False,
+            "DEBUG": hparams.DEBUG,
             "middle_size": hparams.middle_size
             }
     return dico
@@ -52,6 +53,7 @@ if __name__ == "__main__":
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
+    parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--middle_size", type=int, default=50)
     parser.add_argument("--epochs", type=int, default=100)
     hparams = parser.parse_args()
