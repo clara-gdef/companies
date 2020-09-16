@@ -2,6 +2,7 @@ import os
 import argparse
 import pickle as pkl
 import ipdb
+import yaml
 from tqdm import tqdm
 import re
 from collections import Counter
@@ -13,14 +14,17 @@ from datetime import datetime
 
 
 def main(args):
+    global CFG
+    with open("config.yaml", "r") as ymlfile:
+        CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     # with ipdb.launch_ipdb_on_exception():
-    cie_file = os.path.join(args.DATA_DIR_TGT, "cie_list.pkl")
+    cie_file = os.path.join(CFG["datadir"], "cie_list.pkl")
     with open(cie_file, "rb") as f:
         cie_list = pkl.load(f)
-    synonym_file = os.path.join(args.DATA_DIR_TGT, "cie_synonyms.pkl")
+    synonym_file = os.path.join(CFG["datadir"], "cie_synonyms.pkl")
     with open(synonym_file, "rb") as f:
         syn_cie = pkl.load(f)
-    blacklist_file = os.path.join(args.DATA_DIR_TGT, "blacklist.pkl")
+    blacklist_file = os.path.join(CFG["datadir"], "blacklist.pkl")
     with open(blacklist_file, "rb") as f:
         blacklist = pkl.load(f)
     build_dataset(cie_list, syn_cie, blacklist)
@@ -33,9 +37,9 @@ def build_dataset(cie_list, syn_cie, blacklist):
         timestamp_counter["start"] = Counter()
         timestamp_counter["end"] = Counter()
         timestamp_counter["duration"] = Counter()
-        current_file = os.path.join(args.DATA_DIR_SRC, args.base_file)
+        current_file = os.path.join(CFG["prevdatadir"], args.base_file)
         with ipdb.launch_ipdb_on_exception():
-            with open(os.path.join(args.DATA_DIR_SRC, args.index_file), "rb") as f:
+            with open(os.path.join(CFG["prevdatadir"], args.index_file), "rb") as f:
                 index = pkl.load(f)
             for item in sets:
                 with open(current_file + item + ".json", 'r') as f:
@@ -49,14 +53,14 @@ def build_dataset(cie_list, syn_cie, blacklist):
                         dataset.append(new_p)
                         timestamp_counter = new_tstp
                         pbar.update(1)
-                ppl_file = os.path.join(args.DATA_DIR_TGT, 'ppl_mc_cie' + item + ".pkl")
+                ppl_file = os.path.join(CFG["datadir"], 'ppl_mc_cie' + item + ".pkl")
                 with open(ppl_file, 'wb') as fp:
                     pkl.dump(dataset, fp)
-            tstp_file = os.path.join(args.DATA_DIR_TGT, "tstp_mc_cie_counter.pkl")
+            tstp_file = os.path.join(CFG["datadir"], "tstp_mc_cie_counter.pkl")
             with open(tstp_file, "wb") as tgt_file:
                 pkl.dump(new_tstp, tgt_file)
     else:
-        current_file = os.path.join(args.DATA_DIR_SRC, args.base_file)
+        current_file = os.path.join(CFG["prevdatadir"], args.base_file)
         with ipdb.launch_ipdb_on_exception():
             with open(current_file, 'r') as f:
                 num_lines = sum(1 for line in f)
@@ -73,7 +77,7 @@ def build_dataset(cie_list, syn_cie, blacklist):
                             dataset.append(new_p)
                     pbar.update(1)
 
-            ppl_file = os.path.join(args.DATA_DIR_TGT, "profiles_jobs_skills.pkl")
+            ppl_file = os.path.join(CFG["datadir"], "profiles_jobs_skills_edu.pkl")
             with open(ppl_file, 'wb') as fp:
                 pkl.dump(dataset, fp)
 
@@ -82,9 +86,8 @@ def build_new_person(person, cie_list, syn_cie, blacklist):
     person_id = person[0]
     industry = person[-1]
     skills = person[-3]
-    ipdb.set_trace()
-    education = person
-    new_p = [person_id, skills, industry]
+    education = process_education(person[-2])
+    new_p = [person_id, skills, industry, education]
     jobs = []
     flag = False
     for job in person[1]:
@@ -182,7 +185,6 @@ def word_seq_into_list(position, description, cie_list, syn_cie):
     return cleaned_tup
 
 
-
 def handle_date(job):
     if job["to"] == "Present":
         date_time_str = '2018-04-12'  # date of files creation
@@ -200,6 +202,10 @@ def handle_date(job):
             time = datetime.timestamp(datetime.strptime(date_time_str, '%Y-%m-%d'))
     tstmp = pd.Timestamp.fromtimestamp(time)
     return round(datetime.timestamp(tstmp.round("D").to_pydatetime()))
+
+
+def process_education(degree_list):
+    pass
 
 
 if __name__ == "__main__":

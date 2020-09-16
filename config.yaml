@@ -1,4 +1,5 @@
 datadir: /local/gainondefor/work/lip6/data/companies
+prevdatadir: /local/gainondefor/work/lip6/data/seq2seq
 gpudatadir: /local/gainondefor/work/data
 modeldir: /net/big/gainondefor/work/trained_models/companies/
 rep:
