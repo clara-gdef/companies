@@ -51,7 +51,7 @@ def main(hparams):
             for k in [1, 5, 10]:
                 res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], offset, handle + "_@"+str(k), offset)
                 res = {**res, **res_k}
-        with open(os.path.join(CFG["gpudatadir"], "OUTPUTS_well_classified_" + xp_title), 'wb') as f:
+        with open(os.path.join(CFG["gpudatadir"], "OUTPUTS_well_classified_topK_" + xp_title), 'wb') as f:
             pkl.dump(res, f)
     else:
         well_classified = get_well_classified_outputs(preds_and_labels)
