@@ -42,12 +42,12 @@ def class_to_one_hot(num_ppl, classes_num, total_classes):
 
 def get_model_params(hparams, rep_dim, num_bag):
     out_size = num_bag
-    ipdb.set_trace()
     if hparams.input_type == "concat":
         in_size = rep_dim * num_bag
     elif hparams.input_type == "matMul" or "hadamard":
         in_size = num_bag
     elif hparams.input_type == "userOriented" or hparams.input_type == "bagTransformer":
+        ipdb.set_trace()
         in_size = rep_dim
         out_size = rep_dim
     elif hparams.input_type == "userOnly":
