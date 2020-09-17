@@ -49,10 +49,10 @@ def main(hparams):
         for handle, offset in zip(["cie", "clus", "dpt"], [0, 207, 237]):
             predicted_classes = torch.argsort(preds[handle], dim=-1, descending=False) + offset
             for k in [1, 5, 10]:
-                res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], offset, handle, offset)
+                res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], offset, handle + "_@"+str(k), offset)
                 res = {**res, **res_k}
-
-        ipdb.set_trace()
+        with open(os.path.join(CFG["gpudatadir"], "OUTPUTS_well_classified_" + xp_title), 'wb') as f:
+            pkl.dump(res, f)
     else:
         well_classified = get_well_classified_outputs(preds_and_labels)
         with open(os.path.join(CFG["gpudatadir"], "OUTPUTS_well_classified_" + xp_title), 'wb') as f:
