@@ -42,6 +42,7 @@ def class_to_one_hot(num_ppl, classes_num, total_classes):
 
 def get_model_params(hparams, rep_dim, num_bag):
     out_size = num_bag
+    ipdb.set_trace()
     if hparams.input_type == "concat":
         in_size = rep_dim * num_bag
     elif hparams.input_type == "matMul" or "hadamard":
