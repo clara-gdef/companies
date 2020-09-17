@@ -40,9 +40,12 @@ def main(hparams):
     print("Model Loaded.")
     print("Starting eval for " + xp_title + "...")
     preds_and_labels = model.get_outputs_and_labels(test_loader)
-    well_classified = get_well_classified_outputs(preds_and_labels)
-    with open(os.path.join(CFG["gpudatadir"], "OUTPUTS_well_classified_" + xp_title), 'wb') as f:
-        pkl.dump(well_classified, f)
+    if hparams.eval_top_k:
+        ipdb.set_trace()
+    else:
+        well_classified = get_well_classified_outputs(preds_and_labels)
+        with open(os.path.join(CFG["gpudatadir"], "OUTPUTS_well_classified_" + xp_title), 'wb') as f:
+            pkl.dump(well_classified, f)
 
 
 def load_datasets(hparams, splits, load):
@@ -99,6 +102,7 @@ if __name__ == "__main__":
     parser.add_argument("--middle_size", type=int, default=20)
     parser.add_argument("--input_type", type=str, default="b4Training")
     parser.add_argument("--load_dataset", type=bool, default=True)
+    parser.add_argument("--eval_top_k", type=bool, default=True)
     parser.add_argument("--auto_lr_find", type=bool, default=False)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--lr", type=float, default=1e-6)

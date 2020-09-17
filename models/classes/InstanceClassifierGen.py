@@ -177,7 +177,6 @@ class InstanceClassifierGen(pl.LightningModule):
         return input_tensor
 
 
-
 def test_for_bag(preds, labels, offset):
     tmp = [i.item() for i in torch.argmax(preds, dim=1)]
     predicted_classes = [i + offset for i in tmp]
