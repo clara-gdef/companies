@@ -23,7 +23,7 @@ def grid_search(hparams):
                     dico["middle_size"] = mid_size
                     dico["wd"] = wd
                     arg = DotDict(dico)
-                    train.disc_poly.main(arg)
+                    #train.disc_poly.main(arg)
                     test_results[lr][b_size][wd][mid_size] = eval.disc_poly.main(arg)
     res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_topK_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
     with open(res_path, "wb") as f:
