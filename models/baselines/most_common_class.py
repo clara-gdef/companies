@@ -52,11 +52,10 @@ def main(hparams):
     labels = preds_and_labels["labels"]
 
     res = {}
-    for handle, offset, num_c in zip(["cie", "clus", "dpt"], [0, 207, 237], [207, 30, 5888]):
-        predicted_classes = most_common_classes
+    for handle, num_c in zip(["cie", "clus", "dpt"], [207, 30, 5888]):
+        predicted_classes = torch.LongTensor(most_common_classes[handle]).expand(len(dataset_test), -1)
         for k in [1, 10]:
-            ipdb.set_trace()
-            res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], num_c, handle + "_@"+str(k), offset)
+            res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], num_c, handle + "_@"+str(k), 0)
             res = {**res, **res_k}
     print(sorted(res.items()))
 
@@ -79,34 +78,6 @@ def load_datasets(hparams, splits, load):
     return datasets
 
 
-def get_well_classified_outputs(res_dict):
-    well_classified = {}
-    for k, offset in zip(res_dict["preds"].keys(), [0, 207, 237]):
-        predicted_classes = get_predicted_classes(res_dict["preds"][k], offset)
-        print("F1 for " + str(k) + ': ' + str(f1_score(predicted_classes, res_dict["labels"][k], average="weighted", zero_division=0) * 100))
-        print("Acc for " + str(k) + ': ' + str(accuracy_score(predicted_classes, res_dict["labels"][k]) * 100))
-        print("Prec for " + str(k) + ': ' + str(precision_score(predicted_classes, res_dict["labels"][k], average="weighted", zero_division=0) * 100))
-        print("Rec for " + str(k) + ': ' + str(recall_score(predicted_classes, res_dict["labels"][k], average="weighted", zero_division=0) * 100))
-
-        good_outputs, labels, good_idx = find_well_classified_outputs(predicted_classes, res_dict["preds"][k], res_dict["labels"][k], res_dict["indices"])
-        well_classified[k] = {v: (k.numpy(), j.item()) for v, k, j in zip(good_idx, good_outputs, labels)}
-    return well_classified
-
-
-def get_predicted_classes(outvectors, offset):
-    return [i.item() + offset for i in torch.argmax(outvectors, dim=-1)]
-
-
-def find_well_classified_outputs(predicted_classes, preds, labels, idx):
-    indices = []
-    for index, tup in enumerate(zip(predicted_classes, labels)):
-        if tup[0] == tup[1].item():
-            indices.append(index)
-    good_preds = [preds[i] for i in indices]
-    good_labels = [labels[i] for i in indices]
-    good_indices = [idx[i] for i in indices]
-    return good_preds, good_labels, good_indices
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
@@ -114,7 +85,7 @@ if __name__ == "__main__":
     parser.add_argument("--b_size", type=int, default=1)
     parser.add_argument("--middle_size", type=int, default=20)
     parser.add_argument("--wd", type=float, default=0.)
-    parser.add_argument("--input_type", type=str, default="most_common_class")
+    parser.add_argument("--input_type", type=str, default="b4_training")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--eval_top_k", type=bool, default=True)
     parser.add_argument("--auto_lr_find", type=bool, default=False)
