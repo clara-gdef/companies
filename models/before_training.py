@@ -7,6 +7,7 @@ import yaml
 import pickle as pkl
 from data.datasets import DiscriminativePolyvalentDataset
 from models.classes import InstanceClassifierDisc
+from models.classes.InstanceClassifierDisc import get_metrics_at_k
 from utils.models import collate_for_disc_poly_model, get_model_params
 from sklearn.metrics import f1_score,  accuracy_score, precision_score, recall_score
 
@@ -46,9 +47,9 @@ def main(hparams):
         preds = preds_and_labels["preds"]
         labels = preds_and_labels["labels"]
         for handle, offset in zip(["cie", "clus", "dpt"], [0, 207, 237]):
-            predicted_classes = [i + offset for i in torch.argsort(preds[handle], dim=-1, descending=False)]
+            predicted_classes = torch.argsort(preds[handle], dim=-1, descending=False) + offset
             for k in [1, 5, 10]:
-                res_k = model.get_metrics_at_k(predicted_classes[:, :k], labels[handle], offset, handle, offset)
+                res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], offset, handle, offset)
                 res = {**res, **res_k}
 
         ipdb.set_trace()
