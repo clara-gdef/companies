@@ -42,6 +42,15 @@ def main(hparams):
     print("Starting eval for " + xp_title + "...")
     preds_and_labels = model.get_outputs_and_labels(test_loader)
     if hparams.eval_top_k:
+        res = {}
+        preds = preds_and_labels["preds"]
+        labels = preds_and_labels["labels"]
+        for handle, offset in zip(["cie", "clus", "dpt"], [0, 207, 237]):
+            predicted_classes = [i + offset for i in torch.argsort(preds[handle], dim=-1, descending=False)]
+            for k in [1, 5, 10]:
+                res_k = model.get_metrics_at_k(predicted_classes[:, :k], labels[handle], offset, handle, offset)
+                res = {**res, **res_k}
+
         ipdb.set_trace()
     else:
         well_classified = get_well_classified_outputs(preds_and_labels)
