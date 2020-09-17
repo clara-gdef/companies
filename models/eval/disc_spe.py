@@ -20,7 +20,7 @@ def main(hparams):
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     if hparams.DEBUG:
         with ipdb.launch_ipdb_on_exception():
-            return test(hparams)
+            return test(hparams, CFG)
     else:
         test(hparams, CFG)
 
