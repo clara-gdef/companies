@@ -392,13 +392,14 @@ def get_metrics(preds, labels, num_classes, handle, offset):
 
 
 def get_metrics_at_k(predictions, labels, num_classes, handle, offset):
-    if handle.__contains__("clus_"):
-        ipdb.set_trace()
     out_predictions = []
     transformed_predictions = predictions + offset
     for index, pred in enumerate(transformed_predictions):
         if labels[index].item() in pred:
             out_predictions.append(labels[index].item())
         else:
-            out_predictions.append(pred[0])
+            if type(pred[0]) == torch.Tensor:
+                out_predictions.append(pred[0].item())
+            else:
+                out_predictions.append(pred[0])
     return get_metrics(out_predictions, labels, num_classes, handle, offset)

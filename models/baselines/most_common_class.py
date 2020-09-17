@@ -7,7 +7,7 @@ import yaml
 import pickle as pkl
 from data.datasets import DiscriminativePolyvalentDataset
 from models.classes import InstanceClassifierDisc
-from models.classes.InstanceClassifierDisc import get_metrics_at_k
+from models.classes.InstanceClassifierDisc import get_metrics
 from utils.models import collate_for_disc_poly_model, get_model_params
 from sklearn.metrics import f1_score,  accuracy_score, precision_score, recall_score
 
@@ -52,10 +52,10 @@ def main(hparams):
     labels = preds_and_labels["labels"]
 
     res = {}
-    for handle, num_c in zip(["cie", "clus", "dpt"], [207, 30, 5888]):
+    for handle, num_c, offset in zip(["cie", "clus", "dpt"], [207, 30, 5888], [0, 207, 237]):
         predicted_classes = torch.LongTensor(most_common_classes[handle]).expand(len(dataset_test), -1)
         for k in [1, 10]:
-            res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], num_c, handle + "_@"+str(k), 0)
+            res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], num_c, handle + "_@"+str(k), offset)
             res = {**res, **res_k}
     print(sorted(res.items()))
 
@@ -76,6 +76,19 @@ def load_datasets(hparams, splits, load):
         datasets.append(DiscriminativePolyvalentDataset(**common_hparams, split=split))
 
     return datasets
+
+
+def get_metrics_at_k(predictions, labels, num_classes, handle, offset):
+    out_predictions = []
+    for index, pred in enumerate(predictions):
+        if labels[index].item() in pred:
+            out_predictions.append(labels[index].item())
+        else:
+            if type(pred[0]) == torch.Tensor:
+                out_predictions.append(pred[0].item())
+            else:
+                out_predictions.append(pred[0])
+    return get_metrics(out_predictions, labels, num_classes, handle, offset)
 
 
 if __name__ == "__main__":
