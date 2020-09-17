@@ -100,6 +100,7 @@ if __name__ == "__main__":
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--b_size", type=int, default=1)
     parser.add_argument("--middle_size", type=int, default=20)
+    parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--input_type", type=str, default="b4Training")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--eval_top_k", type=bool, default=True)
