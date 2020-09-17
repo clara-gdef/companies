@@ -47,7 +47,6 @@ def get_model_params(hparams, rep_dim, num_bag):
     elif hparams.input_type == "matMul" or hparams.input_type == "hadamard":
         in_size = num_bag
     elif hparams.input_type == "userOriented" or hparams.input_type == "bagTransformer":
-        ipdb.set_trace()
         in_size = rep_dim
         out_size = rep_dim
     elif hparams.input_type == "userOnly":
