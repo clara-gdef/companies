@@ -28,7 +28,7 @@ def grid_search(hparams):
                         test_results[lr][b_size][wd][mid_size] = eval.disc_poly.main(arg)
                 else:
                     print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ", wd=" + str(
-                        wd) + ", middle size=" + str(mid_size) + ")")
+                        wd) + ")")
                     dico['lr'] = lr
                     dico["b_size"] = b_size
                     dico["middle_size"] = mid_size
