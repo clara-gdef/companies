@@ -8,27 +8,26 @@ from utils import DotDict
 
 
 def grid_search(hparams):
-    with ipdb.launch_ipdb_on_exception():
-        dico = init_args(hparams)
-        for bag_type in hparams.bag_types:
-            test_results = {}
-            for lr in [1e-4, 1e-6, 1e-8]:
-                test_results[lr] = {}
-                for b_size in [16, 64, 512]:
-                    test_results[lr][b_size] = {}
-                    for mid_size in [200, 600, 1000]:
-                        print("Grid Search for " + bag_type.upper() + " (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
-                        dico['lr'] = lr
-                        dico["b_size"] = b_size
-                        dico["middle_size"] = mid_size
-                        dico["bag_type"] = bag_type
-                        arg = DotDict(dico)
-                        train.disc_spe.main(arg)
-                        test_results[lr][b_size][mid_size] = eval.disc_spe.test(arg, CFG)
-            res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_all_disc_spe_" + bag_type + "_" + hparams.rep_type +
-                                    "_" + hparams.input_type)
-            with open(res_path, "wb") as f:
-                pkl.dump(test_results, f)
+    dico = init_args(hparams)
+    for bag_type in hparams.bag_types:
+        test_results = {}
+        for lr in [1e-4, 1e-6, 1e-8]:
+            test_results[lr] = {}
+            for b_size in [16, 64, 512]:
+                test_results[lr][b_size] = {}
+                for mid_size in [200, 600, 1000]:
+                    print("Grid Search for " + bag_type.upper() + " (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
+                    dico['lr'] = lr
+                    dico["b_size"] = b_size
+                    dico["middle_size"] = mid_size
+                    dico["bag_type"] = bag_type
+                    arg = DotDict(dico)
+                    train.disc_spe.main(arg)
+                    test_results[lr][b_size][mid_size] = eval.disc_spe.test(arg, CFG)
+        res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_all_disc_spe_" + bag_type + "_" + hparams.rep_type +
+                                "_" + hparams.input_type)
+        with open(res_path, "wb") as f:
+            pkl.dump(test_results, f)
 
 
 def init_args(hparams):

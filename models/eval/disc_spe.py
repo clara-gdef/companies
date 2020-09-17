@@ -57,7 +57,9 @@ def test(hparams, CFG):
         model_name += "/" + str(hparams.middle_size)
     model_path = os.path.join(CFG['modeldir'], model_name)
     model_files = glob.glob(os.path.join(model_path, "*"))
-    latest_file = max(model_files, key=os.path.getctime)
+    #latest_file = max(model_files, key=os.path.getctime)
+    ## TODO REMOVE AFTER DEBUG
+    latest_file = '/net/big/gainondefor/work/trained_models/companies/disc_spe/clus/ft/avg/hadamard/16/0.0001/50/epoch=00.ckpt'
     print("Evaluating model: " + str(latest_file))
     model.load_state_dict(torch.load(latest_file)["state_dict"])
     return trainer.test(test_dataloaders=test_loader, model=model)
