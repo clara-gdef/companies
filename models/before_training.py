@@ -51,6 +51,7 @@ def main(hparams):
             for k in [1, 5, 10]:
                 res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], offset, handle + "_@"+str(k), offset)
                 res = {**res, **res_k}
+        print(sorted(res.items()))
         with open(os.path.join(CFG["gpudatadir"], "OUTPUTS_well_classified_topK_" + xp_title), 'wb') as f:
             pkl.dump(res, f)
     else:
