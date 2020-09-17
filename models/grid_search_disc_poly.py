@@ -31,8 +31,8 @@ def grid_search(hparams):
                         wd) + ")")
                     dico['lr'] = lr
                     dico["b_size"] = b_size
-                    dico["middle_size"] = mid_size
-                    dico["wd"] = hparams.middle_size
+                    dico["middle_size"] = hparams.middle_size
+                    dico["wd"] = wd
                     arg = DotDict(dico)
                     train.disc_poly.main(arg)
                     test_results[lr][b_size][wd] = eval.disc_poly.main(arg)
