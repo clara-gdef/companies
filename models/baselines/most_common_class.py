@@ -60,7 +60,6 @@ def main(hparams):
             res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], num_c, handle + "_@"+str(k), offset)
             res = {**res, **res_k}
     print(sorted(res.items()))
-    with open(os.path.join(CFG["gpudatadir"], "OUTPUTS_well_classified_topK_" + xp_title), 'wb') as f:
 
 
 def load_datasets(hparams, splits, load):
