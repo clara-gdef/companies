@@ -47,6 +47,8 @@ def main(hparams):
         preds = preds_and_labels["preds"]
         labels = preds_and_labels["labels"]
         for handle, offset in zip(["cie", "clus", "dpt"], [0, 207, 237]):
+            if handle == "clus":
+                ipdb.set_trace()
             predicted_classes = torch.argsort(preds[handle], dim=-1, descending=True) + offset
             for k in [1, 5, 10]:
                 res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], offset, handle + "_@"+str(k), offset)
