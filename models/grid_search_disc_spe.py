@@ -16,7 +16,7 @@ def grid_search(hparams):
                 test_results[lr] = {}
                 for b_size in [16, 64, 512]:
                     test_results[lr][b_size] = {}
-                    for mid_size in [200, 600, 1000]:
+                    for mid_size in [50, 200, 600]:
                         print("Grid Search for " + bag_type.upper() + " (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
                         dico['lr'] = lr
                         dico["b_size"] = b_size
