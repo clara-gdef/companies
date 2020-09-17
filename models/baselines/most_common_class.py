@@ -47,7 +47,7 @@ def main(hparams):
         with open(tgt_file + handle + ".pkl", "rb") as f:
             tmp = pkl.load(f)
         ipdb.set_trace()
-        most_common_classes[handle] 
+        most_common_classes[handle]
 
     preds_and_labels = model.get_outputs_and_labels(test_loader)
     labels = preds_and_labels["labels"]
