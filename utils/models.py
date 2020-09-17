@@ -54,5 +54,5 @@ def get_model_params(hparams, rep_dim, num_bag):
         in_size = rep_dim
     else:
         raise Exception("Wrong input data specified: " + str(hparams.input_type))
-
+    ipdb.set_trace()
     return in_size, out_size
