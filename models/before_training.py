@@ -48,7 +48,7 @@ def main(hparams):
         labels = preds_and_labels["labels"]
         for handle, offset, num_c in zip(["cie", "clus", "dpt"], [0, 207, 237], [207, 30, 5888]):
             predicted_classes = torch.argsort(preds[handle], dim=-1, descending=True)
-            for k in [1, 5, 10]:
+            for k in [1, 10]:
                 res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], num_c, handle + "_@"+str(k), offset)
                 res = {**res, **res_k}
         print(sorted(res.items()))
