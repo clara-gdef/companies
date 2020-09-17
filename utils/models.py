@@ -44,7 +44,7 @@ def get_model_params(hparams, rep_dim, num_bag):
     out_size = num_bag
     if hparams.input_type == "concat":
         in_size = rep_dim * num_bag
-    elif hparams.input_type == "matMul" or "hadamard":
+    elif hparams.input_type == "matMul" or hparams.input_type == "hadamard":
         in_size = num_bag
     elif hparams.input_type == "userOriented" or hparams.input_type == "bagTransformer":
         ipdb.set_trace()
@@ -54,5 +54,4 @@ def get_model_params(hparams, rep_dim, num_bag):
         in_size = rep_dim
     else:
         raise Exception("Wrong input data specified: " + str(hparams.input_type))
-    ipdb.set_trace()
     return in_size, out_size
