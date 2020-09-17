@@ -42,7 +42,7 @@ def main(hparams):
     print("Model Loaded.")
     print("Starting eval for " + xp_title + "...")
     most_common_classes = {}
-    tgt_file = os.path.join(CFG["datadir"], "most_common_classes_")
+    tgt_file = os.path.join(CFG["gpudatadir"], "most_common_classes_")
     for handle in ["cie", 'clus', "dpt"]:
         with open(tgt_file + handle + ".pkl", "rb") as f:
             tmp = pkl.load(f)
