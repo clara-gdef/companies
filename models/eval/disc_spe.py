@@ -101,6 +101,7 @@ if __name__ == "__main__":
     parser.add_argument("--middle_size", type=int, default=50)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--lr", type=float, default=1e-4)
+    parser.add_argument("--wd", type=float, default=0)
     parser.add_argument("--b_size", type=int, default=64)
     hparams = parser.parse_args()
     main(hparams)
