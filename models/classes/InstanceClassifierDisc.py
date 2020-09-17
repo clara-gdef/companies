@@ -392,6 +392,8 @@ def get_metrics(preds, labels, num_classes, handle, offset):
 
 
 def get_metrics_at_k(predictions, labels, num_classes, handle, offset):
+    if handle == "clus":
+        ipdb.set_trace()
     out_predictions = []
     transformed_predictions = predictions + offset
     for index, pred in enumerate(transformed_predictions):
