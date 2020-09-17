@@ -18,8 +18,11 @@ def main(hparams):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
-    # with ipdb.launch_ipdb_on_exception():
-    test(hparams, CFG)
+    if hparams.DEBUG:
+        with ipdb.launch_ipdb_on_exception():
+            return test(hparams)
+    else:
+        test(hparams, CFG)
 
 
 def test(hparams, CFG):
@@ -93,6 +96,7 @@ if __name__ == "__main__":
     parser.add_argument("--rep_type", type=str, default='sk')
     parser.add_argument("--gpus", type=int, default=[0])
     parser.add_argument("--bag_type", type=str, default="cie")
+    parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--middle_size", type=int, default=50)
     parser.add_argument("--data_agg_type", type=str, default="avg")
