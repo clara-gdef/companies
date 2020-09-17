@@ -17,8 +17,11 @@ def main(hparams):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
-    # with ipdb.launch_ipdb_on_exception():
-    train(hparams)
+    if hparams.DEBUG:
+        with ipdb.launch_ipdb_on_exception():
+            return train(hparams)
+    else:
+        return train(hparams)
 
 
 def train(hparams):
@@ -132,6 +135,7 @@ if __name__ == "__main__":
     parser.add_argument("--load_from_checkpoint", type=bool, default=False)
     parser.add_argument("--checkpoint", type=int, default=499)
     parser.add_argument("--data_agg_type", type=str, default="avg")
+    parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--lr", type=float, default=1e-6)
     parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--epochs", type=int, default=20)
