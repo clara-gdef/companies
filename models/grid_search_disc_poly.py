@@ -17,7 +17,7 @@ def grid_search(hparams):
             for wd in [0., .4, .8]:
                 test_results[lr][b_size][wd] = {}
                 for mid_size in [50, 200, 600]:
-                    print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ", wd=" + str(wd) + ", middle size=" + mid_size + ")")
+                    print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ", wd=" + str(wd) + ", middle size=" + str(mid_size) + ")")
                     dico['lr'] = lr
                     dico["b_size"] = b_size
                     dico["middle_size"] = mid_size
