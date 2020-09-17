@@ -54,6 +54,8 @@ def main(hparams):
     res = {}
     for handle, num_c in zip(["cie", "clus", "dpt"], [207, 30, 5888]):
         predicted_classes = torch.LongTensor(most_common_classes[handle]).expand(len(dataset_test), -1)
+        if handle == "clus":
+            ipdb.set_trace()
         for k in [1, 10]:
             res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], num_c, handle + "_@"+str(k), 0)
             res = {**res, **res_k}
