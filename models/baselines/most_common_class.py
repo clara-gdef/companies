@@ -46,17 +46,16 @@ def main(hparams):
     for handle in ["cie", 'clus', "dpt"]:
         with open(tgt_file + handle + ".pkl", "rb") as f:
             tmp = pkl.load(f)
-        ipdb.set_trace()
-        most_common_classes[handle]
+        most_common_classes[handle] = [i[0] for i in tmp]
 
     preds_and_labels = model.get_outputs_and_labels(test_loader)
     labels = preds_and_labels["labels"]
 
-
     res = {}
     for handle, offset, num_c in zip(["cie", "clus", "dpt"], [0, 207, 237], [207, 30, 5888]):
-        predicted_classes = torch.argsort(preds[handle], dim=-1, descending=True)
+        predicted_classes = most_common_classes
         for k in [1, 10]:
+            ipdb.set_trace()
             res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], num_c, handle + "_@"+str(k), offset)
             res = {**res, **res_k}
     print(sorted(res.items()))
