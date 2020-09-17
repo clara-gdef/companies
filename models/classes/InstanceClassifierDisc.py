@@ -207,7 +207,7 @@ class InstanceClassifierDisc(pl.LightningModule):
     def test_spe(self, outputs):
         preds = torch.argsort(outputs.view(-1, self.get_num_classes()), dim=-1, descending=True)
         labels = torch.LongTensor([i[0][0] for i in self.test_labels]).cuda()
-        res_dict_trained = get_metrics(preds.cpu(), labels.cpu(), self.get_num_classes(), self.bag_type, 0)
+        res_dict_trained = get_metrics(preds[:, :1].cpu(), labels.cpu(), self.get_num_classes(), self.bag_type, 0)
         for k in [5, 10]:
             tmp = get_metrics_at_k(preds[:, :k].cpu(), labels.cpu(),  self.get_num_classes(),
                                                    self.bag_type + "_@" + str(k), 0)
