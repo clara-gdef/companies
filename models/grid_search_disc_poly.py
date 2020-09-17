@@ -16,15 +16,26 @@ def grid_search(hparams):
             test_results[lr][b_size] = {}
             for wd in [0., .4, .8]:
                 test_results[lr][b_size][wd] = {}
-                for mid_size in [50, 200, 600]:
-                    print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ", wd=" + str(wd) + ", middle size=" + str(mid_size) + ")")
+                if hparams.input_type == "hadamard":
+                    for mid_size in [50, 200, 600]:
+                        print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ", wd=" + str(wd) + ", middle size=" + str(mid_size) + ")")
+                        dico['lr'] = lr
+                        dico["b_size"] = b_size
+                        dico["middle_size"] = mid_size
+                        dico["wd"] = wd
+                        arg = DotDict(dico)
+                        train.disc_poly.main(arg)
+                        test_results[lr][b_size][wd][mid_size] = eval.disc_poly.main(arg)
+                else:
+                    print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ", wd=" + str(
+                        wd) + ", middle size=" + str(mid_size) + ")")
                     dico['lr'] = lr
                     dico["b_size"] = b_size
                     dico["middle_size"] = mid_size
-                    dico["wd"] = wd
+                    dico["wd"] = hparams.middle_size
                     arg = DotDict(dico)
                     train.disc_poly.main(arg)
-                    test_results[lr][b_size][wd][mid_size] = eval.disc_poly.main(arg)
+                    test_results[lr][b_size][wd] = eval.disc_poly.main(arg)
     res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_topK_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
     with open(res_path, "wb") as f:
         pkl.dump(test_results, f)
