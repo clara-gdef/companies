@@ -21,7 +21,7 @@ class DiscriminativePolyvalentDataset(Dataset):
             with open(os.path.join(data_dir, file_name), 'rb') as f_name:
                 dic = torch.load(f_name)
             self.rep_type = dic["rep_type"]
-            self.tuples = dic["tuples"]
+            self.tuples = dic["tuples"][:14000]
             self.rep_dim = dic["rep_dim"]
             self.bag_rep = dic["bag_rep"]
             self.num_cie = dic["num_cie"]
