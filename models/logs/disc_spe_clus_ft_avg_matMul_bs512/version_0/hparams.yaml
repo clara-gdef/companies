@@ -1,5 +1,5 @@
 auto_lr_find: false
-b_size: 16
+b_size: 512
 bag_type: clus
 data_agg_type: avg
 epochs: 50

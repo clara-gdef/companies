@@ -1,9 +1,0 @@
-auto_lr_find: false
-b_size: 64
-bag_type: clus
-data_agg_type: avg
-epochs: 50
-gpus: 1
-input_type: matMul
-lr: 1.0e-07
-rep_type: ft
