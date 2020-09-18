@@ -22,6 +22,7 @@ class DiscriminativePolyvalentDataset(Dataset):
                 dic = torch.load(f_name)
             self.rep_type = dic["rep_type"]
             r = torch.randperm(14000)
+            ipdb.set_trace()
             self.tuples = dic["tuples"][:r]
             self.rep_dim = dic["rep_dim"]
             self.bag_rep = dic["bag_rep"]
