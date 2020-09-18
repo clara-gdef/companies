@@ -50,7 +50,8 @@ def test(hparams):
     model = InstanceClassifierDisc(**arguments)
     print("Model Loaded.")
 
-    dataset = load_datasets(hparams, CFG, ["TEST"], hparams.load_dataset)
+    ## TODO: REMOVE TRAIN AND REPLACE BY TEST
+    dataset = load_datasets(hparams, CFG, ["TRAIN"], hparams.load_dataset)
     test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_poly_model, num_workers=32)
     model_name = "disc_poly_wd/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" + \
                  str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
