@@ -23,7 +23,7 @@ def main(hparams):
 
 def train(hparams):
     xp_title = "disc_spe_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
-        hparams.b_size)
+        hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, CFG, xp_title)
     print(hparams.auto_lr_find)
     trainer = pl.Trainer(gpus=hparams.gpus,

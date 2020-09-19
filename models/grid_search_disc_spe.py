@@ -13,18 +13,31 @@ def grid_search(hparams):
         test_results = {}
         for lr in [1e-4, 1e-6, 1e-8]:
             test_results[lr] = {}
-            for b_size in [16, 64, 512]:
+            for b_size in [64, 512, 16]:
                 test_results[lr][b_size] = {}
-                for mid_size in [200, 600, 1000]:
-                    print("Grid Search for " + bag_type.upper() + " (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
-                    dico['lr'] = lr
-                    dico["b_size"] = b_size
-                    dico["middle_size"] = mid_size
-                    dico["bag_type"] = bag_type
-                    arg = DotDict(dico)
-                    train.disc_spe.main(arg)
-                    test_results[lr][b_size][mid_size] = eval.disc_spe.test(arg, CFG)
-        res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_all_disc_spe_" + bag_type + "_" + hparams.rep_type +
+                if hparams.input_type == "hadamard":
+                    for mid_size in [200, 600, 1000]:
+                        print("Grid Search for " + bag_type.upper() + " (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
+                        dico['lr'] = lr
+                        dico["b_size"] = b_size
+                        dico["middle_size"] = mid_size
+                        dico["bag_type"] = bag_type
+                        arg = DotDict(dico)
+                        train.disc_spe.main(arg)
+                        test_results[lr][b_size][mid_size] = eval.disc_spe.test(arg, CFG)
+                else:
+                    for wd in [0., .4, .8]:
+                        print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ", wd=" + str(
+                            wd) + ")")
+                        dico['lr'] = lr
+                        dico["b_size"] = b_size
+                        dico["middle_size"] = hparams.middle_size
+                        dico["bag_type"] = bag_type
+                        dico["wd"] = wd
+                        arg = DotDict(dico)
+                        train.disc_spe.main(arg)
+                        test_results[lr][b_size]= eval.disc_spe.test(arg, CFG)
+        res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_disc_spe_" + bag_type + "_" + hparams.rep_type +
                                 "_" + hparams.input_type)
         with open(res_path, "wb") as f:
             pkl.dump(test_results, f)

@@ -123,7 +123,9 @@ class InstanceClassifierDisc(pl.LightningModule):
             # the model is specialized
             val_loss = torch.nn.functional.cross_entropy(output,
                                                          torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
-        tensorboard_logs = {'val_loss': val_loss}
+        preds = [i.item() for i in torch.argmax(output, dim=1)]
+        res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "valid", 0)
+        tensorboard_logs = {**res_dict, 'val_loss': val_loss}
         return {'loss': val_loss, 'log': tensorboard_logs}
 
     def epoch_end(self):
