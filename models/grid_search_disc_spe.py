@@ -35,8 +35,8 @@ def grid_search(hparams):
                         dico["bag_type"] = bag_type
                         dico["wd"] = wd
                         arg = DotDict(dico)
-                        train.disc_spe.main(arg)
-                        test_results[lr][b_size]= eval.disc_spe.test(arg, CFG)
+                        # train.disc_spe.main(arg)
+                        test_results[lr][b_size][wd] = eval.disc_spe.test(arg, CFG)
         res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_disc_spe_" + bag_type + "_" + hparams.rep_type +
                                 "_" + hparams.input_type)
         with open(res_path, "wb") as f:
