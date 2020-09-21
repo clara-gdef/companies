@@ -22,7 +22,7 @@ def main(hparams):
 
 
 def train(hparams):
-    xp_title = "disc_spe_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
+    xp_title = "disc_spe_sgd_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, CFG, xp_title)
     print(hparams.auto_lr_find)
@@ -54,7 +54,7 @@ def train(hparams):
     print("Model Loaded.")
     if hparams.load_from_checkpoint:
         print("Loading from previous checkpoint...")
-        model_name = "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
+        model_name = "disc_spe_sgd/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
                      "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(
             hparams.wd)
         if hparams.input_type == "hadamard":
@@ -84,7 +84,7 @@ def load_datasets(hparams, CFG, splits):
 
 
 def init_lightning(hparams, CFG, xp_title):
-    model_name = "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
+    model_name = "disc_spe_sgd/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
                  "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
     if hparams.input_type == "hadamard":
         model_name += "/" + str(hparams.middle_size)

@@ -137,7 +137,8 @@ class InstanceClassifierDisc(pl.LightningModule):
         return outputs[-1]
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=self.hparams.lr, weight_decay=self.wd)
+        return torch.optim.SGD(self.parameters(), lr=self.hparams.lr, weight_decay=self.wd)
+        #return torch.optim.Adam(self.parameters(), lr=self.hparams.lr, weight_decay=self.wd)
 
     def test_step(self, batch, batch_idx):
         if self.input_type == "userOriented":
