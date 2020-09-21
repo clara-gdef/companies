@@ -52,7 +52,7 @@ def test(hparams, CFG):
 
     model.eval()
 
-    dataset = load_datasets(hparams, CFG, ["TEST"])
+    dataset = load_datasets(hparams, CFG, ["VALID"])
     test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_spe_model, num_workers=32)
     model_name = "SGDdisc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
                  "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
