@@ -11,9 +11,9 @@ def grid_search(hparams):
     dico = init_args(hparams)
     for bag_type in hparams.bag_types:
         test_results = {}
-        for lr in [1e-4, 1e-6, 1e-8]:
+        for lr in [1e-8]:
             test_results[lr] = {}
-            for b_size in [64, 512, 16]:
+            for b_size in [64, 512, 1024, 16]:
                 test_results[lr][b_size] = {}
                 if hparams.input_type == "hadamard":
                     for mid_size in [200, 600, 1000]:
@@ -35,9 +35,9 @@ def grid_search(hparams):
                         dico["bag_type"] = bag_type
                         dico["wd"] = wd
                         arg = DotDict(dico)
-                        # train.disc_spe.main(arg)
+                        train.disc_spe.main(arg)
                         test_results[lr][b_size][wd] = eval.disc_spe.test(arg, CFG)
-        res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_disc_spe_" + bag_type + "_" + hparams.rep_type +
+        res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_1ep_disc_spe_" + bag_type + "_" + hparams.rep_type +
                                 "_" + hparams.input_type)
         with open(res_path, "wb") as f:
             pkl.dump(test_results, f)
@@ -50,7 +50,7 @@ def init_args(hparams):
             'load_dataset': True,
             'auto_lr_find': False,
             'data_agg_type': 'avg',
-            'epochs': 50,
+            'epochs': hparams.epochs,
             "wd": 0.,
             "load_from_checkpoint": False}
     return dico
@@ -63,12 +63,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=1)
-    parser.add_argument("--input_type", type=str, default="bagTransformer")
+    parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--middle_size", type=int, default=100)
-    parser.add_argument("--epochs", type=int, default=100)
-    parser.add_argument("--bag_types", nargs='+', default=["cie", "clus", "dpt"])
+    parser.add_argument("--epochs", type=int, default=1)
+    parser.add_argument("--bag_types", nargs='+', default=["clus"])
     hparams = parser.parse_args()
     grid_search(hparams)

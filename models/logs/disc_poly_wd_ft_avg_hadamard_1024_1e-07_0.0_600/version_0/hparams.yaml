@@ -1,0 +1,14 @@
+DEBUG: false
+auto_lr_find: false
+b_size: 1024
+checkpoint: 49
+data_agg_type: avg
+epochs: 100
+gpus: 1
+input_type: hadamard
+load_dataset: true
+load_from_checkpoint: false
+lr: 1.0e-07
+middle_size: 600
+rep_type: ft
+wd: 0.0

@@ -1,0 +1,11 @@
+DEBUG: true
+b_size: 64
+bag_type: clus
+data_agg_type: avg
+gpus:
+- 0
+input_type: hadamard
+lr: 0.0001
+middle_size: 50
+rep_type: ft
+wd: 0
