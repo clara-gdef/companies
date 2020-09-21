@@ -54,8 +54,9 @@ def train(hparams):
     print("Model Loaded.")
     if hparams.load_from_checkpoint:
         print("Loading from previous checkpoint...")
-        model_name = "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type +\
-                     "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr)
+        model_name = "disc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
+                     "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(
+            hparams.wd)
         if hparams.input_type == "hadamard":
             model_name += "/" + str(hparams.middle_size)
 
