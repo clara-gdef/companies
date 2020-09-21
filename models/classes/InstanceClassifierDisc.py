@@ -214,8 +214,8 @@ class InstanceClassifierDisc(pl.LightningModule):
         for k in [5, 10]:
             tmp = get_metrics_at_k(preds[:, :k].cpu(), labels.cpu(),  self.get_num_classes(),
                                                    self.bag_type + "_@" + str(k), 0)
-        res_dict_trained = {**res_dict_trained, **tmp}
-        self.save_bag_outputs(preds, labels, confusion_matrix(preds, labels), res_dict_trained)
+            res_dict_trained = {**res_dict_trained, **tmp}
+        self.save_bag_outputs(preds, labels, confusion_matrix(preds[:, :1].cpu(), labels.cpu()), res_dict_trained)
         # if self.input_type != "userOriented":
         #     b4_training = torch.argmax(torch.stack(self.before_training)[:, 0, :], dim=1)
         #     res_dict_b4_training = get_metrics(b4_training.cpu(), labels.cpu(), self.get_num_classes(), self.bag_type + "_b4", 0)
