@@ -53,6 +53,7 @@ def init_args(hparams):
             'epochs': hparams.epochs,
             "wd": 0.,
             "load_from_checkpoint": False}
+    print(hparams.epochs)
     return dico
 
 
@@ -68,7 +69,7 @@ if __name__ == "__main__":
     parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--middle_size", type=int, default=100)
-    parser.add_argument("--epochs", type=int, default=1)
+    parser.add_argument("--epochs", type=int, default=2)
     parser.add_argument("--bag_types", nargs='+', default=["clus"])
     hparams = parser.parse_args()
     grid_search(hparams)
