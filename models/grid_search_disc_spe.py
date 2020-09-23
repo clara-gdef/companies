@@ -11,9 +11,9 @@ def grid_search(hparams):
     dico = init_args(hparams)
     for bag_type in hparams.bag_types:
         test_results = {}
-        for lr in [1e-6, 1e-7, 1e-8]:
+        for lr in [1e-8]:
             test_results[lr] = {}
-            for b_size in [64, 512, 1024, 16]:
+            for b_size in [64, 512, 1024]:
                 test_results[lr][b_size] = {}
                 if hparams.input_type == "hadamard":
                     for mid_size in [200, 600, 1000]:
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--middle_size", type=int, default=100)
-    parser.add_argument("--epochs", type=int, default=2)
+    parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--TRAIN", default=False)
     parser.add_argument("--bag_types", nargs='+', default=["cie", "dpt"])
     hparams = parser.parse_args()
