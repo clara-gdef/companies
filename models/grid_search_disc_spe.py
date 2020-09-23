@@ -11,7 +11,7 @@ def grid_search(hparams):
     dico = init_args(hparams)
     for bag_type in hparams.bag_types:
         test_results = {}
-        for lr in [1e-8]:
+        for lr in [1e-6, 1e-7, 1e-8]:
             test_results[lr] = {}
             for b_size in [64, 512, 1024, 16]:
                 test_results[lr][b_size] = {}
@@ -73,6 +73,6 @@ if __name__ == "__main__":
     parser.add_argument("--middle_size", type=int, default=100)
     parser.add_argument("--epochs", type=int, default=2)
     parser.add_argument("--TRAIN", default=False)
-    parser.add_argument("--bag_types", nargs='+', default=["cie", "clus", "dpt"])
+    parser.add_argument("--bag_types", nargs='+', default=["cie", "dpt"])
     hparams = parser.parse_args()
     grid_search(hparams)
