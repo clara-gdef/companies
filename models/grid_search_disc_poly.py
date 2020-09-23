@@ -25,14 +25,14 @@ def grid_search(hparams):
                     if hparams.TRAIN == "True":
                         train.disc_poly.main(arg)
                     test_results[lr][b_size][mid_size] = eval.disc_poly.main(arg)
-                else:
-                    print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
-                    dico['lr'] = lr
-                    dico["b_size"] = b_size
-                    dico["middle_size"] = hparams.middle_size
-                    arg = DotDict(dico)
-                    if hparams.TRAIN == "True":
-                        train.disc_poly.main(arg)
+            else:
+                print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
+                dico['lr'] = lr
+                dico["b_size"] = b_size
+                dico["middle_size"] = hparams.middle_size
+                arg = DotDict(dico)
+                if hparams.TRAIN == "True":
+                    train.disc_poly.main(arg)
 
                     test_results[lr][b_size] = eval.disc_poly.main(arg)
     res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_topK_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
