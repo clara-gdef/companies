@@ -47,7 +47,7 @@ def main(hparams):
 
         dataset = load_datasets(hparams, CFG, ["TEST"])
         test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_spe_model, num_workers=32)
-        model_name = "SGDdisc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
+        model_name = hparams.model_type + "/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
                      "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
         if hparams.input_type == "hadamard":
             model_name += "/" + str(hparams.middle_size)
