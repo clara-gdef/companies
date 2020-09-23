@@ -50,6 +50,7 @@ def init_args(hparams):
             'epochs': hparams.epochs,
             "load_from_checkpoint": False,
             "checkpoint": 49,
+            "wd": 0.0,
             "DEBUG": hparams.DEBUG,
             }
     return dico
