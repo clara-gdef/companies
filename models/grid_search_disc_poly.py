@@ -10,12 +10,11 @@ from utils import DotDict
 def grid_search(hparams):
     test_results = {}
     dico = init_args(hparams)
-    #for lr in [1e-4, 1e-6, 1e-8]:
-    for lr in [1e-07, 1e-08]:
+    for lr in [1e-4, 1e-6, 1e-8]:
+#    for lr in [1e-07, 1e-08]:
         test_results[lr] = {}
         for b_size in [512, 768, 1024]:
             test_results[lr][b_size] = {}
-            #for wd in [0., .4, .8]:
             if hparams.input_type == "hadamard":
                 for mid_size in [50, 200, 600]:
                     print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ", middle size=" + str(mid_size) + ")")
@@ -34,8 +33,6 @@ def grid_search(hparams):
                     arg = DotDict(dico)
                     if hparams.TRAIN == "True":
                         train.disc_poly.main(arg)
-
-                    #train.disc_poly.main(arg)
 
                     test_results[lr][b_size] = eval.disc_poly.main(arg)
     res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_topK_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
