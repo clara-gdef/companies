@@ -23,7 +23,7 @@ def grid_search(hparams):
                         dico["middle_size"] = mid_size
                         dico["bag_type"] = bag_type
                         arg = DotDict(dico)
-                        if hparams.TRAIN == True:
+                        if hparams.TRAIN == "True":
                             train.disc_spe.main(arg)
                         test_results[lr][b_size][mid_size] = eval.disc_spe.test(arg, CFG)
                 else:
@@ -36,7 +36,7 @@ def grid_search(hparams):
                         dico["bag_type"] = bag_type
                         dico["wd"] = wd
                         arg = DotDict(dico)
-                        if hparams.TRAIN == True:
+                        if hparams.TRAIN == "True":
                             train.disc_spe.main(arg)
                         test_results[lr][b_size][wd] = eval.disc_spe.test(arg, CFG)
         res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_1ep_disc_spe_" + bag_type + "_" + hparams.rep_type +
