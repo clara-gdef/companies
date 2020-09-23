@@ -8,7 +8,7 @@ from torch.utils.data import Dataset
 
 
 class DiscriminativeSpecializedDataset(Dataset):
-    def __init__(self, data_dir, rep_type, agg_type, bag_type, split):
+    def __init__(self, data_dir, rep_type, agg_type, bag_type, split, subsample):
         print("Loading previously saved dataset...")
         file_name = "disc_poly_" + agg_type + "_" + rep_type + "_" + split + ".pkl"
         with open(os.path.join(data_dir, file_name), 'rb') as f_name:
@@ -31,7 +31,7 @@ class DiscriminativeSpecializedDataset(Dataset):
             self.bag_rep = bag_rep[-self.num_dpt:]
         else:
             raise Exception("Wrong bag type specified: " + bag_type)
-        self.select_relevant_tuples(bag_type, self.all_tuples)
+        self.select_relevant_tuples(bag_type, self.all_tuples, subsample)
 
         ##### debug
         # np.random.shuffle(self.tuples)
@@ -47,13 +47,19 @@ class DiscriminativeSpecializedDataset(Dataset):
     def __getitem__(self, idx):
         return self.tuples[idx]
 
-    def select_relevant_tuples(self, bag_type, all_tuples):
+    def select_relevant_tuples(self, bag_type, all_tuples, subsample):
+        tmp = []
         for person in all_tuples:
-            self.tuples.append({"id": person["id"],
+            tmp.append({"id": person["id"],
                                 "ppl_rep": person["rep"],
                                 "bag_rep": self.bag_rep,
                                 "label": person[bag_type]
                                 })
+            if subsample > 0:
+                np.random.shuffle(self.tuples)
+                self.tuples = self.tuples[:subsample]
+            else:
+                self.tuples = self.tuples
 
     def get_num_bag(self):
         return len(self.bag_rep)
