@@ -23,7 +23,8 @@ def grid_search(hparams):
                         dico["middle_size"] = mid_size
                         dico["bag_type"] = bag_type
                         arg = DotDict(dico)
-                        train.disc_spe.main(arg)
+                        if hparams.TRAIN == True:
+                            train.disc_spe.main(arg)
                         test_results[lr][b_size][mid_size] = eval.disc_spe.test(arg, CFG)
                 else:
                     for wd in [0., .4, .8]:
@@ -35,7 +36,8 @@ def grid_search(hparams):
                         dico["bag_type"] = bag_type
                         dico["wd"] = wd
                         arg = DotDict(dico)
-                        train.disc_spe.main(arg)
+                        if hparams.TRAIN == True:
+                            train.disc_spe.main(arg)
                         test_results[lr][b_size][wd] = eval.disc_spe.test(arg, CFG)
         res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_1ep_disc_spe_" + bag_type + "_" + hparams.rep_type +
                                 "_" + hparams.input_type)
@@ -70,6 +72,7 @@ if __name__ == "__main__":
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--middle_size", type=int, default=100)
     parser.add_argument("--epochs", type=int, default=2)
-    parser.add_argument("--bag_types", nargs='+', default=["clus"])
+    parser.add_argument("--TRAIN", default=False)
+    parser.add_argument("--bag_types", nargs='+', default=["cie", "clus", "dpt"])
     hparams = parser.parse_args()
     grid_search(hparams)

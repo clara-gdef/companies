@@ -24,7 +24,8 @@ def grid_search(hparams):
                         dico["middle_size"] = mid_size
                         dico["wd"] = wd
                         arg = DotDict(dico)
-                        if hparams.TRAIN:
+                        if hparams.TRAIN == True:
+                            print("helloooooo")
                             train.disc_poly.main(arg)
                         test_results[lr][b_size][wd][mid_size] = eval.disc_poly.main(arg)
                 else:
@@ -35,7 +36,7 @@ def grid_search(hparams):
                     dico["middle_size"] = hparams.middle_size
                     dico["wd"] = wd
                     arg = DotDict(dico)
-                    if hparams.TRAIN:
+                    if hparams.TRAIN == True:
                         train.disc_poly.main(arg)
                     test_results[lr][b_size][wd] = eval.disc_poly.main(arg)
     res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_topK_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
@@ -67,7 +68,7 @@ if __name__ == "__main__":
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", type=bool, default=True)
-    parser.add_argument("--TRAIN", type=bool, default=True)
+    parser.add_argument("--TRAIN", default=False)
     parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--DEBUG", type=bool, default=False)
