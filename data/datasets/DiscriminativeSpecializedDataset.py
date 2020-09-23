@@ -57,9 +57,9 @@ class DiscriminativeSpecializedDataset(Dataset):
                                 })
             if subsample > 0:
                 np.random.shuffle(self.tuples)
-                self.tuples = self.tuples[:subsample]
+                self.tuples = tmp[:subsample]
             else:
-                self.tuples = self.tuples
+                self.tuples = tmp
 
     def get_num_bag(self):
         return len(self.bag_rep)
