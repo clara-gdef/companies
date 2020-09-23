@@ -19,7 +19,7 @@ MAX_SEQ_LENGTH = 64
 
 
 global CFG
-with open("../../config.yaml", "r") as ymlfile:
+with open("config.yaml", "r") as ymlfile:
     CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
 # with ipdb.launch_ipdb_on_exception():
 cie_file = os.path.join(CFG["datadir"], "cie_list.pkl")
