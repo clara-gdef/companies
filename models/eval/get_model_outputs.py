@@ -6,7 +6,7 @@ import argparse
 from torch.utils.data import DataLoader
 import yaml
 import torch
-import picke as pkl
+import pickle as pkl
 import glob
 from data.datasets import DiscriminativeSpecializedDataset, DiscriminativePolyvalentDataset
 from models.classes import InstanceClassifierDisc
