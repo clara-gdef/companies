@@ -14,56 +14,57 @@ from utils.models import collate_for_disc_spe_model, collate_for_disc_poly_model
 
 
 def main(hparams):
-    global CFG
-    with open("config.yaml", "r") as ymlfile:
-        CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
+    with ipdb.launch_ipdb_on_exception():
+        global CFG
+        with open("config.yaml", "r") as ymlfile:
+            CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
 
-    xp_title = hparams.model_type + "_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
-        hparams.b_size)
+        xp_title = hparams.model_type + "_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
+            hparams.b_size)
 
-    if hparams.model_type.split("_")[-1] == "spe":
-        collate_fn = collate_for_disc_spe_model
-    else:
-        collate_fn = collate_for_disc_poly_model
-    datasets = load_datasets(hparams, CFG, ["TRAIN"])
-    dataset_train = datasets[0]
-    in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, len(dataset_train.bag_rep))
+        if hparams.model_type.split("_")[-1] == "spe":
+            collate_fn = collate_for_disc_spe_model
+        else:
+            collate_fn = collate_for_disc_poly_model
+        datasets = load_datasets(hparams, CFG, ["TRAIN"])
+        dataset_train = datasets[0]
+        in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, len(dataset_train.bag_rep))
 
-    arguments = {'in_size': in_size,
-                 'out_size': out_size,
-                 'hparams': hparams,
-                 'dataset': dataset_train,
-                 'datadir': CFG["gpudatadir"],
-                 'desc': xp_title,
-                 "wd": hparams.wd,
-                 "middle_size": hparams.middle_size}
+        arguments = {'in_size': in_size,
+                     'out_size': out_size,
+                     'hparams': hparams,
+                     'dataset': dataset_train,
+                     'datadir': CFG["gpudatadir"],
+                     'desc': xp_title,
+                     "wd": hparams.wd,
+                     "middle_size": hparams.middle_size}
 
-    print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
-    model = InstanceClassifierDisc(**arguments)
-    print("Model Loaded.")
+        print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
+        model = InstanceClassifierDisc(**arguments)
+        print("Model Loaded.")
 
-    model.eval()
+        model.eval()
 
-    dataset = load_datasets(hparams, CFG, ["TEST"])
-    test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_spe_model, num_workers=32)
-    model_name = "SGDdisc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
-                 "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
-    if hparams.input_type == "hadamard":
-        model_name += "/" + str(hparams.middle_size)
-    model_path = os.path.join(CFG['modeldir'], model_name)
-    model_files = glob.glob(os.path.join(model_path, "*"))
-    latest_file = max(model_files, key=os.path.getctime)
-    print("Evaluating model: " + str(latest_file))
-    model.load_state_dict(torch.load(latest_file)["state_dict"])
-    test_res = model.get_outputs_and_labels(test_loader)
-    train_res = model.get_outputs_and_labels(DataLoader(dataset_train, batch_size=1,
-                                                        collate_fn=collate_fn,
-                                                        num_workers=32))
-    tgt_file = os.path.join(CFG["gpudatadir"], "OUTPUTS_" + xp_title)
-    with open(tgt_file + "_TEST.pkl", 'wb') as f:
-        pkl.dump(test_res, f)
-    with open(tgt_file + "_TRAIN.pkl", 'wb') as f:
-        pkl.dump(train_res, f)
+        dataset = load_datasets(hparams, CFG, ["TEST"])
+        test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_spe_model, num_workers=32)
+        model_name = "SGDdisc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
+                     "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
+        if hparams.input_type == "hadamard":
+            model_name += "/" + str(hparams.middle_size)
+        model_path = os.path.join(CFG['modeldir'], model_name)
+        model_files = glob.glob(os.path.join(model_path, "*"))
+        latest_file = max(model_files, key=os.path.getctime)
+        print("Evaluating model: " + str(latest_file))
+        model.load_state_dict(torch.load(latest_file)["state_dict"])
+        test_res = model.get_outputs_and_labels(test_loader)
+        train_res = model.get_outputs_and_labels(DataLoader(dataset_train, batch_size=1,
+                                                            collate_fn=collate_fn,
+                                                            num_workers=32))
+        tgt_file = os.path.join(CFG["gpudatadir"], "OUTPUTS_" + xp_title)
+        with open(tgt_file + "_TEST.pkl", 'wb') as f:
+            pkl.dump(test_res, f)
+        with open(tgt_file + "_TRAIN.pkl", 'wb') as f:
+            pkl.dump(train_res, f)
 
 
 def load_datasets(hparams, CFG,  splits):
