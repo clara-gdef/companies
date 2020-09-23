@@ -76,6 +76,7 @@ def load_datasets(hparams, CFG, splits):
         "rep_type": hparams.rep_type,
         "agg_type": hparams.data_agg_type,
         "bag_type": hparams.bag_type,
+        "subsample": 0
     }
     for split in splits:
         datasets.append(DiscriminativeSpecializedDataset(**common_hparams, split=split))

@@ -83,7 +83,8 @@ def load_datasets(hparams, splits, load):
         "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type + ".pkl",
         "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type + ".pkl",
         "agg_type": hparams.data_agg_type,
-        "load": load
+        "load": load,
+        "subsample": 0
     }
     for split in splits:
         datasets.append(DiscriminativePolyvalentDataset(**common_hparams, split=split))

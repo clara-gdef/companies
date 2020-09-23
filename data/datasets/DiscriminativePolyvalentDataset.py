@@ -13,16 +13,18 @@ class DiscriminativePolyvalentDataset(Dataset):
                  ppl_file, rep_type,
                  cie_reps_file, clus_reps_file,
                  dpt_reps_file, agg_type,
-                 split,
-                 load):
+                 split, load, subsample):
         if load:
             print("Loading previously saved dataset...")
             file_name = "disc_poly_" + agg_type + "_" + rep_type + "_" + split + ".pkl"
             with open(os.path.join(data_dir, file_name), 'rb') as f_name:
                 dic = torch.load(f_name)
             self.rep_type = dic["rep_type"]
-            # np.random.shuffle(dic["tuples"])
-            self.tuples = dic["tuples"]
+            if subsample > 0:
+                np.random.shuffle(dic["tuples"])
+                self.tuples = dic["tuples"][:subsample]
+            else:
+                self.tuples = dic["tuples"]
             self.rep_dim = dic["rep_dim"]
             self.bag_rep = dic["bag_rep"]
             self.num_cie = dic["num_cie"]

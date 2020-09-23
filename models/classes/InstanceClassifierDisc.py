@@ -211,7 +211,7 @@ class InstanceClassifierDisc(pl.LightningModule):
         preds = torch.argsort(outputs.view(-1, self.get_num_classes()), dim=-1, descending=True)
         labels = torch.LongTensor([i[0][0] for i in self.test_labels]).cuda()
         res_dict_trained = get_metrics(preds[:, :1].cpu(), labels.cpu(), self.get_num_classes(), self.bag_type, 0)
-        for k in [5, 10]:
+        for k in [10]:
             tmp = get_metrics_at_k(preds[:, :k].cpu(), labels.cpu(),  self.get_num_classes(),
                                                    self.bag_type + "_@" + str(k), 0)
             res_dict_trained = {**res_dict_trained, **tmp}
@@ -364,7 +364,7 @@ def test_for_bag(preds, labels, b4_training, offset, num_classes, bag_type):
     res_dict_trained = get_metrics([i.item() + offset for i in predicted_classes[:, 0]], labels.cpu(), num_classes,
                                       bag_type, offset)
 
-    for k in [5, 10]:
+    for k in [10]:
         tmp = get_metrics_at_k(predicted_classes[:, :k].cpu(), labels.cpu(), num_classes,
                                                bag_type + "_@" + str(k), offset)
         res_dict_trained = {**res_dict_trained, **tmp}
