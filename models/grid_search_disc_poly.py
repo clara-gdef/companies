@@ -25,7 +25,6 @@ def grid_search(hparams):
                         dico["wd"] = wd
                         arg = DotDict(dico)
                         if hparams.TRAIN == "True":
-                            print("helloooooo")
                             train.disc_poly.main(arg)
                         test_results[lr][b_size][wd][mid_size] = eval.disc_poly.main(arg)
                 else:
