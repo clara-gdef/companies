@@ -57,14 +57,17 @@ def main(hparams):
         print("Evaluating model: " + str(latest_file))
         model.load_state_dict(torch.load(latest_file)["state_dict"])
         test_res = model.get_outputs_and_labels(test_loader)
-        train_res = model.get_outputs_and_labels(DataLoader(dataset_train, batch_size=1,
-                                                            collate_fn=collate_fn,
-                                                            num_workers=0))
         tgt_file = os.path.join(CFG["gpudatadir"], "OUTPUTS_" + xp_title)
         with open(tgt_file + "_TEST.pkl", 'wb') as f:
             pkl.dump(test_res, f)
-        with open(tgt_file + "_TRAIN.pkl", 'wb') as f:
-            pkl.dump(train_res, f)
+        if hparams.test_on_train == "True":
+            train_res = model.get_outputs_and_labels(DataLoader(dataset_train, batch_size=1,
+                                                            collate_fn=collate_fn,
+                                                            num_workers=0))
+            with open(tgt_file + "_TRAIN.pkl", 'wb') as f:
+                pkl.dump(train_res, f)
+
+
 
 
 def load_datasets(hparams, CFG,  splits):
@@ -98,12 +101,12 @@ def load_datasets(hparams, CFG,  splits):
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=[0])
     parser.add_argument("--bag_type", type=str, default="cie")
     parser.add_argument("--DEBUG", type=bool, default=False)
+    parser.add_argument("--test_on_train", default=True)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--model_type", type=str, default="SGDdisc_spe")
     parser.add_argument("--middle_size", type=int, default=50)
