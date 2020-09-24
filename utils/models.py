@@ -52,8 +52,7 @@ def get_model_params(hparams, rep_dim, num_bag):
     elif hparams.input_type == "userOnly":
         in_size = rep_dim
     elif hparams.input_type == "b4Training":
-        in_size = 0
-        out_size = 0
+        in_size = num_bag
     else:
         raise Exception("Wrong input data specified: " + str(hparams.input_type))
     return in_size, out_size
