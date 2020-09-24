@@ -10,7 +10,8 @@ from utils import DotDict
 def grid_search(hparams):
     test_results = {}
     dico = init_args(hparams)
-    for lr in hparams.lr:
+    for str_lr in hparams.lr:
+        lr = float(str_lr)
     #for lr in [1e-07, 1e-08]:
         test_results[lr] = {}
         for b_size in [512, 768, 1024]:
