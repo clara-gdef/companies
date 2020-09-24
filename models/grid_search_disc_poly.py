@@ -36,9 +36,10 @@ def grid_search(hparams):
                     train.disc_poly.main(arg)
 
                     test_results[lr][b_size] = eval.disc_poly.main(arg)
-    res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_topK_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
-    with open(res_path, "wb") as f:
-        pkl.dump(test_results, f)
+        ## TODO REMOVE THIS - UNINDENT
+        res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_topK_disc_poly_" + hparams.rep_type + "_" + hparams.input_type)
+        with open(res_path, "wb") as f:
+            pkl.dump(test_results, f)
 
 
 def init_args(hparams):
