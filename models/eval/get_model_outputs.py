@@ -58,11 +58,15 @@ def main(hparams):
             latest_file = max(model_files, key=os.path.getctime)
             print("Evaluating model: " + str(latest_file))
             model.load_state_dict(torch.load(latest_file)["state_dict"])
-            
+
         test_res = model.get_outputs_and_labels(test_loader)
         tgt_file = os.path.join(CFG["gpudatadir"], "OUTPUTS_" + xp_title)
         with open(tgt_file + "_TEST.pkl", 'wb') as f:
             pkl.dump(test_res, f)
+
+        if hparams.well_classified == "True":
+            ipdb.set_trace()
+
         if hparams.test_on_train == "True":
             train_res = model.get_outputs_and_labels(DataLoader(dataset_train, batch_size=1,
                                                             collate_fn=collate_fn,
@@ -110,6 +114,7 @@ if __name__ == "__main__":
     parser.add_argument("--bag_type", type=str, default="cie")
     parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--test_on_train", default=True)
+    parser.add_argument("--well_classified", default=True)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--model_type", type=str, default="SGDdisc_spe")
     parser.add_argument("--middle_size", type=int, default=50)
