@@ -26,7 +26,7 @@ def main(hparams):
 
 
 def test(hparams):
-    xp_title = "EyeDisc_poly_wd_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
+    xp_title = hparams.model_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size)
     logger = init_lightning(hparams, CFG, xp_title)
     trainer = pl.Trainer(gpus=hparams.gpus,
@@ -52,7 +52,7 @@ def test(hparams):
 
     dataset = load_datasets(hparams, CFG, ["TEST"], hparams.load_dataset)
     test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_poly_model, num_workers=32)
-    model_name = "EyeDisc_poly_wd/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" + \
+    model_name = hparams.model_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" + \
                  str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
     if hparams.input_type == "hadamard":
         model_name += "/" + str(hparams.middle_size)
@@ -104,6 +104,7 @@ if __name__ == "__main__":
     parser.add_argument("--wd", type=float, default=.4)
     parser.add_argument("--middle_size", type=int, default=250)
     parser.add_argument("--input_type", type=str, default="matMul")
+    parser.add_argument("--model_type", type=str, default="disc_poly")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--data_agg_type", type=str, default="avg")

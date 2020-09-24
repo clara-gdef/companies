@@ -54,6 +54,7 @@ def init_args(hparams):
             "checkpoint": 49,
             "wd": 0.0,
             "DEBUG": hparams.DEBUG,
+            "model_type": hparams.model_type
             }
     return dico
 
@@ -71,6 +72,7 @@ if __name__ == "__main__":
     parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--DEBUG", type=bool, default=False)
+    parser.add_argument("--model_type", type=str, default="disc_poly_wd")
     parser.add_argument("--middle_size", type=int, default=50)
     parser.add_argument("--epochs", type=int, default=100)
     parser.add_argument("--lr", nargs='+', default=[1e-4, 1e-6, 1e-8])
