@@ -25,7 +25,7 @@ def main(hparams):
 
 
 def train(hparams):
-    xp_title = "disc_poly_wd_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_" + \
+    xp_title = "EyeDisc_poly_wd_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_" + \
                str(hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
     if hparams.input_type == "hadamard":
         xp_title += "_" + str(hparams.middle_size)
@@ -60,7 +60,7 @@ def train(hparams):
     print("Model Loaded.")
     if hparams.load_from_checkpoint:
         print("Loading from previous checkpoint...")
-        model_name = "disc_poly_wd/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" + \
+        model_name = "EyeDisc_poly_wd/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" + \
                      str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
         if hparams.input_type == "hadamard":
             model_name += "/" + str(hparams.middle_size)
@@ -93,7 +93,7 @@ def load_datasets(hparams, splits, load):
 
 
 def init_lightning(hparams, xp_title):
-    model_name = "disc_poly_wd/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" + \
+    model_name = "EyeDisc_poly_wd/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" + \
                  str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
     if hparams.input_type == "hadamard":
         model_name += "/" + str(hparams.middle_size)
