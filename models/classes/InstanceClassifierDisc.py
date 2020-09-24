@@ -29,6 +29,10 @@ class InstanceClassifierDisc(pl.LightningModule):
         if self.input_type == "hadamard":
             self.lin_dim_reduction = torch.nn.Linear(in_size, middle_size)
             self.lin_class_prediction = torch.nn.Linear(middle_size, out_size)
+            torch.nn.init.eye_(self.lin_dim_reduction.weight)
+            torch.nn.init.eye_(self.lin_class_prediction.weight)
+            torch.nn.init.zeros_(self.lin_dim_reduction.bias)
+            torch.nn.init.zeros_(self.lin_class_prediction.bias)
         else:
             self.lin = torch.nn.Linear(in_size, out_size)
             torch.nn.init.eye_(self.lin.weight)
