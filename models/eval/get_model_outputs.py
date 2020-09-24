@@ -65,7 +65,13 @@ def main(hparams):
             pkl.dump(test_res, f)
 
         if hparams.well_classified == "True":
-            ipdb.set_trace()
+            well_classif_indices = []
+            for ind, (pred, lab) in enumerate(zip(test_res["preds"], test_res["labels"])):
+                if torch.argmax(pred, dim=-1).item() == lab.item():
+                    well_classif_indices.append(test_res["indices"][ind])
+            tgt_file = os.path.join(CFG["gpudatadir"], "OUTPUTS_well_classified_" + xp_title)
+            with open(tgt_file + "_TEST.pkl", 'wb') as f:
+                pkl.dump(test_res, f)
 
         if hparams.test_on_train == "True":
             train_res = model.get_outputs_and_labels(DataLoader(dataset_train, batch_size=1,
