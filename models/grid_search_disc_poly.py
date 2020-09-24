@@ -10,8 +10,8 @@ from utils import DotDict
 def grid_search(hparams):
     test_results = {}
     dico = init_args(hparams)
-#    for lr in [1e-4, 1e-6, 1e-8]:
-    for lr in [1e-07, 1e-08]:
+    for lr in hparams.lr:
+    #for lr in [1e-07, 1e-08]:
         test_results[lr] = {}
         for b_size in [512, 768, 1024]:
             test_results[lr][b_size] = {}
@@ -71,5 +71,6 @@ if __name__ == "__main__":
     parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--middle_size", type=int, default=50)
     parser.add_argument("--epochs", type=int, default=100)
+    parser.add_argument("--lr", nargs='+', default=[1e-4, 1e-6, 1e-8])
     hparams = parser.parse_args()
     grid_search(hparams)
