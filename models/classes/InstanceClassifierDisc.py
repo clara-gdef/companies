@@ -119,8 +119,6 @@ class InstanceClassifierDisc(pl.LightningModule):
                 new_bags = self(bag_matrix.T)
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
-                # if self.input_type == "hadamard":
-                #     output = self((bag_matrix, profiles))
         if self.type == "poly":
             val_loss = torch.nn.functional.binary_cross_entropy_with_logits(output, labels.cuda())
         else:
@@ -162,12 +160,6 @@ class InstanceClassifierDisc(pl.LightningModule):
             new_bags = self(bag_matrix.T)
             tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
             self.test_outputs.append(torch.transpose(tmp, 1, 0))
-        # elif self.input_type == "hadamard":
-        #     bag_matrix, profiles = self.get_input_tensor(batch)
-        #     tmp_labels = self.get_labels(batch)
-        #     labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
-        #     output = self((bag_matrix, profiles))
-        #     self.test_outputs.append(torch.transpose(output, 1, 0))
         else:
             input_tensor = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
@@ -220,11 +212,6 @@ class InstanceClassifierDisc(pl.LightningModule):
                                                    self.bag_type + "_@" + str(k), 0)
             res_dict_trained = {**res_dict_trained, **tmp}
         self.save_bag_outputs(preds, labels, confusion_matrix(preds[:, :1].cpu(), labels.cpu()), res_dict_trained)
-        # if self.input_type != "userOriented":
-        #     b4_training = torch.argmax(torch.stack(self.before_training)[:, 0, :], dim=1)
-        #     res_dict_b4_training = get_metrics(b4_training.cpu(), labels.cpu(), self.get_num_classes(), self.bag_type + "_b4", 0)
-        #     return {**res_dict_b4_training, **res_dict_trained}
-        # else:
         return res_dict_trained
 
     def save_bag_outputs(self, preds, labels, cm, res):
@@ -286,14 +273,6 @@ class InstanceClassifierDisc(pl.LightningModule):
             input_tensor = torch.matmul(profiles, bag_rep)
         elif self.input_type == "concat":
             raise NotImplementedError
-        # elif  self.input_type == "hadamard":
-        #     b_size = profiles.shape[0]
-        #     bag_rep = batch[-1]
-        #     # expanded_bag_rep = bag_rep.expand(b_size, bag_rep.shape[0], bag_rep.shape[-1])
-        #     prof = profiles.unsqueeze(1)
-        #     expanded_profiles = prof.expand(b_size, bag_rep.shape[0], bag_rep.shape[-1])
-        #     # tmp = expanded_bag_rep * expanded_profiles
-        #     input_tensor = bag_rep, expanded_profiles
         elif self.input_type == "userOriented":
             input_tensor = (batch[-1], profiles)
         elif self.input_type == "bagTransformer":
@@ -322,29 +301,49 @@ class InstanceClassifierDisc(pl.LightningModule):
             idx.append(batch[0][0])
             self.test_step(batch, 0)
         outputs = torch.stack(self.test_outputs)
-        if self.input_type != "userOriented":
-            cie_preds = outputs[:, 0, :self.num_cie]
-            clus_preds = outputs[:, 0, self.num_cie: self.num_cie + self.num_clus]
-            dpt_preds = outputs[:, 0, -self.num_dpt:]
+        if self.type == "poly":
+            if self.input_type != "userOriented":
+                cie_preds = outputs[:, 0, :self.num_cie]
+                clus_preds = outputs[:, 0, self.num_cie: self.num_cie + self.num_clus]
+                dpt_preds = outputs[:, 0, -self.num_dpt:]
+            else:
+                cie_preds = outputs[:, :self.num_cie, 0]
+                clus_preds = outputs[:, self.num_cie: self.num_cie + self.num_clus, 0]
+                dpt_preds = outputs[:, -self.num_dpt:, 0]
+
+            cie_labels = torch.LongTensor([i[0][0] for i in self.test_labels])
+            clus_labels = torch.LongTensor([i[1][0] for i in self.test_labels])
+            dpt_labels = torch.LongTensor([i[2][0] for i in self.test_labels])
+
+            return {"indices": idx,
+                    "preds":
+                        {"cie": cie_preds,
+                         "clus": clus_preds,
+                         "dpt": dpt_preds},
+                    "labels":
+                        {"cie": cie_labels,
+                         "clus": clus_labels,
+                         "dpt": dpt_labels},
+                    }
         else:
-            cie_preds = outputs[:, :self.num_cie, 0]
-            clus_preds = outputs[:, self.num_cie: self.num_cie + self.num_clus, 0]
-            dpt_preds = outputs[:, -self.num_dpt:, 0]
-
-        cie_labels = torch.LongTensor([i[0][0] for i in self.test_labels])
-        clus_labels = torch.LongTensor([i[1][0] for i in self.test_labels])
-        dpt_labels = torch.LongTensor([i[2][0] for i in self.test_labels])
-
-        return {"indices": idx,
-                "preds":
-                    {"cie": cie_preds,
-                     "clus": clus_preds,
-                     "dpt": dpt_preds},
-                "labels":
-                    {"cie": cie_labels,
-                     "clus": clus_labels,
-                     "dpt": dpt_labels},
-                }
+            if self.bag_type == "cie":
+                offset = 0
+                limit = self.num_cie
+            elif self.bag_type == "clus":
+                offset = self.num_cie
+                limit = self.num_cie + self.num_clus
+            elif self.bag_type == "dpt":
+                offset = self.num_cie + self.num_clus
+                limit = self.num_cie  + self.num_clus + self.num_dpt
+            if self.input_type != "userOriented":
+                preds = outputs[:, 0, offset:limit]
+            else:
+                preds = outputs[:, offset:limit, 0]
+            labels = torch.LongTensor([i[0][0] for i in self.test_labels])
+            return {"indices": idx,
+                    "preds": preds,
+                    "labels": labels
+                    }
 
 
 def test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds, dpt_preds, num_classes):
@@ -373,9 +372,7 @@ def test_for_bag(preds, labels, b4_training, offset, num_classes, bag_type):
                                                bag_type + "_@" + str(k), offset)
         res_dict_trained = {**res_dict_trained, **tmp}
     return res_dict_trained
-    # b4_train = torch.LongTensor([i + offset for i in torch.argmax(b4_training, dim=1)])
-    # res_dict_b4_training = get_metrics(b4_train, labels.cpu(), num_classes, bag_type + "_b4", offset)
-    # return {**res_dict_b4_training, **res_dict_trained}
+
 
 
 def get_average_metrics(res_dict):
