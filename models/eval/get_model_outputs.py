@@ -51,11 +51,14 @@ def main(hparams):
                      "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
         if hparams.input_type == "hadamard":
             model_name += "/" + str(hparams.middle_size)
-        model_path = os.path.join(CFG['modeldir'], model_name)
-        model_files = glob.glob(os.path.join(model_path, "*"))
-        latest_file = max(model_files, key=os.path.getctime)
-        print("Evaluating model: " + str(latest_file))
-        model.load_state_dict(torch.load(latest_file)["state_dict"])
+
+        if hparams.input_type != "b4Training":
+            model_path = os.path.join(CFG['modeldir'], model_name)
+            model_files = glob.glob(os.path.join(model_path, "*"))
+            latest_file = max(model_files, key=os.path.getctime)
+            print("Evaluating model: " + str(latest_file))
+            model.load_state_dict(torch.load(latest_file)["state_dict"])
+            
         test_res = model.get_outputs_and_labels(test_loader)
         tgt_file = os.path.join(CFG["gpudatadir"], "OUTPUTS_" + xp_title)
         with open(tgt_file + "_TEST.pkl", 'wb') as f:
