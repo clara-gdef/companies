@@ -46,7 +46,7 @@ def main(hparams):
         model.eval()
 
         dataset = load_datasets(hparams, CFG, ["TEST"])
-        test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_spe_model, num_workers=32)
+        test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_spe_model, num_workers=0)
         model_name = hparams.model_type + "/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
                      "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
         if hparams.input_type == "hadamard":
@@ -59,7 +59,7 @@ def main(hparams):
         test_res = model.get_outputs_and_labels(test_loader)
         train_res = model.get_outputs_and_labels(DataLoader(dataset_train, batch_size=1,
                                                             collate_fn=collate_fn,
-                                                            num_workers=32))
+                                                            num_workers=0))
         tgt_file = os.path.join(CFG["gpudatadir"], "OUTPUTS_" + xp_title)
         with open(tgt_file + "_TEST.pkl", 'wb') as f:
             pkl.dump(test_res, f)
