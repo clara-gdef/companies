@@ -345,6 +345,20 @@ class InstanceClassifierDisc(pl.LightningModule):
                     "labels": labels
                     }
 
+    def get_jobs_outputs(self, test_loader):
+        jobs_ouputs = {}
+        for batch in tqdm(test_loader, desc="Testing..."):
+            jobs_ouputs[batch[0][0]] = {}
+            jobs_ouputs[batch[0][0]]["jobs"] = batch[-2]
+            jobs_ouputs[batch[0][0]]["jobs_emb"] = batch[1]
+            self.test_step(batch, 0)
+        counter = 0
+        for batch in tqdm(test_loader, desc="Testing..."):
+            jobs_ouputs[batch[0][0]]["jobs_outputs"] = self.test_outputs[counter]
+            jobs_ouputs[batch[0][0]]["labels"] = self.test_labels[counter]
+            counter += 1
+        return jobs_ouputs
+
 
 def test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds, dpt_preds, num_classes):
     all_labels = []
@@ -374,7 +388,6 @@ def test_for_bag(preds, labels, b4_training, offset, num_classes, bag_type):
     return res_dict_trained
 
 
-
 def get_average_metrics(res_dict):
     precision = []
     recall = []
@@ -388,11 +401,12 @@ def get_average_metrics(res_dict):
 def get_metrics(preds, labels, num_classes, handle, offset):
     num_c = range(offset, offset + num_classes)
     res_dict = {
-        "acc_" + handle: accuracy_score(preds, labels) * 100,
-        "precision_" + handle: precision_score(preds, labels, average='weighted',
+        "acc_" + handle: accuracy_score(labels, preds) * 100,
+        "precision_" + handle: precision_score(labels, preds, average='weighted',
                                                labels=num_c, zero_division=0) * 100,
-        "recall_" + handle: recall_score(preds, labels, average='weighted', labels=num_c, zero_division=0) * 100,
-        "f1_" + handle: f1_score(preds, labels, average='weighted', labels=num_c, zero_division=0) * 100}
+        "recall_" + handle: recall_score(labels, preds, average='weighted', labels=num_c, zero_division=0) * 100,
+        "f1_" + handle: f1_score(labels, preds, average='weighted', labels=num_c, zero_division=0) * 100}
+    ipdb.set_trace()
     return res_dict
 
 
