@@ -1,5 +1,6 @@
 import ipdb
 import torch
+import numpy as np
 
 
 def collate_for_disc_poly_model(batch):
@@ -34,13 +35,12 @@ def labels_to_one_hot(b_size, classes_num, total_classes):
 
 
 def collate_for_jobs(batch):
-    ipdb.set_trace()
-    ids = [i[0]["id"] for i in batch]
-    jobs = [i[0]["rep"] for i in batch]
-    cies = [i[0]["cie"] for i in batch]
-    clus = [i[0]["clus"] for i in batch]
-    dpt = [i[0]["dpt"] for i in batch]
-    return ids, torch.stack(reps), cies, clus, dpt, batch[0][-1]
+    ids = [i[0] for i in batch]
+    jobs = [i[1] for i in batch]
+    jobs_emb = [i[2] for i in batch]
+    pred = [i[3] for i in batch]
+    label = [i[4] for i in batch]
+    return ids, torch.FloatTensor(np.stack(jobs_emb)[0]), label, torch.FloatTensor(np.stack(pred)), jobs,  batch[0][-1]
 
 
 def class_to_one_hot(num_ppl, classes_num, total_classes):

@@ -37,7 +37,6 @@ def main(hparams):
         print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
         model = InstanceClassifierDisc(**arguments)
         print("Model Loaded.")
-
         model.eval()
 
         test_loader = DataLoader(dataset_jobs, batch_size=1, collate_fn=collate_for_jobs, num_workers=0)
@@ -53,36 +52,15 @@ def main(hparams):
             print("Evaluating model: " + str(latest_file))
             model.load_state_dict(torch.load(latest_file)["state_dict"])
 
-        test_res = model.get_outputs_and_labels(test_loader)
-        tgt_file = os.path.join(CFG["gpudatadir"], "OUTPUTS_" + xp_title)
-        with open(tgt_file + "_TEST.pkl", 'wb') as f:
-            pkl.dump(test_res, f)
+        outputs_for_jobs = model.get_jobs_outputs(test_loader)
+        tgt_file = os.path.join(CFG["gpudatadir"], "jobs_outputs_" + xp_title + ".pkl")
+        with open(tgt_file, 'wb') as f:
+            torch.save(outputs_for_jobs, f)
 
-        if hparams.well_classified == "True":
-            well_classif_indices = []
-            for ind, (pred, lab) in enumerate(zip(test_res["preds"], test_res["labels"])):
-                if torch.argmax(pred, dim=-1).item() == lab.item():
-                    well_classif_indices.append(test_res["indices"][ind])
-            tgt_file = os.path.join(CFG["gpudatadir"], "OUTPUTS_well_classified_" + xp_title)
-            with open(tgt_file + "_TEST.pkl", 'wb') as f:
-                pkl.dump(test_res, f)
-
-        if hparams.test_on_train == "True":
-            train_res = model.get_outputs_and_labels(DataLoader(dataset_train, batch_size=1,
-                                                            collate_fn=collate_fn,
-                                                            num_workers=0))
-            with open(tgt_file + "_TRAIN.pkl", 'wb') as f:
-                pkl.dump(train_res, f)
 
 
 def load_datasets(hparams, CFG):
     if hparams.model_type.split("_")[-1] == "spe":
-        common_hparams = {
-            "data_dir": CFG["gpudatadir"],
-            "rep_type": hparams.rep_type,
-            "bag_type": hparams.bag_type,
-        }
-        dataset_jobs = JobsDataset(**common_hparams)
         common_hparams = {
             "data_dir": CFG["gpudatadir"],
             "rep_type": hparams.rep_type,
@@ -93,8 +71,14 @@ def load_datasets(hparams, CFG):
         }
         dataset_init = (DiscriminativeSpecializedDataset(**common_hparams))
 
+        common_hparams = {
+            "data_dir": CFG["gpudatadir"],
+            "rep_type": hparams.rep_type,
+            "bag_type": hparams.bag_type,
+            "bag_rep": dataset_init.bag_rep
+        }
+        dataset_jobs = JobsDataset(**common_hparams)
     return dataset_init, dataset_jobs
-
 
 
 if __name__ == "__main__":

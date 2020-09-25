@@ -26,7 +26,8 @@ def main(hparams):
 
 
 def test(hparams, CFG):
-    xp_title = "SGDdisc_spe_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
+    xp_title = hparams.model_type + "_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" \
+               + hparams.input_type + "_bs" + str(
         hparams.b_size)
     logger = init_lightning(xp_title)
     trainer = pl.Trainer(gpus=hparams.gpus,
@@ -54,10 +55,11 @@ def test(hparams, CFG):
 
     dataset = load_datasets(hparams, CFG, ["TEST"])
     test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_spe_model, num_workers=32)
-    model_name = "SGDdisc_spe/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
+    model_name = hparams.model_type + "/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
                  "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
     if hparams.input_type == "hadamard":
-        model_name += "/" + str(hparams.middle_size)
+        model_name = hparams.model_type + "/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
+                 "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.middle_size)
     model_path = os.path.join(CFG['modeldir'], model_name)
     model_files = glob.glob(os.path.join(model_path, "*"))
     latest_file = max(model_files, key=os.path.getctime)
@@ -92,15 +94,16 @@ def init_lightning(xp_title):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rep_type", type=str, default='sk')
+    parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=[0])
-    parser.add_argument("--bag_type", type=str, default="cie")
+    parser.add_argument("--bag_type", type=str, default="dpt")
     parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--input_type", type=str, default="matMul")
-    parser.add_argument("--middle_size", type=int, default=50)
+    parser.add_argument("--model_type", type=str, default="disc_spe")
+    parser.add_argument("--middle_size", type=int, default=200)
     parser.add_argument("--data_agg_type", type=str, default="avg")
-    parser.add_argument("--lr", type=float, default=1e-4)
-    parser.add_argument("--wd", type=float, default=0.0)
-    parser.add_argument("--b_size", type=int, default=64)
+    parser.add_argument("--lr", type=float, default=1e-8)
+    parser.add_argument("--wd", type=float, default=0.8)
+    parser.add_argument("--b_size", type=int, default=16)
     hparams = parser.parse_args()
     main(hparams)

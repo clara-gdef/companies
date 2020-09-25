@@ -406,7 +406,6 @@ def get_metrics(preds, labels, num_classes, handle, offset):
                                                labels=num_c, zero_division=0) * 100,
         "recall_" + handle: recall_score(labels, preds, average='weighted', labels=num_c, zero_division=0) * 100,
         "f1_" + handle: f1_score(labels, preds, average='weighted', labels=num_c, zero_division=0) * 100}
-    ipdb.set_trace()
     return res_dict
 
 
