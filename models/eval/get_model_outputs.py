@@ -72,7 +72,8 @@ def main(hparams):
                     well_classif_indices.append(test_res["indices"][ind])
             tgt_file = os.path.join(CFG["gpudatadir"], "OUTPUTS_well_classified_" + xp_title)
             with open(tgt_file + "_TEST.pkl", 'wb') as f:
-                pkl.dump(test_res, f)
+                torch.save(test_res, f)
+            print("Results saved as : " + tgt_file)
 
         if hparams.test_on_train == "True":
             train_res = model.get_outputs_and_labels(DataLoader(dataset_train, batch_size=1,
