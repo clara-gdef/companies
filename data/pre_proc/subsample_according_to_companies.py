@@ -158,30 +158,38 @@ def word_seq_into_list(position, description, cie_list, syn_cie):
     number_regex = re.compile(r'\d+(,\d+)?')
     whole_job = position.lower() + ' ' + description.lower()
     new_tup = []
+    if (cie_list is not None) and (syn_cie is not None):
+        for cie in cie_list:
+            if cie in whole_job.lower():
+                if cie in syn_cie.keys():
+                    handle = syn_cie[cie]
+                else:
+                    handle = cie
+                whole_job = whole_job.replace(cie, handle)
 
-    for cie in cie_list:
-        if cie in whole_job.lower():
-            if cie in syn_cie.keys():
-                handle = syn_cie[cie]
+        for name in syn_cie.keys():
+            if name in whole_job.lower():
+                handle = syn_cie[name]
+                whole_job = whole_job.replace(cie, handle)
+
+        job = word_tokenize(whole_job)
+
+        for tok in job:
+            if re.match(number_regex, tok):
+                new_tup.append("NUM")
+            elif tok.lower() in cie_list or tok.lower() in syn_cie.keys():
+                new_tup.append("CIE")
             else:
-                handle = cie
-            whole_job = whole_job.replace(cie, handle)
-
-    for name in syn_cie.keys():
-        if name in whole_job.lower():
-            handle = syn_cie[name]
-            whole_job = whole_job.replace(cie, handle)
-
-    job = word_tokenize(whole_job)
-
-    for tok in job:
-        if re.match(number_regex, tok):
-            new_tup.append("NUM")
-        elif tok.lower() in cie_list or tok.lower() in syn_cie.keys():
-            new_tup.append("CIE")
-        else:
-            new_tup.append(tok.lower())
-    cleaned_tup = [item for item in new_tup if item != ""]
+                new_tup.append(tok.lower())
+        cleaned_tup = [item for item in new_tup if item != ""]
+    else:
+        edu = word_tokenize(whole_job)
+        for tok in edu:
+            if re.match(number_regex, tok):
+                new_tup.append("NUM")
+            else:
+                new_tup.append(tok.lower())
+        cleaned_tup = [item for item in new_tup if item != ""]
     return cleaned_tup
 
 
@@ -205,8 +213,12 @@ def handle_date(job):
 
 
 def process_education(degree_list):
-    ipdb.set_trace()
-    return sorted(degree_list, key=lambda k: k['to'], reverse=True)
+    education = []
+    ordered_edu = sorted(degree_list, key=lambda k: k['to'], reverse=True)
+    for ed_ex in ordered_edu:
+        tmp = word_seq_into_list(ed_ex["degree"], ed_ex["institution"], None, None)
+        education.append(tmp)
+    return education
 
 
 if __name__ == "__main__":
