@@ -205,7 +205,7 @@ def handle_date(job):
 
 
 def process_education(degree_list):
-    ipdb.set_trace()
+    return sorted(degree_list, key=lambda k: k['to'], reverse=True)
 
 
 if __name__ == "__main__":
