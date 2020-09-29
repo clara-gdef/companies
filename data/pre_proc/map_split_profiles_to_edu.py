@@ -36,7 +36,7 @@ def main(args):
         for split in ["TRAIN", 'VALID', "TEST"]:
             lookup_split[split] = {}
             for person in splits[split]:
-                lookup_split[person[0]] = person[1:]
+                lookup_split[split][person[0]] = person[1:]
 
         final_lists = {}
         for split in ["TRAIN", 'VALID', "TEST"]:
