@@ -35,9 +35,12 @@ def main(args):
         for person in splits[split]:
             lookup_split[person[0]] = person[1:]
 
-    for k in tqdm(lookup_edu.keys()):
-        if k in lookup_split.keys():
-            lookup_split[k].append(k, lookup_split[k], lookup_edu[k])
+    final_lists = {}
+    for split in ["TRAIN", 'VALID', "TEST"]:
+        final_lists[split] = []
+        for k in tqdm(lookup_edu.keys()):
+            if k in lookup_split[split].keys():
+                final_lists[split].append(k, lookup_split[split][k], lookup_edu[k])
     ipdb.set_trace()
 
 
