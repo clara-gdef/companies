@@ -47,6 +47,7 @@ def main(args):
             edu_file = os.path.join(CFG["datadir"], "profiles_jobs_skills_edu_" + split + ".pkl")
             with open(edu_file, "wb") as f:
                 pkl.dump(final_lists[split], f)
+        ipdb.set_trace()
 
 
 
