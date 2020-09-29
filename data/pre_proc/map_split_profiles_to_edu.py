@@ -23,7 +23,7 @@ def main(args):
 
     splits = {}
     for split in ["TRAIN", 'VALID', "TEST"]:
-        split_file = os.path.join(CFG["datadir"], "profiles_jobs_skills_edu_" + split + ".pkl")
+        split_file = os.path.join(CFG["datadir"], "profiles_jobs_skills_" + split + ".pkl")
         with open(split_file, "rb") as f:
             splits[split] = pkl.load(f)
     ipdb.set_trace()
