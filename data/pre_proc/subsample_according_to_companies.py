@@ -205,7 +205,7 @@ def handle_date(job):
 
 
 def process_education(degree_list):
-    pass
+    ipdb.set_trace()
 
 
 if __name__ == "__main__":
