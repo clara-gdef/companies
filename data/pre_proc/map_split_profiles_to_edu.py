@@ -17,31 +17,34 @@ def main(args):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
-    edu_file = os.path.join(CFG["datadir"], "profiles_jobs_skills_edu.pkl")
-    with open(edu_file, "rb") as f:
-        edu = pkl.load(f)
-    lookup_edu = {}
-    for person in edu:
-        lookup_edu[person[0]] = person[1:]
 
-    splits = {}
-    for split in ["TRAIN", 'VALID', "TEST"]:
-        split_file = os.path.join(CFG["datadir"], "profiles_jobs_skills_" + split + ".pkl")
-        with open(split_file, "rb") as f:
-            splits[split] = pkl.load(f)
+    with ipdb.launch_ipdb_on_exception():
+        edu_file = os.path.join(CFG["datadir"], "profiles_jobs_skills_edu.pkl")
+        with open(edu_file, "rb") as f:
+            edu = pkl.load(f)
+        lookup_edu = {}
+        for person in edu:
+            lookup_edu[person[0]] = person[1:]
 
-    for split in ["TRAIN", 'VALID', "TEST"]:
+        splits = {}
+        for split in ["TRAIN", 'VALID', "TEST"]:
+            split_file = os.path.join(CFG["datadir"], "profiles_jobs_skills_" + split + ".pkl")
+            with open(split_file, "rb") as f:
+                splits[split] = pkl.load(f)
+
         lookup_split = {}
-        for person in splits[split]:
-            lookup_split[person[0]] = person[1:]
+        for split in ["TRAIN", 'VALID', "TEST"]:
+            lookup_split[split] = {}
+            for person in splits[split]:
+                lookup_split[person[0]] = person[1:]
 
-    final_lists = {}
-    for split in ["TRAIN", 'VALID', "TEST"]:
-        final_lists[split] = []
-        for k in tqdm(lookup_edu.keys()):
-            if k in lookup_split[split].keys():
-                final_lists[split].append(k, lookup_split[split][k], lookup_edu[k])
-    ipdb.set_trace()
+        final_lists = {}
+        for split in ["TRAIN", 'VALID', "TEST"]:
+            final_lists[split] = []
+            for k in tqdm(lookup_edu.keys()):
+                if k in lookup_split[split].keys():
+                    final_lists[split].append(k, lookup_split[split][k], lookup_edu[k])
+        ipdb.set_trace()
 
 
 
