@@ -20,12 +20,24 @@ def main(args):
     edu_file = os.path.join(CFG["datadir"], "profiles_jobs_skills_edu.pkl")
     with open(edu_file, "rb") as f:
         edu = pkl.load(f)
+    lookup_edu = {}
+    for person in edu:
+        lookup_edu[person[0]] = person[1:]
 
     splits = {}
     for split in ["TRAIN", 'VALID', "TEST"]:
         split_file = os.path.join(CFG["datadir"], "profiles_jobs_skills_" + split + ".pkl")
         with open(split_file, "rb") as f:
             splits[split] = pkl.load(f)
+
+    for split in ["TRAIN", 'VALID', "TEST"]:
+        lookup_split = {}
+        for person in splits[split]:
+            lookup_split[person[0]] = person[1:]
+
+    for k in tqdm(lookup_edu.keys()):
+        if k in lookup_split.keys():
+            lookup_split[k].append(k, lookup_split[k], lookup_edu[k])
     ipdb.set_trace()
 
 
