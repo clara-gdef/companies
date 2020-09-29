@@ -43,8 +43,10 @@ def main(args):
             final_lists[split] = []
             for k in tqdm(lookup_edu.keys()):
                 if k in lookup_split[split].keys():
-                    final_lists[split].append(k, lookup_split[split][k], lookup_edu[k])
-        ipdb.set_trace()
+                    final_lists[split].append([k, lookup_split[split][k], lookup_edu[k]])
+            edu_file = os.path.join(CFG["datadir"], "profiles_jobs_skills_edu_" + split + ".pkl")
+            with open(edu_file, "wb") as f:
+                pkl.dump(final_lists[split], f)
 
 
 

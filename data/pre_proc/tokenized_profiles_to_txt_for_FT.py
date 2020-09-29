@@ -17,11 +17,12 @@ def main(args):
     with open(os.path.join(CFG["datadir"], args.input_file + "_VALID.pkl"), 'rb') as f:
         data_valid = pkl.load(f)
 
-    tgt_file = make_txt_file(data_train, data_valid)
+    with ipdb.launch_ipdb_on_exception():
+        tgt_file = make_txt_file(data_train, data_valid)
 
-    ft_model = fastText.train_unsupervised(tgt_file, dim=300)
+        ft_model = fastText.train_unsupervised(tgt_file, dim=300)
 
-    ft_model.save_model(os.path.join(CFG["modeldir"], args.model_file))
+        ft_model.save_model(os.path.join(CFG["modeldir"], args.model_file))
 
 
 def make_txt_file(data_train, data_valid):
