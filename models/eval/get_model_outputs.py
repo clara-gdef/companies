@@ -48,7 +48,8 @@ def main(hparams):
         dataset = load_datasets(hparams, CFG, ["TEST"])
         test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_spe_model, num_workers=0)
         model_name = hparams.model_type + "/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
-                     "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
+                     "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(
+            hparams.wd)
         if hparams.input_type == "hadamard":
             model_name += "/" + str(hparams.middle_size)
 
@@ -75,15 +76,13 @@ def main(hparams):
 
         if hparams.test_on_train == "True":
             train_res = model.get_outputs_and_labels(DataLoader(dataset_train, batch_size=1,
-                                                            collate_fn=collate_fn,
-                                                            num_workers=0))
+                                                                collate_fn=collate_fn,
+                                                                num_workers=0))
             with open(tgt_file + "_TRAIN.pkl", 'wb') as f:
                 pkl.dump(train_res, f)
 
 
-
-
-def load_datasets(hparams, CFG,  splits):
+def load_datasets(hparams, CFG, splits):
     datasets = []
     if hparams.model_type.split("_")[-1] == "spe":
         common_hparams = {
@@ -110,7 +109,6 @@ def load_datasets(hparams, CFG,  splits):
         for split in splits:
             datasets.append(DiscriminativePolyvalentDataset(**common_hparams, split=split))
     return datasets
-
 
 
 if __name__ == "__main__":
