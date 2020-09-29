@@ -32,16 +32,18 @@ def make_txt_file(data_train, data_valid):
             for j in data[-1]:
                 f.write(" ".join(j["job"]))
                 f.write("\n")
-            for e in data[-2][0]:
-                f.write(" ".join(e))
-                f.write("\n")
+            if len(data[-2]) > 0:
+                for e in data[-2][0]:
+                    f.write(" ".join(e))
+                    f.write("\n")
         for data in tqdm(data_valid, "parsing valid data..."):
             for j in data[-1]:
                 f.write(" ".join(j["job"]))
                 f.write("\n")
-            for e in data[-2][0]:
-                f.write(" ".join(e))
-                f.write("\n")
+            if len(data[-2]) > 0:
+                for e in data[-2][0]:
+                    f.write(" ".join(e))
+                    f.write("\n")
     return tgt_file
 
 
