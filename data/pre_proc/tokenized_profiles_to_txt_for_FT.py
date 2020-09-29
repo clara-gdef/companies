@@ -32,7 +32,8 @@ def make_txt_file(data_train, data_valid):
                 f.write(" ".join(j["job"]))
                 f.write("\n")
             for e in data[-2]:
-                f.write(" ".join(j["job"]))
+                ipdb.set_trace()
+                f.write(" ".join(e))
                 f.write("\n")
         for data in tqdm(data_valid, "parsing valid data..."):
             for j in data[-1]:
