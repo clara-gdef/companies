@@ -8,7 +8,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
 import torch
-from data.datasets import DiscriminativePolyvalentDataset
+from data.datasets import JobsDatasetPoly
 from models.classes import InstanceClassifierDisc
 from utils.models import collate_for_disc_poly_model, get_model_params
 
@@ -77,17 +77,13 @@ def load_datasets(hparams, splits, load):
     datasets = []
     common_hparams = {
         "data_dir": CFG["gpudatadir"],
-        "ppl_file": CFG["rep"][hparams.rep_type]["total"],
-        "rep_type": hparams.rep_type,
         "cie_reps_file": CFG["rep"]["cie"] + hparams.data_agg_type + ".pkl",
         "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type + ".pkl",
         "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type + ".pkl",
-        "agg_type": hparams.data_agg_type,
         "load": load,
-        "subsample": 0
     }
     for split in splits:
-        datasets.append(DiscriminativePolyvalentDataset(**common_hparams, split=split))
+        datasets.append(JobsDatasetPoly(**common_hparams, split=split))
 
     return datasets
 
@@ -137,7 +133,7 @@ if __name__ == "__main__":
     parser.add_argument("--checkpoint", type=int, default=49)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--DEBUG", type=bool, default=False)
-    parser.add_argument("--model_type", type=str, default="disc_poly")
+    parser.add_argument("--model_type", type=str, default="atn_disc_poly")
     parser.add_argument("--lr", type=float, default=1e-6)
     parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--epochs", type=int, default=50)

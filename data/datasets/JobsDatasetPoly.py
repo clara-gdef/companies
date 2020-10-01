@@ -1,24 +1,26 @@
 import os
 import pickle as pkl
 import itertools
+
+import ipdb
 import torch
 import numpy as np
 from tqdm import tqdm
 from torch.utils.data import Dataset
 
 
-class JobsDataset(Dataset):
-    def __init__(self, data_dir, rep_type, bag_type, bag_rep):
+class JobsDatasetPoly(Dataset):
+    def __init__(self, data_dir, cie_reps_file, clus_reps_file, dpt_reps_file, load, split):
         self.jobs = []
         self.jobs_emb = []
         self.indices = []
         self.preds = []
         self.labels = []
-        self.bag_rep = bag_rep
         print("Loading previously saved dataset...")
-        file_name = "jobs_and_emb_wc_" + bag_type + "_" + rep_type +"_TEST.pkl"
+        file_name = "total_rep_jobs_unflattened_" + split + ".pkl"
         with open(os.path.join(data_dir, file_name), 'rb') as f_name:
             dic = torch.load(f_name)
+        ipdb.set_trace()
         for i in dic.keys():
             self.jobs.append(dic[i]["jobs"])
             self.jobs_emb.append(dic[i]["job_emb"])

@@ -1,4 +1,4 @@
 from .DiscriminativePolyvalentDataset import DiscriminativePolyvalentDataset
 from .GenerativePolyvalentDataset import GenerativePolyvalentDataset
 from .DiscriminativeSpecializedDataset import DiscriminativeSpecializedDataset
-from .JobsDataset import JobsDataset
+from .JobsDatasetPoly import JobsDatasetPoly
