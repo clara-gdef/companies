@@ -250,10 +250,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         return tmp_labels
 
     def get_input_tensor(self, batch):
-        if len(batch[1].shape) > 2:
-            profiles = batch[1].squeeze(1)
-        else:
-            profiles = batch[1]
+        profiles = batch[1]
         if self.input_type == "matMul" or self.input_type == "b4Training" or self.input_type == "hadamard":
             bags = batch[-1].T
         elif self.input_type == "userOriented" or self.input_type == "bagTransformer":
