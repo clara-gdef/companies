@@ -12,6 +12,10 @@ def collate_for_disc_poly_model(batch):
     return ids, torch.stack(reps), cies, clus, dpt, batch[0][-1]
 
 
+def collate_for_attn_disc_poly_model(batch):
+    ipdb.set_trace()
+
+
 def collate_for_gen_poly_model(batch):
     ppl = [i[0] for i in batch]
     bag_reps = [i[1] for i in batch]
@@ -66,3 +70,4 @@ def get_model_params(hparams, rep_dim, num_bag):
     else:
         raise Exception("Wrong input data specified: " + str(hparams.input_type))
     return in_size, out_size
+
