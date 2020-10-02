@@ -15,6 +15,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         self.dim_size = dim_size
         self.input_type = hparams.input_type
         self.hparams = hparams
+        self.type = desc.split("_")[1]
         if self.type == 'spe':
             self.bag_type = desc.split("_")[2]
 
