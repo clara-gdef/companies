@@ -49,6 +49,9 @@ def train(hparams):
     arguments = {'dim_size': 300,
                  'in_size': in_size,
                  'out_size': out_size,
+                 "num_cie": dataset_train.num_cie,
+                 "num_clus": dataset_train.num_clus,
+                 "num_dpt": dataset_train.num_dpt,
                  'hparams': hparams,
                  'desc': xp_title,
                  "middle_size": hparams.middle_size}

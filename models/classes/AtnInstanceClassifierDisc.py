@@ -10,8 +10,12 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 
 
 class AtnInstanceClassifierDisc(pl.LightningModule):
-    def __init__(self, in_size, out_size, dim_size, hparams, desc, middle_size=None):
+    def __init__(self, in_size, out_size, dim_size, hparams, desc, num_cie, num_clus, num_dpt, middle_size=None,):
         super().__init__()
+        self.num_cie = num_cie
+        self.num_clus = num_clus
+        self.num_dpt = num_dpt
+
         self.dim_size = dim_size
         self.input_type = hparams.input_type
         self.hparams = hparams
@@ -98,7 +102,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         else:
             bag_matrix, profiles = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
-            labels = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
+            labels = labels_to_one_hot(len(profiles), tmp_labels, self.get_num_classes())
             if self.input_type == "userOriented":
                 tmp = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
