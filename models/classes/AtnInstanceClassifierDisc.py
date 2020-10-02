@@ -63,15 +63,15 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         else:
             return self.lin(x)
 
-    def training_step(self, batch, batch_nb):
+    def training_step(self, mini_batch, batch_nb):
         if self.input_type != "userOriented" and self.input_type != "bagTransformer":
-            input_tensor = self.get_input_tensor(batch)
-            tmp_labels = self.get_labels(batch)
+            input_tensor = self.get_input_tensor(mini_batch)
+            tmp_labels = self.get_labels(mini_batch)
             output = self.forward(input_tensor)
             labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.get_num_classes())
         else:
-            bag_matrix, profiles = self.get_input_tensor(batch)
-            tmp_labels = self.get_labels(batch)
+            bag_matrix, profiles = self.get_input_tensor(mini_batch)
+            tmp_labels = self.get_labels(mini_batch)
             labels = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
             if self.input_type == "userOriented":
                 tmp = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
@@ -93,15 +93,15 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
 
         return {'loss': loss, 'log': tensorboard_logs}
 
-    def validation_step(self, batch, batch_nb):
+    def validation_step(self, mini_batch, batch_nb):
         if self.input_type != "userOriented" and self.input_type != "bagTransformer":
-            input_tensor = self.get_input_tensor(batch)
-            tmp_labels = self.get_labels(batch)
+            input_tensor = self.get_input_tensor(mini_batch)
+            tmp_labels = self.get_labels(mini_batch)
             output = self.forward(input_tensor)
             labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.get_num_classes())
         else:
-            bag_matrix, profiles = self.get_input_tensor(batch)
-            tmp_labels = self.get_labels(batch)
+            bag_matrix, profiles = self.get_input_tensor(mini_batch)
+            tmp_labels = self.get_labels(mini_batch)
             labels = labels_to_one_hot(len(profiles), tmp_labels, self.get_num_classes())
             if self.input_type == "userOriented":
                 tmp = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
@@ -133,33 +133,33 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         # return torch.optim.SGD(self.parameters(), lr=self.hparams.lr, weight_decay=self.wd)
         return torch.optim.Adam(self.parameters(), lr=self.hparams.lr, weight_decay=self.hparams.wd)
 
-    def test_step(self, batch, batch_idx):
+    def test_step(self, mini_batch, batch_idx):
         if self.input_type == "userOriented":
-            bag_matrix, profiles = self.get_input_tensor(batch)
-            tmp_labels = self.get_labels(batch)
+            bag_matrix, profiles = self.get_input_tensor(mini_batch)
+            tmp_labels = self.get_labels(mini_batch)
             labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
             self.test_outputs.append(torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0)).cuda())
         elif self.input_type == "b4Training":
-            input_tensor = self.get_input_tensor(batch)
+            input_tensor = self.get_input_tensor(mini_batch)
             self.test_outputs.append(input_tensor)
-            tmp_labels = self.get_labels(batch)
+            tmp_labels = self.get_labels(mini_batch)
             labels_one_hot = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.get_num_classes())
         elif self.input_type == "bagTransformer":
-            bag_matrix, profiles = self.get_input_tensor(batch)
-            tmp_labels = self.get_labels(batch)
+            bag_matrix, profiles = self.get_input_tensor(mini_batch)
+            tmp_labels = self.get_labels(mini_batch)
             labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
             new_bags = self(bag_matrix.T)
             tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
             self.test_outputs.append(torch.transpose(tmp, 1, 0))
         else:
-            input_tensor = self.get_input_tensor(batch)
-            tmp_labels = self.get_labels(batch)
+            input_tensor = self.get_input_tensor(mini_batch)
+            tmp_labels = self.get_labels(mini_batch)
             labels_one_hot = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.get_num_classes())
             self.test_outputs.append(self.forward(input_tensor))
             self.before_training.append(input_tensor)
         self.test_labels_one_hot.append(labels_one_hot)
         self.test_labels.append(tmp_labels)
-        self.test_ppl_id.append(batch[0])
+        self.test_ppl_id.append(mini_batch[0])
 
     def test_epoch_end(self, outputs):
         outputs = torch.stack(self.test_outputs)
