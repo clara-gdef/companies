@@ -10,10 +10,11 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 
 
 class AtnInstanceClassifierDisc(pl.LightningModule):
-    def __init__(self, in_size, out_size, dim_size, hparams, dataset, datadir, desc, wd, middle_size=None):
+    def __init__(self, in_size, out_size, dim_size, hparams, desc, wd, middle_size=None):
         super().__init__()
         self.dim_size = dim_size
         self.input_type = hparams.input_type
+        self.hparams = hparams
         if self.type == 'spe':
             self.bag_type = desc.split("_")[2]
 
@@ -124,8 +125,8 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         return outputs[-1]
 
     def configure_optimizers(self):
-        return torch.optim.SGD(self.parameters(), lr=self.hparams.lr, weight_decay=self.wd)
-        #return torch.optim.Adam(self.parameters(), lr=self.hparams.lr, weight_decay=self.wd)
+        # return torch.optim.SGD(self.parameters(), lr=self.hparams.lr, weight_decay=self.wd)
+        return torch.optim.Adam(self.parameters(), lr=self.hparams.lr, weight_decay=self.hparams.wd)
 
     def test_step(self, batch, batch_idx):
         if self.input_type == "userOriented":
