@@ -107,8 +107,8 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
                 tmp = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
             if self.input_type == "bagTransformer":
-                new_bags = self(bag_matrix.T)
-                tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
+                new_profiles, new_bags = self(profiles, bag_matrix.T)
+                tmp = torch.matmul(new_bags, torch.transpose(new_profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
         if self.type == "poly":
             val_loss = torch.nn.functional.binary_cross_entropy_with_logits(output, labels.cuda())
@@ -238,7 +238,6 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
 
     def get_labels(self, batch):
         if self.type == "poly":
-            ipdb.set_trace()
             tmp_labels = [batch[2], batch[3], batch[4]]
         elif self.type == "spe":
             if self.bag_type == "cie":
