@@ -15,10 +15,10 @@ def collate_for_disc_poly_model(batch):
 def collate_for_attn_disc_poly_model(batch):
     ids = [i[0] for i in batch]
     reps = [torch.from_numpy(i[1]) for i in batch]
-    ipdb.set_trace()
     cies = [i[2] for i in batch]
     clus = [i[3] for i in batch]
     dpt = [i[4] for i in batch]
+    ipdb.set_trace()
     return ids, reps, cies, clus, dpt, batch[-1]
 
 

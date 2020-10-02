@@ -264,7 +264,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             bags = None
         else:
             raise Exception("Wrong input data specified: " + str(self.input_type))
-        return profiles, bags
+        return bags, profiles
 
     def get_num_classes(self):
         if self.type == "spe":
