@@ -54,7 +54,10 @@ def main(args):
                                 if person_id not in cie_dict[cie]["id"]:
                                     jobs = ppl_dict[person_id]["jobs"]
                                     cie_dict[cie]["id"].append(person_id)
-                                    cie_dict[cie]["profiles"].append(to_emb(jobs, ft_model, args.flat))
+                                    tmp = to_emb(jobs, ft_model, args.flat)
+                                    if tmp is None:
+                                        ipdb.set_trace()
+                                    cie_dict[cie]["profiles"].append(tmp)
                                     if args.edu:
                                         edu = ppl_dict[person_id]["edu"]
                                         cie_dict[cie]["edu"].append(to_emb(edu, ft_model, args.flat))

@@ -73,6 +73,9 @@ def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num
     for cie in ppl_reps.keys():
         lookup_to_reps[cie] = {}
         for identifier, profile in zip(ppl_reps[cie]["id"], ppl_reps[cie]["profiles"]):
+            if identifier is None or profile is None:
+                print("stop !")
+                ipdb.set_trace()
             lookup_to_reps[cie][identifier] = profile
     tmp = []
     for cie in tqdm(ppl_reps_clus.keys(), desc="Getting mean and std for Discriminative Polyvalent Job Dataset for split " + split + " ..."):
