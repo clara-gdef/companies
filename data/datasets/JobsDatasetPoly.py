@@ -43,7 +43,7 @@ class JobsDatasetPoly(Dataset):
         return len(self.tuples)
 
     def __getitem__(self, idx):
-        return self.tuples[idx]["id"], self.tuples[idx]["rep"], self.tuples[idx]["cie"], self.tuples[idx]["clus"], self.bag_rep
+        return self.tuples[idx]["id"], self.tuples[idx]["rep"], self.tuples[idx]["cie"], self.tuples[idx]["clus"], self.tuples[idx]["dpt"], self.bag_rep
 
     def build_bag_reps(self, cie_reps, clus_reps, dpt_reps):
         tmp = torch.FloatTensor(1, self.rep_dim)
