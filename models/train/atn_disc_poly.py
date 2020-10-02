@@ -132,7 +132,7 @@ if __name__ == "__main__":
     parser.add_argument("--b_size", type=int, default=64)
     parser.add_argument("--middle_size", type=int, default=20)
     parser.add_argument("--input_type", type=str, default="bagTransformer")
-    parser.add_argument("--load_dataset", type=bool, default=True)
+    parser.add_argument("--load_dataset", default="True")
     parser.add_argument("--auto_lr_find", type=bool, default=False)
     parser.add_argument("--load_from_checkpoint", type=bool, default=False)
     parser.add_argument("--checkpoint", type=int, default=49)

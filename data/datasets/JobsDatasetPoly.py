@@ -11,7 +11,7 @@ from torch.utils.data import Dataset
 
 class JobsDatasetPoly(Dataset):
     def __init__(self, data_dir, cie_reps_file, clus_reps_file, dpt_reps_file, ppl_file, load, split):
-        if load:
+        if load == "True":
             print("Loading previously saved dataset...")
             self.load_dataset(data_dir, split)
         else:
