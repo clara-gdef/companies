@@ -88,6 +88,7 @@ def to_emb(complete_profile, ft_model, flat):
                     tmp.append(ft_model.get_word_vector(token))
                     word_count += 1
             embs[num, :] = np.mean(np.stack(tmp), axis=0) / word_count
+        return embs
     else:
         emb = np.zeros((ft_model.get_dimension()))
         for job in complete_profile:
