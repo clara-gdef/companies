@@ -13,12 +13,12 @@ def collate_for_disc_poly_model(batch):
 
 
 def collate_for_attn_disc_poly_model(batch):
-    ids = [i[0]["id"] for i in batch]
-    reps = [i[0]["rep"] for i in batch]
-    cies = [i[0]["cie"] for i in batch]
-    clus = [i[0]["clus"] for i in batch]
-    dpt = [i[0]["dpt"] for i in batch]
-    return ids, torch.stack(reps), cies, clus, dpt, batch[0][-1]
+    ids = [i[0] for i in batch]
+    reps = [i[1] for i in batch]
+    cies = [i[2] for i in batch]
+    clus = [i[3] for i in batch]
+    dpt = [i[4] for i in batch]
+    return ids, torch.stack(reps), cies, clus, dpt, batch[-1]
 
 def collate_for_gen_poly_model(batch):
     ppl = [i[0] for i in batch]
