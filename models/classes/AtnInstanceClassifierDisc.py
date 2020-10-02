@@ -238,6 +238,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
 
     def get_labels(self, batch):
         if self.type == "poly":
+            ipdb.set_trace()
             tmp_labels = [batch[2], batch[3], batch[4]]
         elif self.type == "spe":
             if self.bag_type == "cie":
