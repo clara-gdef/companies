@@ -22,7 +22,7 @@ def main(hparams):
         with ipdb.launch_ipdb_on_exception():
             return test(hparams, CFG)
     else:
-        test(hparams, CFG)
+        return test(hparams, CFG)
 
 
 def test(hparams, CFG):

@@ -77,6 +77,7 @@ def load_datasets(hparams, splits, load):
     datasets = []
     common_hparams = {
         "data_dir": CFG["gpudatadir"],
+        "ppl_file": CFG["rep"][hparams.rep_type]["total"],
         "cie_reps_file": CFG["rep"]["cie"] + hparams.data_agg_type + ".pkl",
         "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type + ".pkl",
         "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type + ".pkl",
@@ -122,7 +123,7 @@ def init_lightning(hparams, xp_title):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rep_type", type=str, default='ft_edu')
+    parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--b_size", type=int, default=64)
     parser.add_argument("--middle_size", type=int, default=20)
