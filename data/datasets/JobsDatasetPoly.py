@@ -11,14 +11,9 @@ from torch.utils.data import Dataset
 
 class JobsDatasetPoly(Dataset):
     def __init__(self, data_dir, cie_reps_file, clus_reps_file, dpt_reps_file, ppl_file, load, split):
-        self.jobs = []
-        self.jobs_emb = []
-        self.indices = []
-        self.preds = []
-        self.labels = []
-        print("Loading previously saved dataset...")
         if load:
-            ipdb.set_trace()
+            print("Loading previously saved dataset...")
+            self.load_dataset(data_dir, split)
         else:
             file_name = "total_rep_jobs_unflattened_" + split + ".pkl"
             with open(os.path.join(data_dir, file_name), 'rb') as f_name:
@@ -39,33 +34,45 @@ class JobsDatasetPoly(Dataset):
             self.num_dpt = len(dpt_reps)
             self.bag_rep = self.build_bag_reps(cie_reps, clus_reps, dpt_reps)
             self.tuples = build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, self.num_cie, self.num_clus, self.num_dpt, split)
-
-
-            ipdb.set_trace()
-
-            for i in dic.keys():
-                self.jobs.append(dic[i]["jobs"])
-                self.jobs_emb.append(dic[i]["job_emb"])
-                self.indices.append(i)
-                self.preds.append(dic[i]["pred"])
-                self.labels.append(dic[i]["label"])
-
-        # self.tuples = tmp
+            self.save_dataset(data_dir, split)
 
         print("Job dataset loaded.")
         print("Dataset Length: " + str(len(self.indices)))
 
     def __len__(self):
-        return
+        return len(self.tuples)
 
     def __getitem__(self, idx):
-        return
+        return self.tuples[idx]["id"], self.tuples[idx]["rep"], self.tuples[idx]["cie"], self.tuples[idx]["clus"], self.bag_rep
 
     def build_bag_reps(self, cie_reps, clus_reps, dpt_reps):
         tmp = torch.FloatTensor(1, self.rep_dim)
         for bag in itertools.chain(cie_reps.values(), clus_reps.values(), dpt_reps.values()):
             tmp = torch.cat((tmp, bag["ft"]), dim=0)
         return tmp[1:]
+
+    def save_dataset(self, datadir, split):
+        ds_dict = {"rep_dim": self.rep_dim,
+                   "num_cie": self.num_cie,
+                   "num_clus": self.num_clus,
+                   "num_dpt": self.num_dpt,
+                   "bag_rep": self.bag_rep,
+                   "tuples": self.tuples}
+        tgt_file = os.path.join(datadir, "JobsDatasetPoly_" + split + ".pkl")
+        with open(tgt_file, 'wb') as f:
+            pkl.dump(ds_dict, f)
+
+    def load_dataset(self, datadir, split):
+        tgt_file = os.path.join(datadir, "JobsDatasetPoly_" + split + ".pkl")
+        with open(tgt_file, 'rb') as f:
+            ds_dict = pkl.load(f)
+
+        self.rep_dim = ds_dict["rep_dim"]
+        self.num_cie = ds_dict["num_cie"]
+        self.num_clus = ds_dict["num_clus"]
+        self.num_dpt = ds_dict["num_dpt"]
+        self.bag_rep = ds_dict["bag_rep"]
+        self.tuples = ds_dict["tuples"]
 
 
 def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num_dpt, split):
@@ -92,10 +99,11 @@ def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num
                     assert num_cie + num_clus <= ppl_lookup[person_id]["dpt_label"] <= num_cie + num_clus + num_dpt - 1
                     tuples.append(
                         {"id": person_id,
-                         "rep": (ppl_reps[person_id]["profiles"] - ds_mean) / ds_std,
+                         "rep": (lookup_to_reps[cie][person_id] - ds_mean) / ds_std,
                          "cie": ppl_lookup[person_id]["cie_label"],
                          "clus": ppl_lookup[person_id]["clus_label"],
                          "dpt": ppl_lookup[person_id]["dpt_label"]
                          }
                     )
     return tuples
+
