@@ -18,6 +18,7 @@ def collate_for_attn_disc_poly_model(batch):
     cies = [i[2] for i in batch]
     clus = [i[3] for i in batch]
     dpt = [i[4] for i in batch]
+    ipdb.set_trace()
     return ids, reps, cies, clus, dpt, batch[0][-1]
 
 
