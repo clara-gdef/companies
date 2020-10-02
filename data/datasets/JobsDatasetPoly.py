@@ -73,9 +73,6 @@ def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num
     for cie in ppl_reps.keys():
         lookup_to_reps[cie] = {}
         for identifier, profile in zip(ppl_reps[cie]["id"], ppl_reps[cie]["profiles"]):
-            if identifier is None or profile is None:
-                print("stop !")
-                ipdb.set_trace()
             lookup_to_reps[cie][identifier] = profile
     tmp = []
     for cie in tqdm(ppl_reps_clus.keys(), desc="Getting mean and std for Discriminative Polyvalent Job Dataset for split " + split + " ..."):
@@ -83,8 +80,8 @@ def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num
             if len(ppl_reps_clus[cie][clus].keys()) > 0:
                 for person_id in ppl_reps_clus[cie][clus]["id_ppl"]:
                     tmp.extend(lookup_to_reps[cie][person_id])
-    ds_mean = torch.mean(torch.stack(tmp))
-    ds_std = torch.std(torch.stack(tmp))
+    ds_mean = np.mean(np.stack(tmp))
+    ds_std = np.std(np.stack(tmp))
     tuples = []
     for cie in tqdm(ppl_reps_clus.keys(), desc="Building Discriminative Polyvalent Job Dataset for split " + split + " ..."):
         for clus in ppl_reps_clus[cie].keys():
