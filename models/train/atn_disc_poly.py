@@ -10,7 +10,7 @@ import yaml
 import torch
 from data.datasets import JobsDatasetPoly
 from models.classes import InstanceClassifierDisc
-from utils.models import collate_for_disc_poly_model, get_model_params
+from utils.models import collate_for_disc_poly_model
 
 
 def main(hparams):
@@ -40,7 +40,8 @@ def train(hparams):
                          )
     datasets = load_datasets(hparams, ["TRAIN", "VALID"], hparams.load_dataset)
     dataset_train, dataset_valid = datasets[0], datasets[1]
-    in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, len(dataset_train.bag_rep))
+    ipdb.set_trace()
+    in_size, out_size = get_model_params_atn(hparams, dataset_train.rep_dim, len(dataset_train.bag_rep))
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
                               num_workers=8, shuffle=True)
     valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
@@ -120,6 +121,9 @@ def init_lightning(hparams, xp_title):
     )
     return logger, checkpoint_callback, early_stop_callback
 
+def get_model_params_atn():
+    ipdb.set_trace()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -128,7 +132,7 @@ if __name__ == "__main__":
     parser.add_argument("--b_size", type=int, default=64)
     parser.add_argument("--middle_size", type=int, default=20)
     parser.add_argument("--input_type", type=str, default="bagTransformer")
-    parser.add_argument("--load_dataset", type=bool, default=False)
+    parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--auto_lr_find", type=bool, default=False)
     parser.add_argument("--load_from_checkpoint", type=bool, default=False)
     parser.add_argument("--checkpoint", type=int, default=49)
