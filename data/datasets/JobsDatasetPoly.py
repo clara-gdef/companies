@@ -37,7 +37,7 @@ class JobsDatasetPoly(Dataset):
             self.save_dataset(data_dir, split)
 
         print("Job dataset loaded.")
-        print("Dataset Length: " + str(len(self.indices)))
+        print("Dataset Length: " + str(len(self.tuples)))
 
     def __len__(self):
         return len(self.tuples)
@@ -60,12 +60,12 @@ class JobsDatasetPoly(Dataset):
                    "tuples": self.tuples}
         tgt_file = os.path.join(datadir, "JobsDatasetPoly_" + split + ".pkl")
         with open(tgt_file, 'wb') as f:
-            pkl.dump(ds_dict, f)
+            torch.save(ds_dict, f)
 
     def load_dataset(self, datadir, split):
         tgt_file = os.path.join(datadir, "JobsDatasetPoly_" + split + ".pkl")
         with open(tgt_file, 'rb') as f:
-            ds_dict = pkl.load(f)
+            ds_dict = torch.load(f)
 
         self.rep_dim = ds_dict["rep_dim"]
         self.num_cie = ds_dict["num_cie"]
