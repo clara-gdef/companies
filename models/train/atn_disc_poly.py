@@ -42,9 +42,9 @@ def train(hparams):
     dataset_train, dataset_valid = datasets[0], datasets[1]
     in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, len(dataset_train.bag_rep))
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_attn_disc_poly_model,
-                              num_workers=8, shuffle=True)
+                              num_workers=1, shuffle=True)
     valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_attn_disc_poly_model,
-                              num_workers=8)
+                              num_workers=1)
 
     arguments = {'dim_size': 300,
                  'in_size': in_size,
