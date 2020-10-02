@@ -10,7 +10,7 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 
 
 class AtnInstanceClassifierDisc(pl.LightningModule):
-    def __init__(self, in_size, out_size, dim_size, hparams, desc, wd, middle_size=None):
+    def __init__(self, in_size, out_size, dim_size, hparams, desc, middle_size=None):
         super().__init__()
         self.dim_size = dim_size
         self.input_type = hparams.input_type

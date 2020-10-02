@@ -50,10 +50,7 @@ def train(hparams):
                  'in_size': in_size,
                  'out_size': out_size,
                  'hparams': hparams,
-                 'dataset': dataset_train,
-                 'datadir': CFG["gpudatadir"],
                  'desc': xp_title,
-                 "wd": hparams.wd,
                  "middle_size": hparams.middle_size}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
