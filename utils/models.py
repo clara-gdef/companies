@@ -13,11 +13,12 @@ def collate_for_disc_poly_model(batch):
 
 
 def collate_for_attn_disc_poly_model(batch):
-    ids = [i[0] for i in batch]
-    reps = [i[1] for i in batch]
-    cies = [i[2] for i in batch]
-    clus = [i[3] for i in batch]
-    dpt = [i[4] for i in batch]
+    ipdb.set_trace()
+    ids = [torch.from_numpy(i[0]) for i in batch]
+    reps = [torch.from_numpy(i[1]) for i in batch]
+    cies = [torch.from_numpy(i[2]) for i in batch]
+    clus = [torch.from_numpy(i[3]) for i in batch]
+    dpt = [torch.from_numpy(i[4]) for i in batch]
     return ids, torch.stack(reps), cies, clus, dpt, batch[-1]
 
 def collate_for_gen_poly_model(batch):
