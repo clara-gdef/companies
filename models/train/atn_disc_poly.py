@@ -9,8 +9,8 @@ from torch.utils.data import DataLoader
 import yaml
 import torch
 from data.datasets import JobsDatasetPoly
-from models.classes import InstanceClassifierDisc
-from utils.models import collate_for_disc_poly_model
+from models.classes.AtnInstanceClassifierDisc import AtnInstanceClassifierDisc
+from utils.models import collate_for_disc_poly_model, get_model_params
 
 
 def main(hparams):
@@ -40,14 +40,14 @@ def train(hparams):
                          )
     datasets = load_datasets(hparams, ["TRAIN", "VALID"], hparams.load_dataset)
     dataset_train, dataset_valid = datasets[0], datasets[1]
-    ipdb.set_trace()
-    in_size, out_size = get_model_params_atn(hparams, dataset_train.rep_dim, len(dataset_train.bag_rep))
+    in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, len(dataset_train.bag_rep))
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
                               num_workers=8, shuffle=True)
     valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
                               num_workers=8)
 
-    arguments = {'in_size': in_size,
+    arguments = {'dim_size': 300,
+                 'in_size': in_size,
                  'out_size': out_size,
                  'hparams': hparams,
                  'dataset': dataset_train,
@@ -57,7 +57,7 @@ def train(hparams):
                  "middle_size": hparams.middle_size}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
-    model = InstanceClassifierDisc(**arguments)
+    model = AtnInstanceClassifierDisc(**arguments)
     print("Model Loaded.")
     if hparams.load_from_checkpoint:
         print("Loading from previous checkpoint...")
@@ -121,8 +121,6 @@ def init_lightning(hparams, xp_title):
     )
     return logger, checkpoint_callback, early_stop_callback
 
-def get_model_params_atn():
-    ipdb.set_trace()
 
 
 if __name__ == "__main__":
