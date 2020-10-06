@@ -77,10 +77,10 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
 
     def training_step(self, mini_batch, batch_nb):
         if self.input_type != "userOriented" and self.input_type != "bagTransformer":
-            input_tensor = self.get_input_tensor(mini_batch)
+            bags, profiles = self.get_input_tensor(mini_batch)
             tmp_labels = self.get_labels(mini_batch)
-            output = self.forward(input_tensor)
-            labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.get_num_classes())
+            output = self.forward(profiles, bags)
+            labels = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
         else:
             bag_matrix, profiles = self.get_input_tensor(mini_batch)
             tmp_labels = self.get_labels(mini_batch)
@@ -107,10 +107,10 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
 
     def validation_step(self, mini_batch, batch_nb):
         if self.input_type != "userOriented" and self.input_type != "bagTransformer":
-            input_tensor = self.get_input_tensor(mini_batch)
+            bags, profiles = self.get_input_tensor(mini_batch)
             tmp_labels = self.get_labels(mini_batch)
-            output = self.forward(input_tensor)
-            labels = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.get_num_classes())
+            output = self.forward(profiles, bags)
+            labels = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
         else:
             bag_matrix, profiles = self.get_input_tensor(mini_batch)
             tmp_labels = self.get_labels(mini_batch)
