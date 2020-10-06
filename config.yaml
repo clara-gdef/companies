@@ -1,7 +1,8 @@
 datadir: /local/gainondefor/work/lip6/data/companies
 prevdatadir: /local/gainondefor/work/lip6/data/seq2seq
 gpudatadir: /local/gainondefor/work/data
-modeldir: /net/big/gainondefor/work/trained_models/companies/
+# modeldir: /net/big/gainondefor/work/trained_models/companies/
+modeldir: /local/gainondefor/work/trained_models/companies/
 rep:
   ft:
     total: reps/ft_emb/30_latest_clus_cie_per_skills
