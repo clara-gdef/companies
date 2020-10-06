@@ -53,6 +53,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
                 atn[idx][num] = self.atn_layer(item)
 
         new_people = torch.FloatTensor(len(people), 300)
+        new_people.requires_grad = True
         for num, person in enumerate(people):
             job_counter = 0
             new_p = 0
