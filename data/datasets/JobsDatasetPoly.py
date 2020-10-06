@@ -106,6 +106,7 @@ def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num
                         rep[num, :] = (j - ds_mean) / ds_std
                     tuples.append(
                         {"id": person_id,
+                         "jobs_len" : len(lookup_to_reps[cie][person_id]),
                          "rep": rep,
                          "cie": ppl_lookup[person_id]["cie_label"],
                          "clus": ppl_lookup[person_id]["clus_label"],
