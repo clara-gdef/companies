@@ -46,9 +46,10 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         ### debug
         self.before_training = []
 
-    def forward(self, people, bags):
+    def forward(self, tmp_people, bags):
+        people = torch.from_numpy(np.stack(tmp_people)).type(torch.FloatTensor).cuda()
         ipdb.set_trace()
-        atn = self.atn_layer(torch.stack(people))
+        atn = self.atn_layer(people)
 
         lp = LineProfiler()
         lp_wrapper = lp(self.ponderate_jobs)
