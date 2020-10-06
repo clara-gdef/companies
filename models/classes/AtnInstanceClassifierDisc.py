@@ -47,12 +47,12 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
 
     def forward(self, people, bags):
         max_profil_len = max([len(i) for i in people])
-        atn = torch.zeros(len(people), max_profil_len, requires_grad=True)
+        atn = torch.zeros(len(people), max_profil_len, requires_grad=True).cuda()
         for idx, person in enumerate(people):
             for num, item in enumerate(person):
                 atn[idx][num] = self.atn_layer(item)
 
-        new_people = torch.zeros(len(people), 300, requires_grad=True)
+        new_people = torch.zeros(len(people), 300, requires_grad=True).cuda()
         for num, person in enumerate(people):
             job_counter = 0
             new_p = torch.zeros(300)
