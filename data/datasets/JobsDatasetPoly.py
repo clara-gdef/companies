@@ -84,6 +84,7 @@ def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num
             lookup_to_reps[cie][identifier] = profile
             prof_lengths.append(len(profile))
     max_prof_len = max(prof_lengths)
+    print(max_prof_len)
     tmp = []
     for cie in tqdm(ppl_reps_clus.keys(), desc="Getting mean and std for Discriminative Polyvalent Job Dataset for split " + split + " ..."):
         for clus in ppl_reps_clus[cie].keys():
