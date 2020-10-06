@@ -14,11 +14,11 @@ def collate_for_disc_poly_model(batch):
 
 def collate_for_attn_disc_poly_model(batch):
     ids = [i[0] for i in batch]
-    reps = [torch.from_numpy(i[1]) for i in batch]
+    reps = [torch.from_numpy(i[1]).type(torch.FloatTensor) for i in batch]
     cies = [i[2] for i in batch]
     clus = [i[3] for i in batch]
     dpt = [i[4] for i in batch]
-    return ids, reps, cies, clus, dpt, batch[0][-1]
+    return ids, reps.cuda(), cies, clus, dpt, batch[0][-1]
 
 
 def collate_for_gen_poly_model(batch):
