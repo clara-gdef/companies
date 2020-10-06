@@ -47,7 +47,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
 
     def forward(self, people, bags):
         max_profil_len = max([len(i) for i in people])
-        atn = torch.FloatTensor(len(people), max_profil_len)
+        atn = torch.FloatTensor(len(people), max_profil_len, requires_grad=True)
         for idx, person in enumerate(people):
             for num, item in enumerate(person):
                 atn[idx][num] = self.atn_layer(item)
