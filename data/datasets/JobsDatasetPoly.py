@@ -101,9 +101,9 @@ def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num
                     assert ppl_lookup[person_id]["cie_label"] <= num_cie - 1
                     assert num_cie <= ppl_lookup[person_id]["clus_label"] <= num_cie + num_clus - 1
                     assert num_cie + num_clus <= ppl_lookup[person_id]["dpt_label"] <= num_cie + num_clus + num_dpt - 1
-                    rep = torch.zeros(max_prof_len, 300)
+                    rep = np.zeros(max_prof_len, 300)
                     for num, j in enumerate(lookup_to_reps[cie][person_id]):
-                        rep[num, :] = (torch.from_numpy(j).type(torch.FloatTensor) - ds_mean) / ds_std
+                        rep[num, :] = (j - ds_mean) / ds_std
                     tuples.append(
                         {"id": person_id,
                          "rep": rep,
