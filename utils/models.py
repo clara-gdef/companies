@@ -14,6 +14,7 @@ def collate_for_disc_poly_model(batch):
 
 def collate_for_attn_disc_poly_model(batch):
     ids = [i[0] for i in batch]
+    ipdb.set_trace()
     reps = [torch.from_numpy(i[1]).type(torch.FloatTensor).cuda() for i in batch]
     cies = [i[2] for i in batch]
     clus = [i[3] for i in batch]
