@@ -52,10 +52,10 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             for num, item in enumerate(person):
                 atn[idx][num] = self.atn_layer(item)
 
-        new_people = torch.zeros(len(people), 300, requires_grad=True).cuda()
+        new_people = torch.zeros(len(people), 300).cuda()
         for num, person in enumerate(people):
             job_counter = 0
-            new_p = torch.zeros(300)
+            new_p = torch.zeros(300).cuda()
             for j, job in enumerate(person):
                 # that means the job is a placeholder, and equal to zero everywhere
                 if max(job) != min(job):
