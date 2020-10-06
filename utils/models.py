@@ -14,7 +14,6 @@ def collate_for_disc_poly_model(batch):
 
 def collate_for_attn_disc_poly_model(batch):
     ids = [i[0] for i in batch]
-    ipdb.set_trace()
     max_profil_len = max([len(i[1]) for i in batch])
     reps = torch.FloatTensor(len(batch), max_profil_len, 300)
     for idx, person in enumerate(batch):
