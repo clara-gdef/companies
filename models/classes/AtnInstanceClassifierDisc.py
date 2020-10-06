@@ -3,6 +3,7 @@ import torch
 import os
 import pytorch_lightning as pl
 import numpy as np
+from line_profiler import LineProfiler
 import pickle as pkl
 from tqdm import tqdm
 from utils.models import labels_to_one_hot
@@ -47,22 +48,13 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
 
     def forward(self, people, bags):
         ipdb.set_trace()
-        atn = torch.zeros(len(people), len(people[0]), requires_grad=True).cuda()
-        for idx, person in enumerate(people):
-            for num, item in enumerate(person):
-                atn[idx][num] = self.atn_layer(item)
+        atn = self.atn_layer(torch.stack(people))
 
-        new_people = torch.zeros(len(people), 300).cuda()
-        for num, person in enumerate(people):
-            job_counter = 0
-            new_p = torch.zeros(300).cuda()
-            for j, job in enumerate(person):
-                # that means the job is a placeholder, and equal to zero everywhere
-                if max(job) != min(job):
-                    job_counter += 1
-                    new_p += atn[num][j] * job
-            new_people[num] = new_p / job_counter
-
+        lp = LineProfiler()
+        lp_wrapper = lp(self.ponderate_jobs)
+        new_people = lp_wrapper(people, atn)
+        lp.print_stats()
+        ipdb.set_trace()
         affinities = torch.matmul(new_people.cuda(), bags.cuda())
 
         if self.input_type == "bagTransformer":
@@ -352,6 +344,19 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             jobs_ouputs[batch[0][0]]["labels"] = self.test_labels[counter]
             counter += 1
         return jobs_ouputs
+
+    def ponderate_jobs(self, people, atn):
+        new_people = torch.zeros(len(people), 300).cuda()
+        for num, person in enumerate(people):
+            job_counter = 0
+            new_p = torch.zeros(300).cuda()
+            for j, job in enumerate(person):
+                # that means the job is a placeholder, and equal to zero everywhere
+                if max(job) != min(job):
+                    job_counter += 1
+                    new_p += atn[num][j] * job
+            new_people[num] = new_p / job_counter
+        return new_people
 
 
 def test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds, dpt_preds, num_classes):
