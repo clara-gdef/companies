@@ -13,7 +13,7 @@ def grid_search(hparams):
         test_results = {}
         for lr in hparams.lr:
             test_results[lr] = {}
-            for b_size in [64, 512, 16]:
+            for b_size in hparams.b_size:
                 if hparams.input_type == "hadamard":
                     test_results[lr][b_size] = {}
                     for mid_size in [200, 600, 1000]:
