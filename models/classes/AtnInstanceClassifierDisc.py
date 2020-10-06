@@ -48,7 +48,6 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
 
     def forward(self, tmp_people, bags):
         people = torch.from_numpy(np.stack(tmp_people)).type(torch.FloatTensor).cuda()
-        ipdb.set_trace()
         atn = self.atn_layer(people)
 
         lp = LineProfiler()
@@ -353,7 +352,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             new_p = torch.zeros(300).cuda()
             for j, job in enumerate(person):
                 # that means the job is a placeholder, and equal to zero everywhere
-                if max(job) != min(job):
+                if job != min(job):
                     job_counter += 1
                     new_p += atn[num][j] * job
             new_people[num] = new_p / job_counter
