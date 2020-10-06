@@ -63,17 +63,17 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
                     new_p += atn[num][j] * job
             new_people[num] = new_p / job_counter
 
-        affinities = new_people * bags
-        ipdb.set_trace()
+        affinities = torch.matmul(new_people.cuda(), bags.cuda())
+
         if self.input_type == "bagTransformer":
             mat = torch.diag(self.lin.weight).unsqueeze(1)
-            out = x * mat + self.lin.bias.view(x.shape[0], -1)
-            return out.T
+            out = bags * mat + self.lin.bias.view(bags.shape[0], -1)
+            return out.T, new_people
         elif self.input_type == "hadamard":
-            transformed_input = torch.relu(self.lin_dim_reduction(x))
+            transformed_input = torch.relu(self.lin_dim_reduction(affinities))
             return self.lin_class_prediction(transformed_input)
         else:
-            return self.lin(x)
+            return self.lin(affinities)
 
     def training_step(self, mini_batch, batch_nb):
         if self.input_type != "userOriented" and self.input_type != "bagTransformer":
@@ -89,8 +89,8 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
                 tmp = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
             if self.input_type == "bagTransformer":
-                new_bags = self(bag_matrix.T)
-                tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
+                new_bags, people = self(bag_matrix.T)
+                tmp = torch.matmul(new_bags, torch.transpose(people, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
         if self.type == "poly":
             loss = torch.nn.functional.binary_cross_entropy_with_logits(output, labels.cuda())
