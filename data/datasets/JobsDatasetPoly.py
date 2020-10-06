@@ -77,10 +77,13 @@ class JobsDatasetPoly(Dataset):
 
 def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num_dpt, split):
     lookup_to_reps = {}
+    prof_lengths = []
     for cie in ppl_reps.keys():
         lookup_to_reps[cie] = {}
         for identifier, profile in zip(ppl_reps[cie]["id"], ppl_reps[cie]["profiles"]):
             lookup_to_reps[cie][identifier] = profile
+            prof_lengths.append(len(profile))
+    max_prof_len = max(prof_lengths)
     tmp = []
     for cie in tqdm(ppl_reps_clus.keys(), desc="Getting mean and std for Discriminative Polyvalent Job Dataset for split " + split + " ..."):
         for clus in ppl_reps_clus[cie].keys():
@@ -97,9 +100,12 @@ def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num
                     assert ppl_lookup[person_id]["cie_label"] <= num_cie - 1
                     assert num_cie <= ppl_lookup[person_id]["clus_label"] <= num_cie + num_clus - 1
                     assert num_cie + num_clus <= ppl_lookup[person_id]["dpt_label"] <= num_cie + num_clus + num_dpt - 1
+                    rep = torch.zeros(max_prof_len, 300)
+                    for num, j in enumerate(lookup_to_reps[cie][person_id]):
+                        rep[num, :] = (j - ds_mean) / ds_std
                     tuples.append(
                         {"id": person_id,
-                         "rep": (lookup_to_reps[cie][person_id] - ds_mean) / ds_std,
+                         "rep": rep,
                          "cie": ppl_lookup[person_id]["cie_label"],
                          "clus": ppl_lookup[person_id]["clus_label"],
                          "dpt": ppl_lookup[person_id]["dpt_label"]
