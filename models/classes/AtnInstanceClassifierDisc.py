@@ -47,7 +47,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
 
     def forward(self, people, bags):
         max_profil_len = max([len(i) for i in people])
-        atn = torch.FloatTensor(len(people), max_profil_len, requires_grad=True)
+        atn = torch.zeros(len(people), max_profil_len, requires_grad=True)
         for idx, person in enumerate(people):
             for num, item in enumerate(person):
                 atn[idx][num] = self.atn_layer(item)
@@ -55,7 +55,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         new_people = torch.zeros(len(people), 300, requires_grad=True)
         for num, person in enumerate(people):
             job_counter = 0
-            new_p = 0
+            new_p = torch.zeros(300)
             for j, job in enumerate(person):
                 # that means the job is a placeholder, and equal to zero everywhere
                 if max(job) != min(job):
