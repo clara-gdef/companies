@@ -80,11 +80,11 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             bags, profiles = self.get_input_tensor(mini_batch)
             tmp_labels = self.get_labels(mini_batch)
             output = self.forward(profiles, bags)
-            labels = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
+            labels = labels_to_one_hot(len(profiles), tmp_labels, self.get_num_classes())
         else:
             bag_matrix, profiles = self.get_input_tensor(mini_batch)
             tmp_labels = self.get_labels(mini_batch)
-            labels = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
+            labels = labels_to_one_hot(len(profiles), tmp_labels, self.get_num_classes())
             if self.input_type == "userOriented":
                 tmp = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
@@ -110,7 +110,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             bags, profiles = self.get_input_tensor(mini_batch)
             tmp_labels = self.get_labels(mini_batch)
             output = self.forward(profiles, bags)
-            labels = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
+            labels = labels_to_one_hot(len(profiles), tmp_labels, self.get_num_classes())
         else:
             bag_matrix, profiles = self.get_input_tensor(mini_batch)
             tmp_labels = self.get_labels(mini_batch)
