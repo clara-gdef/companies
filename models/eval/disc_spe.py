@@ -58,8 +58,7 @@ def test(hparams, CFG):
     model_name = hparams.model_type + "/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
                  "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
     if hparams.input_type == "hadamard":
-        model_name = hparams.model_type + "/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
-                 "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.middle_size)
+        model_name += "/" + str(hparams.middle_size)
     model_path = os.path.join(CFG['modeldir'], model_name)
     model_files = glob.glob(os.path.join(model_path, "*"))
     latest_file = max(model_files, key=os.path.getctime)
