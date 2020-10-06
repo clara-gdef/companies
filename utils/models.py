@@ -15,7 +15,7 @@ def collate_for_disc_poly_model(batch):
 def collate_for_attn_disc_poly_model(batch):
     ids = [i[0] for i in batch]
     max_profil_len = max([len(i[1]) for i in batch])
-    reps = torch.FloatTensor(len(batch), max_profil_len, 300)
+    reps = torch.zeros(len(batch), max_profil_len, 300)
     for idx, person in enumerate(batch):
         reps[idx][:len(person[1])][:] = torch.from_numpy(person[1]).type(torch.FloatTensor).cuda()
     cies = [i[2] for i in batch]

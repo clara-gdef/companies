@@ -52,7 +52,17 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             for num, item in enumerate(person):
                 atn[idx][num] = self.atn_layer(item)
 
-        new_people = people * atn
+        new_people = torch.FloatTensor(len(people), 300)
+        for num, person in enumerate(people):
+            job_counter = 0
+            new_p = 0
+            for j, job in enumerate(person):
+                # that means the job is a placeholder, and equal to zero everywhere
+                if max(job) == min(job):
+                    job_counter += 1
+                    new_p += atn[num][j] * job
+            new_people[num] = new_p / job_counter
+            
         affinities = new_people * bags
         ipdb.set_trace()
         if self.input_type == "bagTransformer":
