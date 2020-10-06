@@ -40,6 +40,7 @@ def train(hparams):
                          )
     datasets = load_datasets(hparams, ["TRAIN", "VALID"], hparams.load_dataset)
     dataset_train, dataset_valid = datasets[0], datasets[1]
+
     in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, len(dataset_train.bag_rep))
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_attn_disc_poly_model,
                               num_workers=0, shuffle=True)
@@ -111,6 +112,7 @@ def init_lightning(hparams, xp_title):
         mode='min',
         prefix=''
     )
+    print("callback initiated.")
 
     early_stop_callback = EarlyStopping(
         monitor='val_loss',
@@ -119,6 +121,8 @@ def init_lightning(hparams, xp_title):
         verbose=False,
         mode='min'
     )
+    print("early stopping procedure initiated.")
+
     return logger, checkpoint_callback, early_stop_callback
 
 
