@@ -58,11 +58,11 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             new_p = 0
             for j, job in enumerate(person):
                 # that means the job is a placeholder, and equal to zero everywhere
-                if max(job) == min(job):
+                if max(job) != min(job):
                     job_counter += 1
                     new_p += atn[num][j] * job
             new_people[num] = new_p / job_counter
-            
+
         affinities = new_people * bags
         ipdb.set_trace()
         if self.input_type == "bagTransformer":
