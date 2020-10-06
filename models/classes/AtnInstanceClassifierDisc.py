@@ -45,13 +45,15 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         ### debug
         self.before_training = []
 
-    def forward(self, person, bags):
-        atn = torch.FloatTensor(len(person))
-        for num, item in enumerate(person):
-            atn[num] = self.atn_layer(item)
+    def forward(self, people, bags):
+        max_profil_len = max([len(i) for i in people])
+        atn = torch.FloatTensor(len(people), max_profil_len)
+        for idx, person in enumerate(people):
+            for num, item in enumerate(person):
+                atn[idx][num] = self.atn_layer(item)
 
-        new_person = person * atn
-        affinities = new_person * bags
+        new_people = people * atn
+        affinities = new_people * bags
         ipdb.set_trace()
         if self.input_type == "bagTransformer":
             mat = torch.diag(self.lin.weight).unsqueeze(1)
