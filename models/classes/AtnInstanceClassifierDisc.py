@@ -50,11 +50,12 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         people = torch.from_numpy(np.stack(tmp_people)).type(torch.FloatTensor).cuda()
         atn = self.atn_layer(people)
 
-        lp = LineProfiler()
-        lp_wrapper = lp(self.ponderate_jobs)
-        new_people = lp_wrapper(people, atn)
-        lp.print_stats()
-        ipdb.set_trace()
+        # lp = LineProfiler()
+        # lp_wrapper = lp(self.ponderate_jobs)
+        # new_people = lp_wrapper(people, atn)
+        # lp.print_stats()
+        # ipdb.set_trace()
+        new_people = self.ponderate_jobs(people, atn)
         affinities = torch.matmul(new_people.cuda(), bags.cuda())
 
         if self.input_type == "bagTransformer":
@@ -352,7 +353,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             new_p = torch.zeros(300).cuda()
             for j, job in enumerate(person):
                 # that means the job is a placeholder, and equal to zero everywhere
-                if job != min(job):
+                if (job != torch.zeros(300).cuda()).all():
                     job_counter += 1
                     new_p += atn[num][j] * job
             new_people[num] = new_p / job_counter

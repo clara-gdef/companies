@@ -77,14 +77,13 @@ class JobsDatasetPoly(Dataset):
 
 def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num_dpt, split):
     lookup_to_reps = {}
-    prof_lengths = []
     for cie in ppl_reps.keys():
         lookup_to_reps[cie] = {}
         for identifier, profile in zip(ppl_reps[cie]["id"], ppl_reps[cie]["profiles"]):
             lookup_to_reps[cie][identifier] = profile
-            prof_lengths.append(len(profile))
-    max_prof_len = max(prof_lengths)
-    print(max_prof_len)
+    # length of the profile that accounts for 90% of the training dataset
+    max_prof_len = 9
+
     tmp = []
     for cie in tqdm(ppl_reps_clus.keys(), desc="Getting mean and std for Discriminative Polyvalent Job Dataset for split " + split + " ..."):
         for clus in ppl_reps_clus[cie].keys():
