@@ -49,12 +49,6 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
     def forward(self, tmp_people, bags):
         people = torch.from_numpy(np.stack(tmp_people)).type(torch.FloatTensor).cuda()
         atn = self.atn_layer(people)
-
-        # lp = LineProfiler()
-        # lp_wrapper = lp(self.ponderate_jobs)
-        # new_people = lp_wrapper(people, atn)
-        # lp.print_stats()
-        # ipdb.set_trace()
         new_people = self.ponderate_jobs(people, atn)
         affinities = torch.matmul(new_people.cuda(), bags.cuda())
 
@@ -157,21 +151,21 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
             self.test_outputs.append(torch.transpose(tmp, 1, 0))
         else:
-            input_tensor = self.get_input_tensor(mini_batch)
+            bags, profiles = self.get_input_tensor(mini_batch)
             tmp_labels = self.get_labels(mini_batch)
-            labels_one_hot = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.get_num_classes())
-            self.test_outputs.append(self.forward(input_tensor))
-            self.before_training.append(input_tensor)
+            labels_one_hot = labels_to_one_hot(len(profiles), tmp_labels, self.get_num_classes())
+            self.test_outputs.append(self.forward(profiles, bags))
+            # self.before_training.append(input_tensor)
         self.test_labels_one_hot.append(labels_one_hot)
         self.test_labels.append(tmp_labels)
         self.test_ppl_id.append(mini_batch[0])
 
     def test_epoch_end(self, outputs):
         outputs = torch.stack(self.test_outputs)
-        if self.type == "poly":
-            res = self.test_poly(outputs)
-        else:
-            res = self.test_spe(outputs)
+        # if self.type == "poly":
+        res = self.test_poly(outputs)
+        # else:
+        #     res = self.test_spe(outputs)
         return res
 
     def test_poly(self, outputs):
