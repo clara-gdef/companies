@@ -18,7 +18,7 @@ def main():
                 data = pkl.load(fp)
             dataset = build_dataset(data, split)
             with open(tgt_file + split + ".pkl", 'wb') as f:
-                pkl.dump(dataset f)
+                pkl.dump(dataset, f)
 
 
 def build_dataset(data, split):
