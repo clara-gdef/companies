@@ -14,8 +14,8 @@ def grid_search(hparams):
         for str_lr in hparams.lr:
             lr = float(str_lr)
             test_results[lr] = {}
-            for b_size in [16, 64, 512]:
-                test_results[lr][b_size] = {}
+            for b_size in hparams.b_size:
+                test_results[lr][int(b_size)] = {}
                 if hparams.input_type == "hadamard":
                     for mid_size in [50, 200, 600]:
                         print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ", middle size=" + str(mid_size) + ")")
@@ -75,6 +75,7 @@ if __name__ == "__main__":
     parser.add_argument("--model_type", type=str, default="atn_disc_poly")
     parser.add_argument("--middle_size", type=int, default=50)
     parser.add_argument("--epochs", type=int, default=100)
-    parser.add_argument("--lr", nargs='+', default=[1e-4, 1e-6, 1e-8])
+    parser.add_argument("--b_size", nargs='+', default=[64, 512])
+    parser.add_argument("--lr", nargs='+', default=[1e-5, 1e-6])
     hparams = parser.parse_args()
     grid_search(hparams)
