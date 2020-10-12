@@ -23,7 +23,7 @@ def main():
 def build_dataset(data, split):
     all_durations_days = []
     faulty_profiles = set()
-    good_profiles = set()
+    good_profiles = []
     faulty_jobs = []
     total_jobs = 0
     for person in tqdm(data):
@@ -38,7 +38,7 @@ def build_dataset(data, split):
             else:
                 all_durations_days.append(delta)
         if not flag:
-            good_profiles.add(person)
+            good_profiles.append(person)
     final_dataset = []
     print("percentage of wrongly filled jobs for split " + split +  ": " + str(100 * len(faulty_jobs)/total_jobs) + "%")
     print("percentage of removed profiles for split " + split +  ": " + str(100 * len(faulty_profiles)/len(data)) + "%")
