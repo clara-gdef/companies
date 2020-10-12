@@ -12,12 +12,13 @@ def main():
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     ppl_file = os.path.join(CFG["datadir"], "profiles_jobs_skills_edu")
     tgt_file = os.path.join(CFG["datadir"], "profiles_jobs_skills_edu_delta_t")
-    for split in ["_TRAIN", "_VALID", "_TEST"]:
-        with open(ppl_file + split + ".pkl", 'rb') as fp:
-            data = pkl.load(fp)
-        dataset = build_dataset(data, split)
-        with open(tgt_file + split + ".pkl", 'wb') as f:
-            pkl.dump(dataset)
+    with ipdb.launch_ipdb_on_exception():
+        for split in ["_TRAIN", "_VALID", "_TEST"]:
+            with open(ppl_file + split + ".pkl", 'rb') as fp:
+                data = pkl.load(fp)
+            dataset = build_dataset(data, split)
+            with open(tgt_file + split + ".pkl", 'wb') as f:
+                pkl.dump(dataset)
 
 
 def build_dataset(data, split):
