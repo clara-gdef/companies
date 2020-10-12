@@ -46,7 +46,7 @@ def init_args(hparams):
     dico = {'rep_type': hparams.rep_type,
             'gpus': hparams.gpus,
             'input_type': hparams.input_type,
-            'load_dataset': True,
+            'load_dataset': hparams.load_dataset,
             'auto_lr_find': False,
             'data_agg_type': 'avg',
             'epochs': hparams.epochs,
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--input_type", type=str, default="matMul")
-    parser.add_argument("--load_dataset", type=bool, default=True)
+    parser.add_argument("--load_dataset", default="True")
     parser.add_argument("--TRAIN", default="True")
     parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
