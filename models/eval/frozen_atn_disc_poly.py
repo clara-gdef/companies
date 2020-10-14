@@ -33,7 +33,7 @@ def evaluate(hparams):
     trainer = pl.Trainer(gpus=[hparams.gpus],
                          logger=logger
                          )
-    dataset_test = load_datasets(hparams, ["TEST"], hparams.load_dataset)
+    dataset_test = load_datasets(hparams, ["TEST"], hparams.load_dataset)[0]
 
     in_size, out_size = get_model_params(hparams, dataset_test.rep_dim, len(dataset_test.bag_rep))
     test_loader = DataLoader(dataset_test, batch_size=hparams.b_size, collate_fn=collate_for_attn_disc_poly_model,
@@ -79,11 +79,10 @@ def load_datasets(hparams, splits, load):
         "cie_reps_file": CFG["rep"]["cie"] + hparams.data_agg_type + ".pkl",
         "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type + ".pkl",
         "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type + ".pkl",
-        "load": load,
+        "load": load
     }
     for split in splits:
         datasets.append(JobsDatasetPoly(**common_hparams, split=split))
-
     return datasets
 
 
