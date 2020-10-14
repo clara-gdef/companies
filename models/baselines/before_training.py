@@ -1,3 +1,6 @@
+import itertools
+from tqdm import tqdm
+import numpy as np
 import ipdb
 import torch
 import os
@@ -7,7 +10,7 @@ import yaml
 import pickle as pkl
 from data.datasets import DiscriminativePolyvalentDataset
 from models.classes import InstanceClassifierDisc
-from models.classes.InstanceClassifierDisc import get_metrics_at_k
+from models.classes.InstanceClassifierDisc import get_metrics_at_k, get_metrics
 from utils.models import collate_for_disc_poly_model, get_model_params
 from sklearn.metrics import f1_score,  accuracy_score, precision_score, recall_score
 
@@ -21,6 +24,7 @@ def init(hparams):
 
 
 def main(hparams):
+    num_classes = 207 + 30 + 5888
     xp_title = "disc_poly_b4_training_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_" + \
                str(hparams.b_size) + "_" + str(hparams.lr)
     datasets = load_datasets(hparams, ["TRAIN", "TEST"], hparams.load_dataset)
@@ -46,12 +50,19 @@ def main(hparams):
         res = {}
         preds = preds_and_labels["preds"]
         labels = preds_and_labels["labels"]
+
         for handle, offset, num_c in zip(["cie", "clus", "dpt"], [0, 207, 237], [207, 30, 5888]):
             predicted_classes = torch.argsort(preds[handle], dim=-1, descending=True)
             for k in [1, 10]:
                 res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], num_c, handle + "_@"+str(k), offset)
                 res = {**res, **res_k}
+
+        gen_res = get_general_results(preds, labels, num_classes)
+
+        res = {**res, **gen_res}
+
         print(sorted(res.items()))
+
         with open(os.path.join(CFG["gpudatadir"], "OUTPUTS_well_classified_topK_" + xp_title), 'wb') as f:
             pkl.dump(res, f)
     else:
@@ -107,6 +118,40 @@ def find_well_classified_outputs(predicted_classes, preds, labels, idx):
     good_labels = [labels[i] for i in indices]
     good_indices = [idx[i] for i in indices]
     return good_preds, good_labels, good_indices
+
+
+def get_general_results(preds, labels, num_classes):
+    all_labels = []
+    for tup in zip(labels["cie"], labels["clus"], labels["dpt"]):
+        all_labels.append([tup[0].item(), tup[1].item(), tup[2].item()])
+    cie_preds_max = [i.item() for i in torch.argmax(preds["cie"], dim=1)]
+    clus_preds_max = [i.item() + 207 for i in torch.argmax(preds["clus"], dim=1)]
+    dpt_preds_max = [i.item() + 237 for i in torch.argmax(preds["dpt"], dim=1)]
+    all_preds_max = []
+    for tup in zip(cie_preds_max, clus_preds_max, dpt_preds_max):
+        all_preds_max.append([tup[0], tup[1], tup[2]])
+
+    res_all = get_metrics(np.array(all_preds_max).reshape(-1, 1), np.array(all_labels).reshape(-1, 1),
+                                num_classes, "all", 0)
+
+    cie_preds_at_k = [i for i in torch.argsort(preds["cie"], dim=-1, descending=True)]
+    clus_preds_at_k = [i + 207 for i in torch.argsort(preds["clus"], dim=-1, descending=True)]
+    dpt_preds_at_k = [i + 237 for i in torch.argsort(preds["dpt"], dim=-1, descending=True)]
+
+    all_preds_k = []
+    chained_labels = [i.item() for i in itertools.chain(labels["cie"], labels["clus"], labels["dpt"])]
+    for preds, labs in tqdm(zip(itertools.chain(cie_preds_at_k, clus_preds_at_k, dpt_preds_at_k), chained_labels), desc="Computing at k=10..."):
+        if labs in preds[:10]:
+            all_preds_k.append(labs)
+        else:
+            if type(preds) == torch.Tensor:
+                all_preds_k.append(preds[0].item())
+            else:
+                all_preds_k.append(preds)
+
+    res_all_k = get_metrics(all_preds_k, chained_labels, num_classes, "all_@10", 0)
+    return {**res_all_k, **res_all}
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

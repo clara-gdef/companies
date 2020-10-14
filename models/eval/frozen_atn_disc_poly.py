@@ -67,6 +67,7 @@ def evaluate(hparams):
     model_files = glob.glob(os.path.join(model_path, "*"))
     latest_file = max(model_files, key=os.path.getctime)
     model.load_state_dict(torch.load(latest_file)["state_dict"])
+    print("Evaluating model : " + latest_file + ".")
 
     return trainer.test(test_dataloaders=test_loader, model=model)
 

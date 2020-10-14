@@ -43,14 +43,14 @@ def train(hparams):
 
     in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, len(dataset_train.bag_rep))
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_attn_disc_poly_model,
-                              num_workers=0, shuffle=True)
+                              num_workers=8, shuffle=True)
     valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_attn_disc_poly_model,
-                              num_workers=0)
+                              num_workers=8)
     print("Dataloaders initiated.")
 
     print("Loading previously saved classifier...")
-    model_name = "disc_poly_wd/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type +\
-                 "/768/1e-08/0.7/epoch=" + hparams.prev_model_ep +".ckpt"
+    model_name = "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type +\
+                 "/512/0.0001/0.0/epoch=" + hparams.prev_model_ep +".ckpt"
     weights = torch.load(os.path.join(CFG['modeldir'], model_name))["state_dict"]
 
     arguments = {'dim_size': 300,
@@ -145,7 +145,7 @@ if __name__ == "__main__":
     parser.add_argument("--auto_lr_find", type=bool, default=False)
     parser.add_argument("--load_from_checkpoint", default=False)
     parser.add_argument("--checkpoint", type=int, default=45)
-    parser.add_argument("--prev_model_ep", type=str, default='99')
+    parser.add_argument("--prev_model_ep", type=str, default='49')
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--model_type", type=str, default="frozenAtn_disc_poly")

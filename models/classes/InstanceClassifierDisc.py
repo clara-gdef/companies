@@ -1,3 +1,5 @@
+import itertools
+
 import ipdb
 import torch
 import os
@@ -364,16 +366,33 @@ def test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds
     all_labels = []
     for tup in zip(cie_labels, clus_labels, dpt_labels):
         all_labels.append([tup[0].item(), tup[1].item(), tup[2].item()])
-    cie_preds = [i.item() for i in torch.argmax(cie_preds, dim=1)]
-    clus_preds = [i.item() + 207 for i in torch.argmax(clus_preds, dim=1)]
-    dpt_preds = [i.item() + 237 for i in torch.argmax(dpt_preds, dim=1)]
-    all_preds = []
-    for tup in zip(cie_preds, clus_preds, dpt_preds):
-        all_preds.append([tup[0], tup[1], tup[2]])
+    cie_preds_max = [i.item() for i in torch.argmax(cie_preds, dim=1)]
+    clus_preds_max = [i.item() + 207 for i in torch.argmax(clus_preds, dim=1)]
+    dpt_preds_max = [i.item() + 237 for i in torch.argmax(dpt_preds, dim=1)]
+    all_preds_max = []
+    for tup in zip(cie_preds_max, clus_preds_max, dpt_preds_max):
+        all_preds_max.append([tup[0], tup[1], tup[2]])
 
-    general_res = get_metrics(np.array(all_preds).reshape(-1, 1), np.array(all_labels).reshape(-1, 1), num_classes,
+    general_res = get_metrics(np.array(all_preds_max).reshape(-1, 1), np.array(all_labels).reshape(-1, 1), num_classes,
                               "all", 0)
-    return general_res
+    cie_preds_at_k = [i for i in torch.argsort(cie_preds, dim=-1, descending=True)]
+    clus_preds_at_k = [i + 207 for i in torch.argsort(clus_preds, dim=-1, descending=True)]
+    dpt_preds_at_k = [i + 237 for i in torch.argsort(dpt_preds, dim=-1, descending=True)]
+
+    all_preds_k = []
+    chained_labels = [i for i in itertools.chain(cie_labels, clus_labels, dpt_labels)]
+    for preds, labels in tqdm(zip(itertools.chain(cie_preds_at_k, clus_preds_at_k, dpt_preds_at_k), chained_labels), desc="Computing at k=10..."):
+        if labels.item() in preds[:10]:
+            all_preds_k.append(labels.item())
+        else:
+            if type(preds) == torch.Tensor:
+                all_preds_k.append(preds[0].item())
+            else:
+                all_preds_k.append(preds)
+
+    res_at_k = get_metrics(all_preds_k, chained_labels, num_classes, "all_@k", 0)
+
+    return {**general_res, **res_at_k}
 
 
 def test_for_bag(preds, labels, b4_training, offset, num_classes, bag_type):
