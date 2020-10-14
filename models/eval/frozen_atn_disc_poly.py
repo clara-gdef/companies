@@ -36,7 +36,7 @@ def evaluate(hparams):
     dataset_test = load_datasets(hparams, ["TEST"], hparams.load_dataset)[0]
 
     in_size, out_size = get_model_params(hparams, dataset_test.rep_dim, len(dataset_test.bag_rep))
-    test_loader = DataLoader(dataset_test, batch_size=hparams.b_size, collate_fn=collate_for_attn_disc_poly_model,
+    test_loader = DataLoader(dataset_test, batch_size=1, collate_fn=collate_for_attn_disc_poly_model,
                               num_workers=0, shuffle=True)
     print("Dataloaders initiated.")
 
