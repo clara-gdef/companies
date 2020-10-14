@@ -11,11 +11,12 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 
 
 class AtnInstanceClassifierDisc(pl.LightningModule):
-    def __init__(self, in_size, out_size, dim_size, hparams, desc, num_cie, num_clus, num_dpt, middle_size=None,):
+    def __init__(self, in_size, out_size, dim_size, hparams, desc, num_cie, num_clus, num_dpt, middle_size=None, fixed_weights=None):
         super().__init__()
         self.num_cie = num_cie
         self.num_clus = num_clus
         self.num_dpt = num_dpt
+        self.fixed_weights = fixed_weights
 
         self.dim_size = dim_size
         self.input_type = hparams.input_type
@@ -34,8 +35,13 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             torch.nn.init.zeros_(self.lin_class_prediction.bias)
         else:
             self.lin = torch.nn.Linear(in_size, out_size)
-            torch.nn.init.eye_(self.lin.weight)
-            torch.nn.init.zeros_(self.lin.bias)
+            if fixed_weights is None:
+                torch.nn.init.eye_(self.lin.weight)
+                torch.nn.init.zeros_(self.lin.bias)
+            else:
+                self.lin.weight = torch.nn.Parameter(fixed_weights["lin.weight"])
+                self.lin.bias = torch.nn.Parameter(fixed_weights["lin.bias"])
+                self.lin.requires_grad = False
 
         self.training_losses = []
         self.test_outputs = []
@@ -130,7 +136,9 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
 
     def configure_optimizers(self):
         # return torch.optim.SGD(self.parameters(), lr=self.hparams.lr, weight_decay=self.wd)
-        return torch.optim.Adam(self.parameters(), lr=self.hparams.lr, weight_decay=self.hparams.wd)
+        # ipdb.set_trace()
+        params = filter(lambda p: p.requires_grad, self.parameters())
+        return torch.optim.Adam(params, lr=self.hparams.lr, weight_decay=self.hparams.wd)
 
     def test_step(self, mini_batch, batch_idx):
         if self.input_type == "userOriented":
