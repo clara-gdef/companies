@@ -1,5 +1,6 @@
 import argparse
 import os
+import torch
 import pickle as pkl
 
 import fastText
@@ -20,7 +21,7 @@ def main(args):
             ft_model = fastText.load_model(os.path.join(CFG["modeldir"], "ft_fs.bin"))
         print("Word vectors loaded.")
 
-        dim_mean, dm_std = build_for_train(ft_model)
+        ds_mean, ds_std = build_for_train(ft_model)
 
         for item in ["VALID", "TEST"]:
             data_file = os.path.join(CFG["datadir"], "cie_" + item + ".pkl")
@@ -60,18 +61,18 @@ def main(args):
                                     tmp = to_emb(jobs, ft_model, args.flat)
                                     if tmp is None:
                                         ipdb.set_trace()
-                                    cie_dict[cie]["profiles"].append(tmp)
+                                    cie_dict[cie]["profiles"].append((tmp - ds_mean) / ds_std)
                                     if args.edu:
                                         edu = ppl_dict[person_id]["edu"]
                                         cie_dict[cie]["edu"].append(to_emb(edu, ft_model, args.flat))
             avg_len = [len(cie_dict[cie]["id"]) for cie in cie_dict.keys()]
             print("avg num of ppl per cie: " + str(int(np.mean(np.asarray(avg_len)))))
             f_name = args.tgt_file
-            if args.flat:
+            if args.flat == "True":
                 f_name += "unflattened_"
             if args.edu:
                 f_name += "edu_"
-            target = os.path.join(CFG["datadir"], f_name + item + ".pkl")
+            target = os.path.join(CFG["datadir"], f_name + item + "_standardized.pkl")
             with open(target, "wb") as f:
                 pkl.dump(cie_dict, f)
 
@@ -98,9 +99,7 @@ def build_for_train(ft_model):
 
     with ipdb.launch_ipdb_on_exception():
         cie_dict = dict()
-        counter = 0
         for cie in tqdm(data_cie.keys(), desc="Processing company..."):
-            counter += 1
             if args.edu:
                 cie_dict[cie] = {"id": [], "profiles": [], "edu": []}
             else:
@@ -119,9 +118,30 @@ def build_for_train(ft_model):
                             if args.edu:
                                 edu = ppl_dict[person_id]["edu"]
                                 cie_dict[cie]["edu"].append(to_emb(edu, ft_model, args.flat))
-            if counter > 5:
-                ipdb.set_trace()
 
+    stacked_ppl = np.zeros((1, 300))
+    for cie in cie_dict.keys():
+        if args.flat == "True":
+            ipdb.set_trace()
+        else:
+            for profile in cie_dict[cie]["profiles"]:
+                stacked_ppl = np.concatenate((stacked_ppl, profile), axis=0)
+    tmp = stacked_ppl[1:]
+
+    ds_mean = np.mean(tmp, axis=0)
+    ds_std = np.std(tmp, axis=0)
+
+    cie_dict_standardized = dict()
+    for cie in tqdm(cie_dict.keys(), desc="Processing company..."):
+        cie_dict_standardized[cie] = {"profiles": []}
+        cie_dict_standardized[cie]["id"] = cie_dict[cie]["id"]
+        if args.edu:
+            cie_dict_standardized[cie]["edu"] = cie_dict[cie]["edu"]
+        if args.flat == "True":
+            ipdb.set_trace()
+        else:
+            for profile in cie_dict[cie]["profiles"]:
+                cie_dict_standardized[cie]["profiles"].append((profile - ds_mean)/ds_std)
     avg_len = [len(cie_dict[cie]["id"]) for cie in cie_dict.keys()]
     print("avg num of ppl per cie: " + str(int(np.mean(np.asarray(avg_len)))))
     f_name = args.tgt_file
@@ -130,14 +150,15 @@ def build_for_train(ft_model):
     if args.edu:
         f_name += "edu_"
     target = os.path.join(CFG["datadir"], f_name + "TRAIN_standardized.pkl")
-    ipdb.set_trace()
     with open(target, "wb") as f:
-        pkl.dump(cie_dict, f)
+        pkl.dump(cie_dict_standardized, f)
+
+    return ds_mean, ds_std
 
 
 def to_emb(complete_profile, ft_model, flat):
     word_count = 0
-    if flat:
+    if flat == "True":
         embs = np.zeros((len(complete_profile), ft_model.get_dimension()))
         for num, job in enumerate(complete_profile):
             tmp = []
@@ -170,7 +191,7 @@ if __name__ == "__main__":
     parser.add_argument("--min_count_ppl", type=int, default=200)
     parser.add_argument("--year_start", type=int, default=2000)
     parser.add_argument("--year_end", type=int, default=2017)
-    parser.add_argument("--flat", type=bool, default=True)
+    parser.add_argument("--flat", default=False)
     parser.add_argument("--edu", type=bool, default=False)
     args = parser.parse_args()
     main(args)
