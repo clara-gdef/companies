@@ -98,7 +98,9 @@ def build_for_train(ft_model):
 
     with ipdb.launch_ipdb_on_exception():
         cie_dict = dict()
+        counter = 0
         for cie in tqdm(data_cie.keys(), desc="Processing company..."):
+            counter += 1
             if args.edu:
                 cie_dict[cie] = {"id": [], "profiles": [], "edu": []}
             else:
@@ -117,6 +119,9 @@ def build_for_train(ft_model):
                             if args.edu:
                                 edu = ppl_dict[person_id]["edu"]
                                 cie_dict[cie]["edu"].append(to_emb(edu, ft_model, args.flat))
+            if counter > 5:
+                ipdb.set_trace()
+
     avg_len = [len(cie_dict[cie]["id"]) for cie in cie_dict.keys()]
     print("avg num of ppl per cie: " + str(int(np.mean(np.asarray(avg_len)))))
     f_name = args.tgt_file
