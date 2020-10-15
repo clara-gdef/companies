@@ -120,7 +120,7 @@ def build_for_train(ft_model):
                                 cie_dict[cie]["edu"].append(to_emb(edu, ft_model, args.flat))
 
     stacked_ppl = np.zeros(300)
-    for cie in cie_dict.keys():
+    for cie in tqdm(cie_dict.keys(), desc="Finding mean and std per dimenson across the dataset..."):
         if args.flat == "True":
             ipdb.set_trace()
         else:
@@ -132,7 +132,7 @@ def build_for_train(ft_model):
     ds_std = np.std(tmp, axis=0)
 
     cie_dict_standardized = dict()
-    for cie in tqdm(cie_dict.keys(), desc="Processing company..."):
+    for cie in tqdm(cie_dict.keys(), desc="Processing company for standardization..."):
         cie_dict_standardized[cie] = {"profiles": []}
         cie_dict_standardized[cie]["id"] = cie_dict[cie]["id"]
         if args.edu:
