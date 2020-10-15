@@ -119,7 +119,7 @@ def build_for_train(ft_model):
                                 edu = ppl_dict[person_id]["edu"]
                                 cie_dict[cie]["edu"].append(to_emb(edu, ft_model, args.flat))
 
-    stacked_ppl = np.zeros((1, 300))
+    stacked_ppl = np.zeros(300)
     for cie in cie_dict.keys():
         if args.flat == "True":
             ipdb.set_trace()
