@@ -50,7 +50,7 @@ def test(hparams):
     model = InstanceClassifierDisc(**arguments)
     print("Model Loaded.")
 
-    dataset = load_datasets(hparams, CFG, ["TEST"], hparams.load_dataset)
+    dataset = load_datasets(hparams, CFG, ["TRAIN"], hparams.load_dataset)
     test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_poly_model, num_workers=32)
     model_name = hparams.model_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" + \
                  str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
@@ -63,7 +63,6 @@ def test(hparams):
     print("Evaluating model: " + str(latest_file))
     model.load_state_dict(torch.load(latest_file)["state_dict"])
     model.eval()
-
     return trainer.test(test_dataloaders=test_loader, model=model.cuda())
 
 
@@ -78,7 +77,7 @@ def load_datasets(hparams, CFG, splits, load):
         "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type + ".pkl",
         "agg_type": hparams.data_agg_type,
         "load": load,
-        "subsample": 0
+        "subsample": 1000
     }
     for split in splits:
         datasets.append(DiscriminativePolyvalentDataset(**common_hparams, split=split))

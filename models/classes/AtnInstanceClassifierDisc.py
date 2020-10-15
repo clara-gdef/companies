@@ -58,16 +58,17 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         people = torch.from_numpy(np.stack(tmp_people)).type(torch.FloatTensor).cuda()
         atn = self.atn_layer(people)
         new_people = self.ponderate_jobs(people, atn)
-        affinities = torch.matmul(new_people.cuda(), bags.cuda())
 
         if self.input_type == "bagTransformer":
             mat = torch.diag(self.lin.weight).unsqueeze(1)
             out = bags * mat + self.lin.bias.view(bags.shape[0], -1)
             return out.T, new_people
         elif self.input_type == "hadamard":
+            affinities = torch.matmul(new_people.cuda(), bags.cuda())
             transformed_input = torch.relu(self.lin_dim_reduction(affinities))
             return self.lin_class_prediction(transformed_input)
         else:
+            affinities = torch.matmul(new_people.cuda(), bags.cuda())
             return self.lin(affinities)
 
     def training_step(self, mini_batch, batch_nb):
@@ -84,9 +85,9 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
                 tmp = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
             if self.input_type == "bagTransformer":
-                new_bags, people = self(bag_matrix.T)
-                tmp = torch.matmul(new_bags, torch.transpose(people, 1, 0))
-                output = torch.transpose(tmp, 1, 0)
+                new_profiles, new_bags = self(profiles, bag_matrix.T)
+                output = torch.matmul(new_bags, torch.transpose(new_profiles, 1, 0))
+                # output = torch.transpose(tmp, 1, 0)
         if self.type == "poly":
             loss = torch.nn.functional.binary_cross_entropy_with_logits(output, labels.cuda())
         else:
@@ -115,8 +116,8 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
                 output = torch.transpose(tmp, 1, 0)
             if self.input_type == "bagTransformer":
                 new_profiles, new_bags = self(profiles, bag_matrix.T)
-                tmp = torch.matmul(new_bags, torch.transpose(new_profiles, 1, 0))
-                output = torch.transpose(tmp, 1, 0)
+                output = torch.matmul(new_bags, torch.transpose(new_profiles, 1, 0))
+                # output = torch.transpose(tmp, 1, 0)
         if self.type == "poly":
             val_loss = torch.nn.functional.binary_cross_entropy_with_logits(output, labels.cuda())
         else:
@@ -372,6 +373,7 @@ def test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds
     clus_preds_max = [i.item() + 207 for i in torch.argmax(clus_preds, dim=1)]
     dpt_preds_max = [i.item() + 237 for i in torch.argmax(dpt_preds, dim=1)]
     all_preds_max = []
+
     for tup in zip(cie_preds_max, clus_preds_max, dpt_preds_max):
         all_preds_max.append([tup[0], tup[1], tup[2]])
 

@@ -83,25 +83,28 @@ class InstanceClassifierDisc(pl.LightningModule):
                 #
                 #     output = self((bag_matrix, profiles))
         if self.type == "poly":
-            # cie_preds = output[:, :self.num_cie]
-            # cie_labels = torch.LongTensor(tmp_labels[0]).cuda()
-            # clus_preds = output[:, self.num_cie: self.num_cie + self.num_clus]
-            # clus_labels = torch.LongTensor(tmp_labels[1]).cuda() - self.num_cie
-            # dpt_preds = output[:, -self.num_dpt:]
-            # dpt_labels = torch.LongTensor(tmp_labels[2]).cuda() - (self.num_cie + self.num_clus)
-            # loss = torch.nn.functional.cross_entropy(cie_preds, cie_labels) + \
-            #        torch.nn.functional.cross_entropy(clus_preds, clus_labels) +\
-            #        torch.nn.functional.cross_entropy(dpt_preds, dpt_labels)
-            loss = torch.nn.functional.binary_cross_entropy_with_logits(output, labels.cuda())
+            cie_preds = output[:, :self.num_cie]
+            cie_labels = torch.LongTensor(tmp_labels[0]).cuda()
+            clus_preds = output[:, self.num_cie: self.num_cie + self.num_clus]
+            clus_labels = torch.LongTensor(tmp_labels[1]).cuda() - self.num_cie
+            dpt_preds = output[:, -self.num_dpt:]
+            dpt_labels = torch.LongTensor(tmp_labels[2]).cuda() - (self.num_cie + self.num_clus)
+            loss_cie = torch.nn.functional.cross_entropy(cie_preds, cie_labels)
+            loss_clus = torch.nn.functional.cross_entropy(clus_preds, clus_labels)
+            loss_dpt = torch.nn.functional.cross_entropy(dpt_preds, dpt_labels)
+            loss = loss_cie + loss_clus + loss_dpt
+            # loss = torch.nn.functional.binary_cross_entropy_with_logits(output, labels.cuda())
         else:
             # the model is specialized
             loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
         self.training_losses.append(loss.item())
 
         preds = [i.item() for i in torch.argmax(output, dim=1)]
-        res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "train", 0)
-        tensorboard_logs = {**res_dict, 'train_loss': loss}
-
+        # res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "train", 0)
+        tensorboard_logs = {'val_loss': loss,
+                            "val_loss_cie": loss_cie,
+                            "val_loss_clus": loss_clus,
+                            "val_loss_dpt": loss_dpt}
         return {'loss': loss, 'log': tensorboard_logs}
 
     def validation_step(self, batch, batch_nb):
@@ -122,14 +125,29 @@ class InstanceClassifierDisc(pl.LightningModule):
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
         if self.type == "poly":
-            val_loss = torch.nn.functional.binary_cross_entropy_with_logits(output, labels.cuda())
+            cie_preds = output[:, :self.num_cie]
+            cie_labels = torch.LongTensor(tmp_labels[0]).cuda()
+            clus_preds = output[:, self.num_cie: self.num_cie + self.num_clus]
+            clus_labels = torch.LongTensor(tmp_labels[1]).cuda() - self.num_cie
+            dpt_preds = output[:, -self.num_dpt:]
+            dpt_labels = torch.LongTensor(tmp_labels[2]).cuda() - (self.num_cie + self.num_clus)
+            val_loss_cie = torch.nn.functional.cross_entropy(cie_preds, cie_labels)
+            val_loss_clus = torch.nn.functional.cross_entropy(clus_preds, clus_labels)
+            val_loss_dpt = torch.nn.functional.cross_entropy(dpt_preds, dpt_labels)
+            val_loss = val_loss_cie + val_loss_clus + val_loss_dpt
+            # val_loss = torch.nn.functional.binary_cross_entropy_with_logits(output, labels.cuda())
         else:
             # the model is specialized
             val_loss = torch.nn.functional.cross_entropy(output,
                                                          torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
         preds = [i.item() for i in torch.argmax(output, dim=1)]
         res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "valid", 0)
-        tensorboard_logs = {**res_dict, 'val_loss': val_loss}
+        #tensorboard_logs = {**res_dict, 'val_loss': val_loss, "val_loss_cie": val_loss_cie, "val_loss_clus": val_loss_clus, "val_loss_dpt": val_loss_dpt}
+        tensorboard_logs = {'val_loss': val_loss,
+                            "val_loss_cie": val_loss_cie,
+                            "val_loss_clus": val_loss_clus,
+                            "val_loss_dpt": val_loss_dpt}
+
         return {'loss': val_loss, 'log': tensorboard_logs}
 
     def epoch_end(self):
@@ -151,6 +169,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
             self.test_outputs.append(torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0)).cuda())
         elif self.input_type == "b4Training":
+            ipdb.set_trace()
             input_tensor = self.get_input_tensor(batch)
             self.test_outputs.append(input_tensor)
             tmp_labels = self.get_labels(batch)
