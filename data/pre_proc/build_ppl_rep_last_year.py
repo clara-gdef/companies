@@ -19,7 +19,10 @@ def main(args):
         else:
             ft_model = fastText.load_model(os.path.join(CFG["modeldir"], "ft_fs.bin"))
         print("Word vectors loaded.")
-        for item in ["VALID", "TEST", "TRAIN"]:
+
+        dim_mean, dm_std = build_for_train(ft_model)
+
+        for item in ["VALID", "TEST"]:
             data_file = os.path.join(CFG["datadir"], "cie_" + item + ".pkl")
             with open(data_file, "rb") as f:
                 data_cie = pkl.load(f)
@@ -71,6 +74,60 @@ def main(args):
             target = os.path.join(CFG["datadir"], f_name + item + ".pkl")
             with open(target, "wb") as f:
                 pkl.dump(cie_dict, f)
+
+
+def build_for_train(ft_model):
+    data_file = os.path.join(CFG["datadir"], "cie_TRAIN.pkl")
+    with open(data_file, "rb") as f:
+        data_cie = pkl.load(f)
+    if args.edu:
+        ppl_file = os.path.join(CFG["datadir"], "profiles_jobs_skills_edu_TRAIN.pkl")
+        with open(ppl_file, 'rb') as fp:
+            data_ppl = pkl.load(fp)
+    else:
+        ppl_file = os.path.join(CFG["datadir"], "profiles_jobs_skills_TRAIN.pkl")
+        with open(ppl_file, 'rb') as fp:
+            data_ppl = pkl.load(fp)
+
+    ppl_dict = {}
+    for person in data_ppl:
+        if args.edu:
+            ppl_dict[person[0]] = {'jobs': person[3], "edu": person[2]}
+        else:
+            ppl_dict[person[0]] = {'jobs': person[3]}
+
+    with ipdb.launch_ipdb_on_exception():
+        cie_dict = dict()
+        for cie in tqdm(data_cie.keys(), desc="Processing company..."):
+            if args.edu:
+                cie_dict[cie] = {"id": [], "profiles": [], "edu": []}
+            else:
+                cie_dict[cie] = {"id": [], "profiles": []}
+            for year in range(args.year_end, args.year_start, -1):
+                if year in data_cie[cie].keys():
+                    for person in data_cie[cie][year]:
+                        person_id = person[0]
+                        if person_id not in cie_dict[cie]["id"]:
+                            jobs = ppl_dict[person_id]["jobs"]
+                            cie_dict[cie]["id"].append(person_id)
+                            tmp = to_emb(jobs, ft_model, args.flat)
+                            if tmp is None:
+                                ipdb.set_trace()
+                            cie_dict[cie]["profiles"].append(tmp)
+                            if args.edu:
+                                edu = ppl_dict[person_id]["edu"]
+                                cie_dict[cie]["edu"].append(to_emb(edu, ft_model, args.flat))
+    avg_len = [len(cie_dict[cie]["id"]) for cie in cie_dict.keys()]
+    print("avg num of ppl per cie: " + str(int(np.mean(np.asarray(avg_len)))))
+    f_name = args.tgt_file
+    if args.flat:
+        f_name += "unflattened_"
+    if args.edu:
+        f_name += "edu_"
+    target = os.path.join(CFG["datadir"], f_name + "TRAIN_standardized.pkl")
+    ipdb.set_trace()
+    with open(target, "wb") as f:
+        pkl.dump(cie_dict, f)
 
 
 def to_emb(complete_profile, ft_model, flat):

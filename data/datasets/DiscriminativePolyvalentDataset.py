@@ -72,7 +72,7 @@ class DiscriminativePolyvalentDataset(Dataset):
                       'num_cie': self.num_cie,
                       'num_clus': self.num_clus,
                       "num_dpt": self.num_dpt}
-        file_name = "disc_poly_" + agg_type + "_" + rep_type + "_" + split + ".pkl"
+        file_name = "disc_poly_standard_" + agg_type + "_" + rep_type + "_" + split + ".pkl"
         with open(os.path.join(data_dir, file_name), 'wb') as f_name:
             torch.save(dictionary, f_name)
 
