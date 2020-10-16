@@ -190,7 +190,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             cie_preds = outputs[:, :self.num_cie, 0]
             clus_preds = outputs[:, self.num_cie: self.num_cie + self.num_clus, 0]
             dpt_preds = outputs[:, -self.num_dpt:, 0]
-
+            cie_b4, clus_b4, dpt_b4 = [], [], []
 
         cie_labels = torch.LongTensor([i[0][0] for i in self.test_labels])
         clus_labels = torch.LongTensor([i[1][0] for i in self.test_labels])
