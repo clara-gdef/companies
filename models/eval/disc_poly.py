@@ -77,7 +77,7 @@ def load_datasets(hparams, CFG, splits, load):
         "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type + ".pkl",
         "agg_type": hparams.data_agg_type,
         "load": load,
-        "subsample": 1000
+        "subsample": 0
     }
     if hparams.standardized == "True":
         print("Loading standardized datasets...")
