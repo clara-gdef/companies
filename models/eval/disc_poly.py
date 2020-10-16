@@ -33,7 +33,7 @@ def test(hparams):
                          checkpoint_callback=None,
                          logger=logger,
                          )
-    datasets = load_datasets(hparams, CFG, ["TRAIN"], True)
+    datasets = load_datasets(hparams, CFG, ["TEST"], True)
     dataset_train = datasets[0]
     in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, len(dataset_train.bag_rep))
 
