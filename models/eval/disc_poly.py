@@ -79,6 +79,10 @@ def load_datasets(hparams, CFG, splits, load):
         "load": load,
         "subsample": 1000
     }
+    if hparams.standardized == "True":
+        print("Loading standardized datasets...")
+        common_hparams["standardized"] = True
+        
     for split in splits:
         datasets.append(DiscriminativePolyvalentDataset(**common_hparams, split=split))
 
