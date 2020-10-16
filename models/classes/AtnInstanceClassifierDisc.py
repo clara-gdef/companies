@@ -157,10 +157,10 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         elif self.input_type == "bagTransformer":
             bag_matrix, profiles = self.get_input_tensor(mini_batch)
             tmp_labels = self.get_labels(mini_batch)
-            labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
-            new_bags = self(bag_matrix.T)
-            tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
-            self.test_outputs.append(torch.transpose(tmp, 1, 0))
+            labels_one_hot = labels_to_one_hot(len(profiles), tmp_labels, self.get_num_classes())
+            new_profiles, new_bags = self(profiles, bag_matrix.T)
+            output = torch.matmul(new_bags, torch.transpose(new_profiles, 1, 0))
+            self.test_outputs.append(torch.transpose(output, 1, 0))
         else:
             bags, profiles = self.get_input_tensor(mini_batch)
             tmp_labels = self.get_labels(mini_batch)
