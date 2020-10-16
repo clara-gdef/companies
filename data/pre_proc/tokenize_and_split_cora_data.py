@@ -1,3 +1,4 @@
+import argparse
 import os
 import pickle as pkl
 import ipdb
@@ -18,4 +19,6 @@ def main(args):
         ipdb.set_trace()
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    args = parser.parse_args()
+    main(args)
