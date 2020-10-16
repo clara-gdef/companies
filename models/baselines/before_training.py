@@ -77,14 +77,18 @@ def load_datasets(hparams, splits, load):
         "data_dir": CFG["gpudatadir"],
         "ppl_file": CFG["rep"][hparams.rep_type]["total"],
         "rep_type": hparams.rep_type,
-        "cie_reps_file": CFG["rep"]["cie"] + hparams.data_agg_type + ".pkl",
-        "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type + ".pkl",
-        "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type + ".pkl",
+        "cie_reps_file": CFG["rep"]["cie"] + hparams.data_agg_type,
+        "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type,
+        "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type,
         "agg_type": hparams.data_agg_type,
         "load": load,
         "subsample": 0
 
     }
+    if hparams.standardized == "True":
+        print("Loading standardized datasets...")
+        common_hparams["standardized"] = True
+
     for split in splits:
         datasets.append(DiscriminativePolyvalentDataset(**common_hparams, split=split))
 
@@ -161,9 +165,10 @@ if __name__ == "__main__":
     parser.add_argument("--middle_size", type=int, default=20)
     parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--input_type", type=str, default="b4Training")
-    parser.add_argument("--load_dataset", type=bool, default=True)
+    parser.add_argument("--load_dataset", type=bool, default=False)
     parser.add_argument("--eval_top_k", type=bool, default=True)
     parser.add_argument("--auto_lr_find", type=bool, default=False)
+    parser.add_argument("--standardized", type=str, default="True")
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--lr", type=float, default=1e-6)
     parser.add_argument("--epochs", type=int, default=20)

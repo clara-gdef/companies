@@ -13,12 +13,17 @@ class DiscriminativePolyvalentDataset(Dataset):
                  ppl_file, rep_type,
                  cie_reps_file, clus_reps_file,
                  dpt_reps_file, agg_type,
-                 split, load, subsample):
+                 split, load, subsample, standardized):
         if load:
             print("Loading previously saved dataset...")
-            file_name = "disc_poly_" + agg_type + "_" + rep_type + "_" + split + ".pkl"
-            with open(os.path.join(data_dir, file_name), 'rb') as f_name:
-                dic = torch.load(f_name)
+            if standardized is True:
+                file_name = "disc_poly_standard_" + agg_type + "_" + rep_type + "_" + split + "_standardized.pkl"
+                with open(os.path.join(data_dir, file_name), 'rb') as f_name:
+                    dic = torch.load(f_name)
+            else:
+                file_name = "disc_poly_" + agg_type + "_" + rep_type + "_" + split + ".pkl"
+                with open(os.path.join(data_dir, file_name), 'rb') as f_name:
+                    dic = torch.load(f_name)
             self.rep_type = dic["rep_type"]
             if subsample > 0:
                 np.random.shuffle(dic["tuples"])
@@ -35,25 +40,37 @@ class DiscriminativePolyvalentDataset(Dataset):
 
         else:
             print("Loading data...")
-            with open(os.path.join(data_dir, "lookup_ppl.pkl"), 'rb') as f_name:
-                ppl_lookup = pkl.load(f_name)
-            with open(os.path.join(data_dir, ppl_file + '_' + split + ".pkl"), 'rb') as f_name:
-                ppl_reps = pkl.load(f_name)
-            with open(os.path.join(data_dir, cie_reps_file), "rb") as f_name:
-                cie_reps = pkl.load(f_name)
-            with open(os.path.join(data_dir, clus_reps_file), "rb") as f_name:
-                clus_reps = pkl.load(f_name)
-            with open(os.path.join(data_dir, dpt_reps_file), "rb") as f_name:
-                dpt_reps = pkl.load(f_name)
+            if standardized is True:
+                with open(os.path.join(data_dir, "lookup_ppl.pkl"), 'rb') as f_name:
+                    ppl_lookup = pkl.load(f_name)
+                with open(os.path.join(data_dir, ppl_file + '_' + split + "_standardized.pkl"), 'rb') as f_name:
+                    ppl_reps = pkl.load(f_name)
+                with open(os.path.join(data_dir, cie_reps_file + "_standardized.pkl"), "rb") as f_name:
+                    cie_reps = pkl.load(f_name)
+                with open(os.path.join(data_dir, clus_reps_file + "_standardized.pkl"), "rb") as f_name:
+                    clus_reps = pkl.load(f_name)
+                with open(os.path.join(data_dir, dpt_reps_file + "_standardized.pkl"), "rb") as f_name:
+                    dpt_reps = pkl.load(f_name)
+            else:
+                with open(os.path.join(data_dir, "lookup_ppl.pkl"), 'rb') as f_name:
+                    ppl_lookup = pkl.load(f_name)
+                with open(os.path.join(data_dir, ppl_file + '_' + split + ".pkl"), 'rb') as f_name:
+                    ppl_reps = pkl.load(f_name)
+                with open(os.path.join(data_dir, cie_reps_file + ".pkl"), "rb") as f_name:
+                    cie_reps = pkl.load(f_name)
+                with open(os.path.join(data_dir, clus_reps_file + ".pkl"), "rb") as f_name:
+                    clus_reps = pkl.load(f_name)
+                with open(os.path.join(data_dir, dpt_reps_file + ".pkl"), "rb") as f_name:
+                    dpt_reps = pkl.load(f_name)
             print("Data Loaded.")
             self.rep_type = rep_type
             self.num_cie = len(cie_reps)
             self.num_clus = len(clus_reps)
             self.num_dpt = len(dpt_reps)
-            self.tuples = build_ppl_tuples(ppl_reps, ppl_lookup, rep_type, self.num_cie, self.num_clus, self.num_dpt, split)
+            self.tuples = build_ppl_tuples(ppl_reps, ppl_lookup, rep_type, self.num_cie, self.num_clus, self.num_dpt, split, standardized)
             self.rep_dim = self.tuples[0]["rep"].shape[-1]
             self.bag_rep = self.build_bag_reps(cie_reps, clus_reps, dpt_reps)
-            self.save_dataset(data_dir, agg_type, rep_type, split)
+            self.save_dataset(data_dir, agg_type, rep_type, split, standardized)
 
             print("Discriminative Polyvalent Dataset for split " + split + " built.")
             print("Dataset Length: " + str(len(self.tuples)))
@@ -64,7 +81,7 @@ class DiscriminativePolyvalentDataset(Dataset):
     def __getitem__(self, idx):
         return self.tuples[idx], self.bag_rep
 
-    def save_dataset(self, data_dir, agg_type, rep_type, split):
+    def save_dataset(self, data_dir, agg_type, rep_type, split, standardized):
         dictionary = {"rep_type": self.rep_type,
                       "tuples": self.tuples,
                       "rep_dim": self.rep_dim,
@@ -72,7 +89,10 @@ class DiscriminativePolyvalentDataset(Dataset):
                       'num_cie': self.num_cie,
                       'num_clus': self.num_clus,
                       "num_dpt": self.num_dpt}
-        file_name = "disc_poly_standard_" + agg_type + "_" + rep_type + "_" + split + ".pkl"
+        if standardized is True:
+            file_name = "disc_poly_" + agg_type + "_" + rep_type + "_" + split + "_standardized.pkl"
+        else:
+            file_name = "disc_poly_" + agg_type + "_" + rep_type + "_" + split + ".pkl"
         with open(os.path.join(data_dir, file_name), 'wb') as f_name:
             torch.save(dictionary, f_name)
 
@@ -83,15 +103,20 @@ class DiscriminativePolyvalentDataset(Dataset):
         return tmp[1:]
 
 
-def build_ppl_tuples(ppl_reps, ppl_lookup, rep_type, num_cie, num_clus, num_dpt, split):
-    tmp = []
-    for cie in tqdm(ppl_reps.keys(), desc="Getting mean and std for Discriminative Polyvalent Dataset for split " + split + " ..."):
-        for clus in ppl_reps[cie].keys():
-            if len(ppl_reps[cie][clus].keys()) > 0:
-                for person_id in ppl_reps[cie][clus]["id_ppl"]:
-                    tmp.append(ppl_lookup[person_id][rep_type])
-    ds_mean = torch.mean(torch.stack(tmp))
-    ds_std = torch.std(torch.stack(tmp))
+def build_ppl_tuples(ppl_reps, ppl_lookup, rep_type, num_cie, num_clus, num_dpt, split, standardized):
+    if not standardized:
+        tmp = []
+        for cie in tqdm(ppl_reps.keys(), desc="Getting mean and std for Discriminative Polyvalent Dataset for split " + split + " ..."):
+            for clus in ppl_reps[cie].keys():
+                if len(ppl_reps[cie][clus].keys()) > 0:
+                    for person_id in ppl_reps[cie][clus]["id_ppl"]:
+                        tmp.append(ppl_lookup[person_id][rep_type])
+        ds_mean = torch.mean(torch.stack(tmp))
+        ds_std = torch.std(torch.stack(tmp))
+    else:
+        ds_std = 1
+        ds_mean = 0
+
     tuples = []
     for cie in tqdm(ppl_reps.keys(), desc="Building Discriminative Polyvalent Dataset for split " + split + " ..."):
         for clus in ppl_reps[cie].keys():

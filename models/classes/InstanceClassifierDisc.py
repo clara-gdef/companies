@@ -101,10 +101,10 @@ class InstanceClassifierDisc(pl.LightningModule):
 
         preds = [i.item() for i in torch.argmax(output, dim=1)]
         # res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "train", 0)
-        tensorboard_logs = {'val_loss': loss,
-                            "val_loss_cie": loss_cie,
-                            "val_loss_clus": loss_clus,
-                            "val_loss_dpt": loss_dpt}
+        tensorboard_logs = {'train_loss': loss,
+                            "train_loss_cie": loss_cie,
+                            "train_loss_clus": loss_clus,
+                            "train_loss_dpt": loss_dpt}
         return {'loss': loss, 'log': tensorboard_logs}
 
     def validation_step(self, batch, batch_nb):
@@ -169,7 +169,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
             self.test_outputs.append(torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0)).cuda())
         elif self.input_type == "b4Training":
-            ipdb.set_trace()
+            # ipdb.set_trace()
             input_tensor = self.get_input_tensor(batch)
             self.test_outputs.append(input_tensor)
             tmp_labels = self.get_labels(batch)
