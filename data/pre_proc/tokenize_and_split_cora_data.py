@@ -43,7 +43,7 @@ def main():
 
         class_dict = {k: v for k, v in enumerate(sorted(classes))}
         with open(os.path.join(CFG["datadir"], "cora_classes_dict.pkl"), 'wb') as f:
-            pkl.dump(class_dict)
+            pkl.dump(class_dict, f)
 
         print("Train ratio: " + str(100 * len(train) / len(papers_transformed)) + "%")
         print("Valid ratio: " + str(100 * len(valid) / len(papers_transformed)) + "%")
