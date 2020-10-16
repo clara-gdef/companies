@@ -17,6 +17,10 @@ def main(args):
         with open(os.path.join(CFG["datadir"], "classifed_papers.pkl"), 'rb') as f:
             papers = pkl.load(f)
         ipdb.set_trace()
+        papers_transformed = dict()
+        for k in papers.keys():
+            ipdb.set_trace()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
