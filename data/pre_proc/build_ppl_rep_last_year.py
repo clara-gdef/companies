@@ -119,6 +119,10 @@ def build_for_train(ft_model):
                                 edu = ppl_dict[person_id]["edu"]
                                 cie_dict[cie]["edu"].append(to_emb(edu, ft_model, args.flat))
 
+    del ppl_dict
+    del data_ppl
+    del data_cie
+
     stacked_ppl = np.zeros(300)
     for cie in tqdm(cie_dict.keys(), desc="Finding mean and std per dimenson across the dataset..."):
         if args.flat == "True":
