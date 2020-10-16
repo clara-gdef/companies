@@ -17,7 +17,7 @@ class DiscriminativePolyvalentDataset(Dataset):
         if load:
             print("Loading previously saved dataset...")
             if standardized is True:
-                file_name = "disc_poly_standard_" + agg_type + "_" + rep_type + "_" + split + "_standardized.pkl"
+                file_name = "disc_poly_" + agg_type + "_" + rep_type + "_" + split + "_standardized.pkl"
                 with open(os.path.join(data_dir, file_name), 'rb') as f_name:
                     dic = torch.load(f_name)
             else:
