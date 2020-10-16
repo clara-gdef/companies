@@ -126,7 +126,9 @@ def build_for_train(ft_model):
     stacked_ppl = np.zeros(300)
     for cie in tqdm(cie_dict.keys(), desc="Finding mean and std per dimenson across the dataset..."):
         if args.flat == "True":
-            ipdb.set_trace()
+            for profile in cie_dict[cie]["profiles"]:
+                for job in profile:
+                    stacked_ppl = np.concatenate((stacked_ppl, job), axis=0)
         else:
             for profile in cie_dict[cie]["profiles"]:
                 stacked_ppl = np.concatenate((stacked_ppl, profile), axis=0)
@@ -142,7 +144,10 @@ def build_for_train(ft_model):
         if args.edu:
             cie_dict_standardized[cie]["edu"] = cie_dict[cie]["edu"]
         if args.flat == "True":
-            ipdb.set_trace()
+            for indx, profile in enumerate(cie_dict[cie]["profiles"]):
+                cie_dict_standardized[cie]["profiles"][indx] = []
+                for job in profile:
+                    cie_dict_standardized[cie]["profiles"][indx].append((job - ds_mean)/ds_std)
         else:
             for profile in cie_dict[cie]["profiles"]:
                 cie_dict_standardized[cie]["profiles"].append((profile - ds_mean)/ds_std)

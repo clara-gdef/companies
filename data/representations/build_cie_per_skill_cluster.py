@@ -78,7 +78,7 @@ def main(args):
                 with open(file_path, "wb") as f:
                     pkl.dump(clusters_dict, f)
             else:
-                target = os.path.join(CFG["datadir"], args.ft_type + "_total_rep_" + split + "_standardized.pkl")
+                target = os.path.join(CFG["datadir"], "total_rep_" + split + "_standardized.pkl")
                 with open(target, "rb") as f:
                     cie_dict = pkl.load(f)
 
@@ -222,7 +222,6 @@ if __name__ == "__main__":
     parser.add_argument("--model_dir", type=str, default='/net/big/gainondefor/work/trained_models/companies')
     parser.add_argument("--num_clusters", type=int, default=30)
     parser.add_argument("--max_skill_number", type=int, default=5)
-    parser.add_argument("--sk_model", type=str, default="skills_bs128_lr0.001_max_ep_100__best_ep_97_ftfs")
     parser.add_argument("--tgt_file", type=str, default="latest_clus_cie_per_skills")
     parser.add_argument("--ft_type", type=str, default="fs")
     parser.add_argument("--temporal", type=bool, default=False)
