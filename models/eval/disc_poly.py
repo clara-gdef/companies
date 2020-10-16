@@ -33,7 +33,7 @@ def test(hparams):
                          checkpoint_callback=None,
                          logger=logger,
                          )
-    datasets = load_datasets(hparams, CFG, ["TEST"], True)
+    datasets = load_datasets(hparams, CFG, ["TRAIN"], True)
     dataset_train = datasets[0]
     in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, len(dataset_train.bag_rep))
 
@@ -50,7 +50,7 @@ def test(hparams):
     model = InstanceClassifierDisc(**arguments)
     print("Model Loaded.")
 
-    dataset = load_datasets(hparams, CFG, ["TRAIN"], hparams.load_dataset)
+    dataset = load_datasets(hparams, CFG, ["TEST"], hparams.load_dataset)
     test_loader = DataLoader(dataset[0], batch_size=1, collate_fn=collate_for_disc_poly_model, num_workers=32)
     model_name = hparams.model_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" + \
                  str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
