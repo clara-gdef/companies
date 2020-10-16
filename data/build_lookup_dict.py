@@ -50,8 +50,8 @@ def build_ppl_bag_sets(dat_dir):
         print("Loading people...")
         with open(os.path.join(dat_dir, CFG["rep"]['ft']['total'] + split + '.pkl'), 'rb') as f_name:
             ppl_ft = pkl.load(f_name)
-        with open(os.path.join(dat_dir, CFG["rep"]['sk']['total'] + split + '.pkl'), 'rb') as f_name:
-            ppl_sk = pkl.load(f_name)
+        # with open(os.path.join(dat_dir, CFG["rep"]['sk']['total'] + split + '.pkl'), 'rb') as f_name:
+        #     ppl_sk = pkl.load(f_name)
         print("People loaded.")
         for cie in tqdm(ppl_ft.keys(), desc='Builing people lookup for ' + split + '...'):
             all_companies.add(cie)
@@ -61,7 +61,7 @@ def build_ppl_bag_sets(dat_dir):
                     all_dpt.add((cie, i))
                     for pos, person_id in enumerate(ppl_ft[cie][i]["id_ppl"]):
                         lookup_ppl[person_id] = {"ft": ppl_ft[cie][i]["ppl_emb"][pos],
-                                                 "sk": ppl_sk[cie][i]["bin_skills"][pos],
+                                                 # "sk": ppl_sk[cie][i]["bin_skills"][pos],
                                                  "cie_name": cie,
                                                  "clus_name": i}
     return lookup_ppl, all_companies, all_clusters, all_dpt
