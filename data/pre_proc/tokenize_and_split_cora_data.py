@@ -24,7 +24,7 @@ def main(args):
             for handle in ["title", 'author', 'year', "editor", "note", "URL", "Keyword", "Affiliation", "Abstract"]:
                 if handle in papers[k].keys():
                     papers_transformed[k][handle] = word_tokenize(papers[k][handle])
-            for handle in ["filename", "class", "Reference"]:
+            for handle in ["filename", "class"]:
                 papers_transformed[k][handle] = papers[k][handle]
         randomized_indices = random.shuffle([i for i in papers_transformed.keys()])
 
