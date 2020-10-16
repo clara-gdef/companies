@@ -78,7 +78,7 @@ def main(args):
                 with open(file_path, "wb") as f:
                     pkl.dump(clusters_dict, f)
             else:
-                target = os.path.join(CFG["datadir"], "total_rep_" + split + "_standardized.pkl")
+                target = os.path.join(CFG["datadir"], "total_rep_jobs_" + split + "_standardized.pkl")
                 with open(target, "rb") as f:
                     cie_dict = pkl.load(f)
 
