@@ -16,3 +16,6 @@ def main(args):
         with open(os.path.join(CFG["datadir"], "classifed_papers.pkl"), 'rb') as f:
             papers = pkl.load(f)
         ipdb.set_trace()
+
+if __name__ == "__main__":
+    main()
