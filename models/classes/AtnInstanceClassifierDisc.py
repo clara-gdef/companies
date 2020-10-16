@@ -181,7 +181,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
 
     def test_poly(self, outputs):
         # slicing predictions per class type
-        if self.input_type != "userOriented":
+        if self.input_type != "userOriented" and self.input_type != "bagTransformer":
             cie_preds = outputs[:, 0, :self.num_cie]
             clus_preds = outputs[:, 0, self.num_cie: self.num_cie + self.num_clus]
             dpt_preds = outputs[:, 0, -self.num_dpt:]
@@ -190,6 +190,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             cie_preds = outputs[:, :self.num_cie, 0]
             clus_preds = outputs[:, self.num_cie: self.num_cie + self.num_clus, 0]
             dpt_preds = outputs[:, -self.num_dpt:, 0]
+
 
         cie_labels = torch.LongTensor([i[0][0] for i in self.test_labels])
         clus_labels = torch.LongTensor([i[1][0] for i in self.test_labels])
