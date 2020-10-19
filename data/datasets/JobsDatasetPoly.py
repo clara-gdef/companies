@@ -49,7 +49,7 @@ class JobsDatasetPoly(Dataset):
             self.num_dpt = len(dpt_reps)
             self.bag_rep = self.build_bag_reps(cie_reps, clus_reps, dpt_reps)
             self.tuples = build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, self.num_cie, self.num_clus, self.num_dpt, split, standardized)
-            self.save_dataset(data_dir, split)
+            self.save_dataset(data_dir, split, standardized)
 
         print("Job dataset loaded.")
         print("Dataset Length: " + str(len(self.tuples)))
@@ -66,16 +66,21 @@ class JobsDatasetPoly(Dataset):
             tmp = torch.cat((tmp, bag["ft"]), dim=0)
         return tmp[1:]
 
-    def save_dataset(self, datadir, split):
+    def save_dataset(self, datadir, split, standardized):
         ds_dict = {"rep_dim": self.rep_dim,
                    "num_cie": self.num_cie,
                    "num_clus": self.num_clus,
                    "num_dpt": self.num_dpt,
                    "bag_rep": self.bag_rep,
                    "tuples": self.tuples}
-        tgt_file = os.path.join(datadir, "JobsDatasetPoly_" + split + ".pkl")
-        with open(tgt_file, 'wb') as f:
-            pkl.dump(ds_dict, f)
+        if standardized is True:
+            tgt_file = os.path.join(datadir, "JobsDatasetPoly_" + split + "_standardized.pkl")
+            with open(tgt_file, 'wb') as f:
+                pkl.dump(ds_dict, f)
+        else:
+            tgt_file = os.path.join(datadir, "JobsDatasetPoly_" + split + ".pkl")
+            with open(tgt_file, 'wb') as f:
+                pkl.dump(ds_dict, f)
 
     def load_dataset(self, datadir, split, standardized):
         if standardized is True:
