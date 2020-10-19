@@ -99,7 +99,7 @@ def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num
     lookup_to_reps = {}
     for cie in ppl_reps.keys():
         lookup_to_reps[cie] = {}
-        if standardized:
+        if standardized and split == "TRAIN":
             for identifier, profile in zip(ppl_reps[cie]["id"], ppl_reps[cie]["profiles"]):
                 lookup_to_reps[cie][identifier] = ppl_reps[cie]["profiles"][profile]
         else:
@@ -124,7 +124,7 @@ def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num
                     assert num_cie <= ppl_lookup[person_id]["clus_label"] <= num_cie + num_clus - 1
                     assert num_cie + num_clus <= ppl_lookup[person_id]["dpt_label"] <= num_cie + num_clus + num_dpt - 1
                     rep = np.zeros((max_prof_len, 300))
-                    if not standardized:
+                    if not standardized and split != "TRAIN":
                         for num, j in enumerate(lookup_to_reps[cie][person_id]):
                             if num < max_prof_len:
                                 #rep[num, :] = (j - ds_mean) / ds_std
