@@ -8,11 +8,16 @@ from torch.utils.data import Dataset
 
 
 class DiscriminativeSpecializedDataset(Dataset):
-    def __init__(self, data_dir, rep_type, agg_type, bag_type, split, subsample):
+    def __init__(self, data_dir, rep_type, agg_type, bag_type, split, subsample, standardized):
         print("Loading previously saved dataset...")
-        file_name = "disc_poly_" + agg_type + "_" + rep_type + "_" + split + ".pkl"
-        with open(os.path.join(data_dir, file_name), 'rb') as f_name:
-            dic = torch.load(f_name)
+        if standardized is True:
+            file_name = "disc_poly_" + agg_type + "_" + rep_type + "_" + split + "_standardized.pkl"
+            with open(os.path.join(data_dir, file_name), 'rb') as f_name:
+                dic = torch.load(f_name)
+        else:
+            file_name = "disc_poly_" + agg_type + "_" + rep_type + "_" + split + ".pkl"
+            with open(os.path.join(data_dir, file_name), 'rb') as f_name:
+                dic = torch.load(f_name)
         self.rep_type = dic["rep_type"]
         self.rep_dim = dic["rep_dim"]
         self.tuples = []

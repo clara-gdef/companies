@@ -42,6 +42,7 @@ def test(hparams, CFG):
                  'out_size': out_size,
                  'hparams': hparams,
                  'dataset': dataset_train,
+                 "bag_type": hparams.bag_type,
                  'datadir': CFG["gpudatadir"],
                  'desc': xp_title,
                  "wd": hparams.wd,
@@ -74,8 +75,12 @@ def load_datasets(hparams, CFG,  splits):
         "rep_type": hparams.rep_type,
         "agg_type": hparams.data_agg_type,
         "bag_type": hparams.bag_type,
-        "subsample": 0
+        "subsample": 0,
+        "standardized": False
     }
+    if hparams.standardized == "True":
+        print("Loading standardized datasets...")
+        common_hparams["standardized"] = True
     for split in splits:
         datasets.append(DiscriminativeSpecializedDataset(**common_hparams, split=split))
 
@@ -95,14 +100,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=[0])
-    parser.add_argument("--bag_type", type=str, default="dpt")
+    parser.add_argument("--bag_type", type=str, default="cie")
     parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--input_type", type=str, default="matMul")
-    parser.add_argument("--model_type", type=str, default="disc_spe")
+    parser.add_argument("--standardized", type=str, default="True")
+    parser.add_argument("--model_type", type=str, default="disc_spe_std")
     parser.add_argument("--middle_size", type=int, default=200)
     parser.add_argument("--data_agg_type", type=str, default="avg")
-    parser.add_argument("--lr", type=float, default=1e-8)
-    parser.add_argument("--wd", type=float, default=0.8)
+    parser.add_argument("--lr", type=float, default=1e-6)
+    parser.add_argument("--wd", type=float, default=0.0)
     parser.add_argument("--b_size", type=int, default=16)
     hparams = parser.parse_args()
     main(hparams)

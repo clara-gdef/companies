@@ -80,9 +80,9 @@ def load_datasets(hparams, splits, load):
     common_hparams = {
         "data_dir": CFG["gpudatadir"],
         "ppl_file": CFG["rep"][hparams.rep_type]["total"],
-        "cie_reps_file": CFG["rep"]["cie"] + hparams.data_agg_type,
-        "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type,
-        "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type,
+        "cie_reps_file": CFG["rep"]["cie"] + hparams.data_agg_type + ".pkl",
+        "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type + ".pkl",
+        "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type + ".pkl",
         "load": load,
     }
     for split in splits:
@@ -134,13 +134,14 @@ if __name__ == "__main__":
     parser.add_argument("--b_size", type=int, default=512)
     parser.add_argument("--middle_size", type=int, default=20)
     parser.add_argument("--input_type", type=str, default="matMul")
+    parser.add_argument("--bag_type", type=str, default="cie")
     parser.add_argument("--load_dataset", default="True")
     parser.add_argument("--auto_lr_find", type=bool, default=False)
     parser.add_argument("--load_from_checkpoint", default=False)
     parser.add_argument("--checkpoint", type=int, default=45)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--DEBUG", type=bool, default=False)
-    parser.add_argument("--model_type", type=str, default="atn_disc_poly")
+    parser.add_argument("--model_type", type=str, default="atn_disc_spe")
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--epochs", type=int, default=50)

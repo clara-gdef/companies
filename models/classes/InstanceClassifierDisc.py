@@ -12,7 +12,7 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 
 
 class InstanceClassifierDisc(pl.LightningModule):
-    def __init__(self, in_size, out_size, hparams, dataset, datadir, desc, wd, middle_size=None):
+    def __init__(self, in_size, out_size, hparams, dataset, datadir, desc, wd, bag_type, middle_size=None):
         super().__init__()
         self.middle_size = middle_size
         self.wd = wd
@@ -22,7 +22,7 @@ class InstanceClassifierDisc(pl.LightningModule):
         self.num_dpt = dataset.num_dpt
         self.type = desc.split("_")[1]
         if self.type == 'spe':
-            self.bag_type = desc.split("_")[2]
+            self.bag_type = bag_type
 
         self.hparams = hparams
         self.data_dir = datadir
@@ -93,18 +93,20 @@ class InstanceClassifierDisc(pl.LightningModule):
             loss_clus = torch.nn.functional.cross_entropy(clus_preds, clus_labels)
             loss_dpt = torch.nn.functional.cross_entropy(dpt_preds, dpt_labels)
             loss = loss_cie + loss_clus + loss_dpt
+            tensorboard_logs = {'train_loss': loss,
+                                "train_loss_cie": loss_cie,
+                                "train_loss_clus": loss_clus,
+                                "train_loss_dpt": loss_dpt}
             # loss = torch.nn.functional.binary_cross_entropy_with_logits(output, labels.cuda())
         else:
             # the model is specialized
             loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
+            tensorboard_logs = {'train_loss': loss}
         self.training_losses.append(loss.item())
 
         preds = [i.item() for i in torch.argmax(output, dim=1)]
         # res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "train", 0)
-        tensorboard_logs = {'train_loss': loss,
-                            "train_loss_cie": loss_cie,
-                            "train_loss_clus": loss_clus,
-                            "train_loss_dpt": loss_dpt}
+
         return {'loss': loss, 'log': tensorboard_logs}
 
     def validation_step(self, batch, batch_nb):
@@ -135,19 +137,18 @@ class InstanceClassifierDisc(pl.LightningModule):
             val_loss_clus = torch.nn.functional.cross_entropy(clus_preds, clus_labels)
             val_loss_dpt = torch.nn.functional.cross_entropy(dpt_preds, dpt_labels)
             val_loss = val_loss_cie + val_loss_clus + val_loss_dpt
+            tensorboard_logs = {'val_loss': val_loss,
+                                "val_loss_cie": val_loss_cie,
+                                "val_loss_clus": val_loss_clus,
+                                "val_loss_dpt": val_loss_dpt}
             # val_loss = torch.nn.functional.binary_cross_entropy_with_logits(output, labels.cuda())
         else:
             # the model is specialized
             val_loss = torch.nn.functional.cross_entropy(output,
                                                          torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
+            tensorboard_logs = {'val_loss': val_loss}
         preds = [i.item() for i in torch.argmax(output, dim=1)]
         res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "valid", 0)
-        #tensorboard_logs = {**res_dict, 'val_loss': val_loss, "val_loss_cie": val_loss_cie, "val_loss_clus": val_loss_clus, "val_loss_dpt": val_loss_dpt}
-        tensorboard_logs = {'val_loss': val_loss,
-                            "val_loss_cie": val_loss_cie,
-                            "val_loss_clus": val_loss_clus,
-                            "val_loss_dpt": val_loss_dpt}
-
         return {'loss': val_loss, 'log': tensorboard_logs}
 
     def epoch_end(self):

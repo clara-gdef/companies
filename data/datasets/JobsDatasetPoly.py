@@ -10,24 +10,39 @@ from torch.utils.data import Dataset
 
 
 class JobsDatasetPoly(Dataset):
-    def __init__(self, data_dir, cie_reps_file, clus_reps_file, dpt_reps_file, ppl_file, load, split):
+    def __init__(self, data_dir, cie_reps_file, clus_reps_file, dpt_reps_file, ppl_file, load, split, standardized):
         if load == "True":
             print("Loading previously saved dataset...")
-            self.load_dataset(data_dir, split)
+            self.load_dataset(data_dir, split, standardized)
         else:
-            file_name = "total_rep_jobs_unflattened_" + split + ".pkl"
-            with open(os.path.join(data_dir, file_name), 'rb') as f_name:
-                ppl_reps = pkl.load(f_name)
-            with open(os.path.join(data_dir, ppl_file + '_' + split + ".pkl"), 'rb') as f_name:
-                ppl_reps_clus = pkl.load(f_name)
-            with open(os.path.join(data_dir, "lookup_ppl.pkl"), 'rb') as f_name:
-                ppl_lookup = pkl.load(f_name)
-            with open(os.path.join(data_dir, cie_reps_file), "rb") as f_name:
-                cie_reps = pkl.load(f_name)
-            with open(os.path.join(data_dir, clus_reps_file), "rb") as f_name:
-                clus_reps = pkl.load(f_name)
-            with open(os.path.join(data_dir, dpt_reps_file), "rb") as f_name:
-                dpt_reps = pkl.load(f_name)
+            if standardized is True:
+                file_name = "total_rep_jobs_unflattened_" + split + "_standardized.pkl"
+                with open(os.path.join(data_dir, file_name), 'rb') as f_name:
+                    ppl_reps = pkl.load(f_name)
+                with open(os.path.join(data_dir, ppl_file + '_' + split + "_standardized.pkl"), 'rb') as f_name:
+                    ppl_reps_clus = pkl.load(f_name)
+                with open(os.path.join(data_dir, "lookup_ppl.pkl"), 'rb') as f_name:
+                    ppl_lookup = pkl.load(f_name)
+                with open(os.path.join(data_dir, cie_reps_file + "_standardized.pkl"), "rb") as f_name:
+                    cie_reps = pkl.load(f_name)
+                with open(os.path.join(data_dir, clus_reps_file + "_standardized.pkl"), "rb") as f_name:
+                    clus_reps = pkl.load(f_name)
+                with open(os.path.join(data_dir, dpt_reps_file + "_standardized.pkl"), "rb") as f_name:
+                    dpt_reps = pkl.load(f_name)
+            else:
+                file_name = "total_rep_jobs_unflattened_" + split + ".pkl"
+                with open(os.path.join(data_dir, file_name), 'rb') as f_name:
+                    ppl_reps = pkl.load(f_name)
+                with open(os.path.join(data_dir, ppl_file + '_' + split + ".pkl"), 'rb') as f_name:
+                    ppl_reps_clus = pkl.load(f_name)
+                with open(os.path.join(data_dir, "lookup_ppl.pkl"), 'rb') as f_name:
+                    ppl_lookup = pkl.load(f_name)
+                with open(os.path.join(data_dir, cie_reps_file), "rb") as f_name:
+                    cie_reps = pkl.load(f_name)
+                with open(os.path.join(data_dir, clus_reps_file), "rb") as f_name:
+                    clus_reps = pkl.load(f_name)
+                with open(os.path.join(data_dir, dpt_reps_file), "rb") as f_name:
+                    dpt_reps = pkl.load(f_name)
             self.rep_dim = 300
             self.num_cie = len(cie_reps)
             self.num_clus = len(clus_reps)
@@ -62,10 +77,15 @@ class JobsDatasetPoly(Dataset):
         with open(tgt_file, 'wb') as f:
             pkl.dump(ds_dict, f)
 
-    def load_dataset(self, datadir, split):
-        tgt_file = os.path.join(datadir, "JobsDatasetPoly_" + split + ".pkl")
-        with open(tgt_file, 'rb') as f:
-            ds_dict = pkl.load(f)
+    def load_dataset(self, datadir, split, standardized):
+        if standardized is True:
+            tgt_file = os.path.join(datadir, "JobsDatasetPoly_" + split + "standardized.pkl")
+            with open(tgt_file, 'rb') as f:
+                ds_dict = pkl.load(f)
+        else:
+            tgt_file = os.path.join(datadir, "JobsDatasetPoly_" + split + ".pkl")
+            with open(tgt_file, 'rb') as f:
+                ds_dict = pkl.load(f)
 
         self.rep_dim = ds_dict["rep_dim"]
         self.num_cie = ds_dict["num_cie"]
@@ -106,7 +126,7 @@ def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num
                             rep[num, :] = (j - ds_mean) / ds_std
                     tuples.append(
                         {"id": person_id,
-                         "jobs_len" : len(lookup_to_reps[cie][person_id]),
+                         "jobs_len": len(lookup_to_reps[cie][person_id]),
                          "rep": rep,
                          "cie": ppl_lookup[person_id]["cie_label"],
                          "clus": ppl_lookup[person_id]["clus_label"],

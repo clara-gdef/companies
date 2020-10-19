@@ -17,8 +17,11 @@ def main(hparams):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
-    #with ipdb.launch_ipdb_on_exception():
-    train(hparams)
+    if hparams.DEBUG:
+        with ipdb.launch_ipdb_on_exception():
+            return train(hparams)
+    else:
+        return train(hparams)
 
 
 def train(hparams):
@@ -46,6 +49,7 @@ def train(hparams):
                  'dataset': dataset_train,
                  'datadir': CFG["gpudatadir"],
                  'desc': xp_title,
+                 "bag_type": hparams.bag_type,
                  "wd": hparams.wd,
                  "middle_size": hparams.middle_size}
 
@@ -76,8 +80,13 @@ def load_datasets(hparams, CFG, splits):
         "rep_type": hparams.rep_type,
         "agg_type": hparams.data_agg_type,
         "bag_type": hparams.bag_type,
-        "subsample": 0
+        "subsample": 0,
+        "standardized": False
     }
+    if hparams.standardized == "True":
+        print("Loading standardized datasets...")
+        common_hparams["standardized"] = True
+
     for split in splits:
         datasets.append(DiscriminativeSpecializedDataset(**common_hparams, split=split))
 
@@ -120,15 +129,18 @@ if __name__ == "__main__":
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--wd", type=float, default=0.)
-    parser.add_argument("--b_size", type=int, default=8192)
+    parser.add_argument("--DEBUG", type=bool, default=False)
+    parser.add_argument("--b_size", type=int, default=16)
+    parser.add_argument("--standardized", type=str, default="True")
     parser.add_argument("--input_type", type=str, default="matMul")
+    parser.add_argument("--model_type", type=str, default="disc_spe_std")
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--middle_size", type=int, default=250)
     parser.add_argument("--load_from_checkpoint", type=bool, default=False)
     parser.add_argument("--checkpoint", type=str, default=49)
     parser.add_argument("--bag_type", type=str, default="cie")
-    parser.add_argument("--lr", type=float, default=1e-10)
+    parser.add_argument("--lr", type=float, default=1e-6)
     parser.add_argument("--auto_lr_find", type=bool, default=False)
     parser.add_argument("--epochs", type=int, default=50)
     hparams = parser.parse_args()

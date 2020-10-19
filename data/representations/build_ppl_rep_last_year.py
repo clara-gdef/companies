@@ -9,6 +9,7 @@ from tqdm import tqdm
 import ipdb
 import numpy as np
 
+
 def main(args):
     global CFG
     with open("config.yaml", "r") as ymlfile:
@@ -21,7 +22,18 @@ def main(args):
             ft_model = fastText.load_model(os.path.join(CFG["modeldir"], "ft_fs.bin"))
         print("Word vectors loaded.")
 
-        ds_mean, ds_std = build_for_train(ft_model)
+        # ds_mean, ds_std = build_for_train(ft_model)
+
+        f_name = args.tgt_file
+        if args.flat:
+            f_name += "unflattened_"
+        if args.edu:
+            f_name += "edu_"
+
+        with open(os.path.join(CFG["datadir"], f_name + "TRAIN_standardized_PARAMS.pkl"), "rb") as f:
+            params = pkl.load(f)
+
+        ds_mean, ds_std = params["mean"], params["std"]
 
         for item in ["VALID", "TEST"]:
             data_file = os.path.join(CFG["datadir"], "cie_" + item + ".pkl")
@@ -139,7 +151,7 @@ def build_for_train(ft_model):
 
     cie_dict_standardized = dict()
     for cie in tqdm(cie_dict.keys(), desc="Processing company for standardization..."):
-        cie_dict_standardized[cie] = {"profiles": []}
+        cie_dict_standardized[cie] = {"profiles": {}}
         cie_dict_standardized[cie]["id"] = cie_dict[cie]["id"]
         if args.edu:
             cie_dict_standardized[cie]["edu"] = cie_dict[cie]["edu"]
@@ -162,6 +174,8 @@ def build_for_train(ft_model):
     with open(target, "wb") as f:
         pkl.dump(cie_dict_standardized, f)
 
+    with open(os.path.join(CFG["datadir"], f_name + "TRAIN_standardized_PARAMS.pkl"), "wb") as f:
+        pkl.dump({"mean": ds_mean, "std": ds_std}, f)
     return ds_mean, ds_std
 
 
