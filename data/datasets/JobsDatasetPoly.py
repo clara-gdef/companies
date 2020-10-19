@@ -48,7 +48,7 @@ class JobsDatasetPoly(Dataset):
             self.num_clus = len(clus_reps)
             self.num_dpt = len(dpt_reps)
             self.bag_rep = self.build_bag_reps(cie_reps, clus_reps, dpt_reps)
-            self.tuples = build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, self.num_cie, self.num_clus, self.num_dpt, split)
+            self.tuples = build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, self.num_cie, self.num_clus, self.num_dpt, split, standardized)
             self.save_dataset(data_dir, split)
 
         print("Job dataset loaded.")
