@@ -130,9 +130,8 @@ def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num
                                 #rep[num, :] = (j - ds_mean) / ds_std
                                 rep[num, :] = j
                     else:
-                        for num, j in enumerate(lookup_to_reps[cie]["profiles"]):
+                        for num, j in enumerate(lookup_to_reps[cie][person_id]):
                             if num < max_prof_len:
-                                #rep[num, :] = (j - ds_mean) / ds_std
                                 rep[num, :] = j
                     tuples.append(
                         {"id": person_id,
