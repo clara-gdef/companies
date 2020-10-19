@@ -77,9 +77,9 @@ def train(hparams):
             model_name += "/" + str(hparams.middle_size)
         model_path = os.path.join(CFG['modeldir'], model_name)
         model_file = os.path.join(model_path, "epoch=49_v0.ckpt")
-        ipdb.set_trace()
-        model.load_state_dict(torch.load(model_file)["state_dict"])
-        print("Resuming training from checkpoint : " + model_file + ".")
+        model.lin.weight = torch.nn.Parameter(torch.load(model_file)["state_dict"]["lin.weight"])
+        model.lin.bias = torch.nn.Parameter(torch.load(model_file)["state_dict"]["lin.bias"])
+        print("Prediction layer initiated.")
     else:
         print("Starting training for " + xp_title + "...")
     trainer.fit(model.cuda(), train_loader, valid_loader)
