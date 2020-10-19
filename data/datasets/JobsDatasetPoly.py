@@ -103,15 +103,15 @@ def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num
             lookup_to_reps[cie][identifier] = profile
     # length of the profile that accounts for 90% of the training dataset
     max_prof_len = 9
-
-    tmp = []
-    for cie in tqdm(ppl_reps_clus.keys(), desc="Getting mean and std for Discriminative Polyvalent Job Dataset for split " + split + " ..."):
-        for clus in ppl_reps_clus[cie].keys():
-            if len(ppl_reps_clus[cie][clus].keys()) > 0:
-                for person_id in ppl_reps_clus[cie][clus]["id_ppl"]:
-                    tmp.extend(lookup_to_reps[cie][person_id])
-    ds_mean = np.mean(np.stack(tmp))
-    ds_std = np.std(np.stack(tmp))
+    #
+    # tmp = []
+    # for cie in tqdm(ppl_reps_clus.keys(), desc="Getting mean and std for Discriminative Polyvalent Job Dataset for split " + split + " ..."):
+    #     for clus in ppl_reps_clus[cie].keys():
+    #         if len(ppl_reps_clus[cie][clus].keys()) > 0:
+    #             for person_id in ppl_reps_clus[cie][clus]["id_ppl"]:
+    #                 tmp.extend(lookup_to_reps[cie][person_id])
+    # ds_mean = np.mean(np.stack(tmp))
+    # ds_std = np.std(np.stack(tmp))
     tuples = []
     for cie in tqdm(ppl_reps_clus.keys(), desc="Building Discriminative Polyvalent Job Dataset for split " + split + " ..."):
         for clus in ppl_reps_clus[cie].keys():
@@ -123,7 +123,8 @@ def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num
                     rep = np.zeros((max_prof_len, 300))
                     for num, j in enumerate(lookup_to_reps[cie][person_id]):
                         if num < max_prof_len:
-                            rep[num, :] = (j - ds_mean) / ds_std
+                            #rep[num, :] = (j - ds_mean) / ds_std
+                            rep[num, :] = j
                     tuples.append(
                         {"id": person_id,
                          "jobs_len": len(lookup_to_reps[cie][person_id]),

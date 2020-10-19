@@ -89,7 +89,7 @@ def load_datasets(hparams, splits, load):
     if hparams.standardized == "True":
         print("Loading standardized datasets...")
         common_hparams["standardized"] = True
-        
+
     for split in splits:
         datasets.append(JobsDatasetPoly(**common_hparams, split=split))
 
