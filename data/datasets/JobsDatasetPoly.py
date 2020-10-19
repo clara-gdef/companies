@@ -99,9 +99,12 @@ def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num
     lookup_to_reps = {}
     for cie in ppl_reps.keys():
         lookup_to_reps[cie] = {}
-        for identifier, profile in zip(ppl_reps[cie]["id"], ppl_reps[cie]["profiles"]):
-            ipdb.set_trace()
-            lookup_to_reps[cie][identifier] = profile
+        if standardized:
+            for identifier, profile in zip(ppl_reps[cie]["id"], ppl_reps[cie]["profiles"]):
+                lookup_to_reps[cie][identifier] = ppl_reps[cie]["profiles"][profile]
+        else:
+            for identifier, profile in zip(ppl_reps[cie]["id"], ppl_reps[cie]["profiles"]):
+                lookup_to_reps[cie][identifier] = profile
     # length of the profile that accounts for 90% of the training dataset
     max_prof_len = 9
     # tmp = []
