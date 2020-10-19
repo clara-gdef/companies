@@ -72,12 +72,12 @@ def train(hparams):
         print("Resuming training from checkpoint : " + model_file + ".")
     elif hparams.init_weights == "True":
         print("Initializing class prediction weights...")
-        model_name = "disc_poly_std/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" + \
-                     str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
+        model_name = "disc_poly_std/ft/avg/matMul/768/1e-08/0.0"
         if hparams.input_type == "hadamard":
             model_name += "/" + str(hparams.middle_size)
         model_path = os.path.join(CFG['modeldir'], model_name)
-        model_file = os.path.join(model_path, "epoch=" + str(hparams.checkpoint) + ".ckpt")
+        model_file = os.path.join(model_path, "epoch=49_v0.ckpt")
+        ipdb.set_trace()
         model.load_state_dict(torch.load(model_file)["state_dict"])
         print("Resuming training from checkpoint : " + model_file + ".")
     else:
