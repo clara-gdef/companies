@@ -79,7 +79,7 @@ class JobsDatasetPoly(Dataset):
 
     def load_dataset(self, datadir, split, standardized):
         if standardized is True:
-            tgt_file = os.path.join(datadir, "JobsDatasetPoly_" + split + "standardized.pkl")
+            tgt_file = os.path.join(datadir, "JobsDatasetPoly_" + split + "_standardized.pkl")
             with open(tgt_file, 'rb') as f:
                 ds_dict = pkl.load(f)
         else:
