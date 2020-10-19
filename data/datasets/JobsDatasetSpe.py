@@ -24,7 +24,8 @@ class JobsDatasetPoly(Dataset):
             self.rep_dim = 300
             self.num_bags = len(bag_reps)
             self.bag_reps = bag_reps
-            self.tuples = self.select_relevant_tuples(ds_dict, bag_type, subsample)
+            self.tuples = []
+            self.select_relevant_tuples(ds_dict, bag_type, subsample)
             self.save_dataset(data_dir, split)
 
         print("Job dataset loaded.")
