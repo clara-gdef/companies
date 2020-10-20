@@ -20,8 +20,8 @@ def main():
             papers = pkl.load(f)
         papers_transformed = dict()
         for k in tqdm(papers.keys()):
-            papers_transformed[k] = {}
             if "Abstract" in papers[k].keys():
+                papers_transformed[k] = {}
                 for handle in ["title", 'author', 'year', "Keyword", "Affiliation", "Abstract"]:
                     if handle in papers[k].keys():
                         papers_transformed[k][handle] = word_tokenize(papers[k][handle])
