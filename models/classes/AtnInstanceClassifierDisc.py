@@ -25,7 +25,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         self.hparams = hparams
         self.type = desc.split("_")[2]
         if self.type == 'spe':
-            self.bag_type = desc.split("_")[2]
+            self.bag_type = desc.split("_")[3]
 
         self.atn_layer = torch.nn.Linear(dim_size, 1)
         if self.input_type == "hadamard":

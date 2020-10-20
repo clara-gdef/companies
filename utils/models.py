@@ -22,10 +22,10 @@ def collate_for_attn_disc_poly_model(batch):
 
 
 def collate_for_attn_disc_spe_model(batch):
-    ids = [i["id"] for i in batch]
-    reps = [i["rep"] for i in batch]
-    jobs_len = [i["jobs_len"] for i in batch]
-    label = [i["label"] for i in batch]
+    ids = [i[0] for i in batch]
+    reps = [i[1] for i in batch]
+    jobs_len = [i[2] for i in batch]
+    label = [i[3] for i in batch]
     return ids, reps, jobs_len, label, batch[0][-1]
 
 

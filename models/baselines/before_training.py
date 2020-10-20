@@ -8,10 +8,10 @@ import argparse
 from torch.utils.data import DataLoader
 import yaml
 import pickle as pkl
-from data.datasets import DiscriminativePolyvalentDataset
+from data.datasets import DiscriminativeSpecializedDataset, DiscriminativePolyvalentDataset
 from models.classes import InstanceClassifierDisc
 from models.classes.InstanceClassifierDisc import get_metrics_at_k, get_metrics
-from utils.models import collate_for_disc_poly_model, get_model_params
+from utils.models import collate_for_disc_poly_model, get_model_params, collate_for_disc_spe_model
 from sklearn.metrics import f1_score,  accuracy_score, precision_score, recall_score
 
 
@@ -24,22 +24,43 @@ def init(hparams):
 
 
 def main(hparams):
-    num_classes = 207 + 30 + 5888
-    xp_title = "disc_poly_b4_training_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_" + \
-               str(hparams.b_size) + "_" + str(hparams.lr)
-    datasets = load_datasets(hparams, ["TRAIN", "TEST"], hparams.load_dataset)
+    if hparams.type == "poly":
+        num_classes = 207 + 30 + 5888
+    else:
+        num_classes = 207
+
+    datasets = load_datasets(hparams, ["TEST"], hparams.load_dataset)
     dataset_train, dataset_test = datasets[0], datasets[1]
     in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, len(dataset_train.bag_rep))
-    test_loader = DataLoader(dataset_test, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
-                             num_workers=8)
-    arguments = {'in_size': in_size,
-                 'out_size': out_size,
-                 'hparams': hparams,
-                 'dataset': dataset_train,
-                 'datadir': CFG["gpudatadir"],
-                 'desc': xp_title,
-                 "wd": hparams.wd,
-                 "middle_size": hparams.middle_size}
+
+    if hparams.type == "poly":
+        xp_title = "disc_poly_b4_training_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_" + \
+                   str(hparams.b_size) + "_" + str(hparams.lr)
+        test_loader = DataLoader(dataset_test, batch_size=hparams.b_size, collate_fn=collate_for_disc_poly_model,
+                                 num_workers=8)
+        arguments = {'in_size': in_size,
+                     'out_size': out_size,
+                     'hparams': hparams,
+                     'dataset': dataset_train,
+                     "bag_type": None,
+                     'datadir': CFG["gpudatadir"],
+                     'desc': xp_title,
+                     "wd": hparams.wd,
+                     "middle_size": hparams.middle_size}
+    else:
+        xp_title = "disc_spe_b4_training_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_" + \
+                   str(hparams.b_size) + "_" + str(hparams.lr)
+        test_loader = DataLoader(dataset_test, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model,
+                                 num_workers=8)
+        arguments = {'in_size': in_size,
+                     'out_size': out_size,
+                     'hparams': hparams,
+                     'dataset': dataset_train,
+                     "bag_type": "cie",
+                     'datadir': CFG["gpudatadir"],
+                     'desc': xp_title,
+                     "wd": hparams.wd,
+                     "middle_size": hparams.middle_size}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = InstanceClassifierDisc(**arguments)
@@ -51,13 +72,22 @@ def main(hparams):
         preds = preds_and_labels["preds"]
         labels = preds_and_labels["labels"]
 
-        for handle, offset, num_c in zip(["cie", "clus", "dpt"], [0, 207, 237], [207, 30, 5888]):
-            predicted_classes = torch.argsort(preds[handle], dim=-1, descending=True)
+        if hparams.type == "poly":
+            for handle, offset, num_c in zip(["cie", "clus", "dpt"], [0, 207, 237], [207, 30, 5888]):
+                predicted_classes = torch.argsort(preds[handle], dim=-1, descending=True)
+                for k in [1, 10]:
+                    res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], num_c, handle + "_@"+str(k), offset)
+                    res = {**res, **res_k}
+            gen_res = get_general_results_poly(preds, labels, num_classes)
+        else:
+            handle = "cie"
+            offset = 0
+            num_c = 207
+            predicted_classes = torch.argsort(preds, dim=-1, descending=True)
             for k in [1, 10]:
-                res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], num_c, handle + "_@"+str(k), offset)
+                res_k = get_metrics_at_k(predicted_classes[:, :k], labels, num_c, handle + "_@"+str(k), offset)
                 res = {**res, **res_k}
-
-        gen_res = get_general_results(preds, labels, num_classes)
+            gen_res = res
 
         res = {**res, **gen_res}
 
@@ -73,25 +103,40 @@ def main(hparams):
 
 def load_datasets(hparams, splits, load):
     datasets = []
-    common_hparams = {
-        "data_dir": CFG["gpudatadir"],
-        "ppl_file": CFG["rep"][hparams.rep_type]["total"],
-        "rep_type": hparams.rep_type,
-        "cie_reps_file": CFG["rep"]["cie"] + hparams.data_agg_type,
-        "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type,
-        "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type,
-        "agg_type": hparams.data_agg_type,
-        "load": load,
-        "subsample": 0
+    if hparams.type == "poly":
+        common_hparams = {
+            "data_dir": CFG["gpudatadir"],
+            "ppl_file": CFG["rep"][hparams.rep_type]["total"],
+            "rep_type": hparams.rep_type,
+            "cie_reps_file": CFG["rep"]["cie"] + hparams.data_agg_type,
+            "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type,
+            "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type,
+            "agg_type": hparams.data_agg_type,
+            "load": load,
+            "subsample": 0,
+            "standardized": False
+        }
+        if hparams.standardized == "True":
+            print("Loading standardized datasets...")
+            common_hparams["standardized"] = True
 
-    }
-    if hparams.standardized == "True":
-        print("Loading standardized datasets...")
-        common_hparams["standardized"] = True
+        for split in splits:
+            datasets.append(DiscriminativePolyvalentDataset(**common_hparams, split=split))
+    else:
+        common_hparams = {
+            "data_dir": CFG["gpudatadir"],
+            "rep_type": hparams.rep_type,
+            "bag_type": "cie",
+            "agg_type": hparams.data_agg_type,
+            "subsample": 0,
+            "standardized": False
+        }
+        if hparams.standardized == "True":
+            print("Loading standardized datasets...")
+            common_hparams["standardized"] = True
 
-    for split in splits:
-        datasets.append(DiscriminativePolyvalentDataset(**common_hparams, split=split))
-
+        for split in splits:
+            datasets.append(DiscriminativeSpecializedDataset(**common_hparams, split=split))
     return datasets
 
 
@@ -124,7 +169,7 @@ def find_well_classified_outputs(predicted_classes, preds, labels, idx):
     return good_preds, good_labels, good_indices
 
 
-def get_general_results(preds, labels, num_classes):
+def get_general_results_poly(preds, labels, num_classes):
     all_labels = []
     for tup in zip(labels["cie"], labels["clus"], labels["dpt"]):
         all_labels.append([tup[0].item(), tup[1].item(), tup[2].item()])
@@ -165,6 +210,7 @@ if __name__ == "__main__":
     parser.add_argument("--middle_size", type=int, default=20)
     parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--input_type", type=str, default="b4Training")
+    parser.add_argument("--type", type=str, default="spe")
     parser.add_argument("--load_dataset", type=bool, default=False)
     parser.add_argument("--eval_top_k", type=bool, default=True)
     parser.add_argument("--auto_lr_find", type=bool, default=False)

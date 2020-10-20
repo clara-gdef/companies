@@ -31,7 +31,7 @@ class JobsDatasetSpe(Dataset):
 
             self.rep_dim = 300
             self.num_bags = len(bag_reps)
-            self.bag_reps = bag_reps
+            self.bag_reps = self.build_bag_tensor(bag_reps)
             self.tuples = []
             self.select_relevant_tuples(ds_dict["tuples"], bag_type, subsample)
             self.save_dataset(data_dir, split, standardized)
@@ -44,6 +44,12 @@ class JobsDatasetSpe(Dataset):
 
     def __getitem__(self, idx):
         return self.tuples[idx]["id"], self.tuples[idx]["rep"], self.tuples[idx]["jobs_len"], self.tuples[idx]["label"], self.bag_reps
+
+    def build_bag_tensor(self, bag_dict):
+        bags = torch.zeros(1, 300)
+        for k in bag_dict.keys():
+            bags = torch.cat((bags, bag_dict[k]["ft"]), dim=0)
+        return bags[1:]
 
     def save_dataset(self, datadir, split, standardized):
         ds_dict = {"rep_dim": self.rep_dim,
@@ -69,8 +75,8 @@ class JobsDatasetSpe(Dataset):
             with open(tgt_file, 'rb') as f:
                 ds_dict = pkl.load(f)
         self.rep_dim = ds_dict["rep_dim"]
-        self.num_bag = ds_dict["num_bags"]
-        self.bag_rep = ds_dict["bag_rep"]
+        self.num_bags = ds_dict["num_bags"]
+        self.bag_reps = ds_dict["bag_reps"]
         self.tuples = ds_dict["tuples"]
 
     def select_relevant_tuples(self, all_tuples, bag_type, subsample):

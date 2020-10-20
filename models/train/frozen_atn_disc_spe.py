@@ -43,10 +43,16 @@ def train(hparams):
 
     in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, len(dataset_train.bag_reps))
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_attn_disc_spe_model,
-                              num_workers=0, shuffle=True)
+                              num_workers=8, shuffle=True)
     valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_attn_disc_spe_model,
-                              num_workers=0)
+                              num_workers=8)
     print("Dataloaders initiated.")
+
+    print("Loading previously saved classifier...")
+
+    model_name = 'disc_spe/cie/ft/avg/matMul/epoch=02.ckpt'
+
+    weights = torch.load(os.path.join(CFG['modeldir'], model_name))["state_dict"]
     arguments = {'dim_size': 300,
                  'in_size': in_size,
                  'out_size': out_size,
@@ -55,7 +61,8 @@ def train(hparams):
                  "num_dpt": 0,
                  'hparams': hparams,
                  'desc': xp_title,
-                 "middle_size": hparams.middle_size}
+                 "middle_size": hparams.middle_size,
+                 "fixed_weights": weights}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = AtnInstanceClassifierDisc(**arguments)
@@ -141,7 +148,7 @@ if __name__ == "__main__":
     parser.add_argument("--checkpoint", type=int, default=45)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--DEBUG", type=bool, default=False)
-    parser.add_argument("--model_type", type=str, default="atn_disc_spe")
+    parser.add_argument("--model_type", type=str, default="frozenAtn_disc_spe")
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--epochs", type=int, default=50)
