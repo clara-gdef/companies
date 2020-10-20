@@ -70,6 +70,15 @@ def train(hparams):
         model_file = os.path.join(model_path, "epoch=" + str(hparams.checkpoint) + ".ckpt")
         model.load_state_dict(torch.load(model_file)["state_dict"])
         print("Resuming training from checkpoint : " + model_file + ".")
+    elif hparams.init_weights == "True":
+        print("Initializing class prediction weights...")
+        model_name = 'disc_spe/cie/ft/avg/matMul/epoch=02.ckpt'
+        if hparams.input_type == "hadamard":
+            model_name += "/" + str(hparams.middle_size)
+        model_path = os.path.join(CFG['modeldir'], model_name)
+        model.lin.weight = torch.nn.Parameter(torch.load(model_path)["state_dict"]["lin.weight"])
+        model.lin.bias = torch.nn.Parameter(torch.load(model_path)["state_dict"]["lin.bias"])
+        print("Prediction layer initiated.")
     else:
         print("Starting training for " + xp_title + "...")
     trainer.fit(model.cuda(), train_loader, valid_loader)
@@ -135,6 +144,7 @@ if __name__ == "__main__":
     parser.add_argument("--middle_size", type=int, default=20)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--bag_type", type=str, default="cie")
+    parser.add_argument("--init_weights", default="True")
     parser.add_argument("--load_dataset", default="True")
     parser.add_argument("--auto_lr_find", type=bool, default=False)
     parser.add_argument("--load_from_checkpoint", default=False)
@@ -142,7 +152,7 @@ if __name__ == "__main__":
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--model_type", type=str, default="atn_disc_spe")
-    parser.add_argument("--lr", type=float, default=1e-4)
+    parser.add_argument("--lr", type=float, default=1e-6)
     parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--epochs", type=int, default=50)
     hparams = parser.parse_args()
