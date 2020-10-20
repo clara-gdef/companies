@@ -21,13 +21,14 @@ def main():
         papers_transformed = dict()
         for k in tqdm(papers.keys()):
             papers_transformed[k] = {}
-            for handle in ["title", 'author', 'year', "editor", "note", "URL", "Keyword", "Affiliation", "Abstract"]:
-                if handle in papers[k].keys():
-                    papers_transformed[k][handle] = word_tokenize(papers[k][handle])
-            for handle in ["filename", "class"]:
-                if handle == "class":
-                    classes.add(papers[k][handle])
-                papers_transformed[k][handle] = papers[k][handle]
+            if "Abstract" in papers[k].keys():
+                for handle in ["title", 'author', 'year', "Keyword", "Affiliation", "Abstract"]:
+                    if handle in papers[k].keys():
+                        papers_transformed[k][handle] = word_tokenize(papers[k][handle])
+                for handle in ["filename", "class"]:
+                    if handle == "class":
+                        classes.add(papers[k][handle])
+                    papers_transformed[k][handle] = papers[k][handle]
         randomized_indices = [i for i in papers_transformed.keys()]
         random.shuffle(randomized_indices)
         train, valid, test = [], [], []

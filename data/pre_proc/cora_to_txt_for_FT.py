@@ -1,6 +1,8 @@
 import argparse
 import os
 import pickle as pkl
+
+import itertools
 import yaml
 import ipdb
 from tqdm import tqdm
@@ -26,15 +28,9 @@ def main(args):
 def make_txt_file(data_train):
     tgt_file = os.path.join(CFG["datadir"], "ft_unsupervised_input.txt")
     with open(tgt_file, "a") as f:
-        ipdb.set_trace()
         for data in tqdm(data_train, "parsing train data..."):
-            for j in data[-1]:
-                f.write(" ".join(j["job"]))
-                f.write("\n")
-            if len(data[-2]) > 0:
-                for e in data[-2][0]:
-                    f.write(" ".join(e))
-                    f.write("\n")
+            f.write(" ".join(data[1]['Abstract']))
+            f.write("\n")
     return tgt_file
 
 
