@@ -57,8 +57,11 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
     def forward(self, tmp_people, bags):
         people = torch.from_numpy(np.stack(tmp_people)).type(torch.FloatTensor).cuda()
         atn = self.atn_layer(people)
-        new_people = self.ponderate_jobs(people, atn)
-
+        normed_atn = atn.clone()
+        for ind, sample in enumerate(atn):
+            normed_atn[ind] = torch.softmax(atn[ind], dim=0)
+        new_people = self.ponderate_jobs(people, normed_atn)
+        # ipdb.set_trace()
         if self.input_type == "bagTransformer":
             mat = torch.diag(self.lin.weight).unsqueeze(1)
             out = bags * mat + self.lin.bias.view(bags.shape[0], -1)
@@ -95,10 +98,10 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
         self.training_losses.append(loss.item())
 
-        preds = [i.item() for i in torch.argmax(output, dim=1)]
-        res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "train", 0)
-        tensorboard_logs = {**res_dict, 'train_loss': loss}
-
+        # preds = [i.item() for i in torch.argmax(output, dim=1)]
+        # res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "train", 0)
+        # tensorboard_logs = {**res_dict, 'train_loss': loss}
+        tensorboard_logs = {'train_loss': loss}
         return {'loss': loss, 'log': tensorboard_logs}
 
     def validation_step(self, mini_batch, batch_nb):

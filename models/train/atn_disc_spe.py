@@ -8,9 +8,9 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
 import torch
-from data.datasets import JobsDatasetPoly
+from data.datasets import JobsDatasetSpe
 from models.classes.AtnInstanceClassifierDisc import AtnInstanceClassifierDisc
-from utils.models import collate_for_attn_disc_poly_model, get_model_params
+from utils.models import collate_for_attn_disc_spe_model, get_model_params
 
 
 def main(hparams):
@@ -41,18 +41,18 @@ def train(hparams):
     datasets = load_datasets(hparams, ["TRAIN", "VALID"], hparams.load_dataset)
     dataset_train, dataset_valid = datasets[0], datasets[1]
 
-    in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, len(dataset_train.bag_rep))
-    train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_attn_disc_poly_model,
-                              num_workers=8, shuffle=True)
-    valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_attn_disc_poly_model,
-                              num_workers=8)
+    in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, len(dataset_train.bag_reps))
+    train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_attn_disc_spe_model,
+                              num_workers=0, shuffle=True)
+    valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_attn_disc_spe_model,
+                              num_workers=0)
     print("Dataloaders initiated.")
     arguments = {'dim_size': 300,
                  'in_size': in_size,
                  'out_size': out_size,
-                 "num_cie": dataset_train.num_cie,
-                 "num_clus": dataset_train.num_clus,
-                 "num_dpt": dataset_train.num_dpt,
+                 "num_cie": dataset_train.num_bags,
+                 "num_clus": 0,
+                 "num_dpt": 0,
                  'hparams': hparams,
                  'desc': xp_title,
                  "middle_size": hparams.middle_size}
@@ -79,14 +79,14 @@ def load_datasets(hparams, splits, load):
     datasets = []
     common_hparams = {
         "data_dir": CFG["gpudatadir"],
-        "ppl_file": CFG["rep"][hparams.rep_type]["total"],
-        "cie_reps_file": CFG["rep"]["cie"] + hparams.data_agg_type + ".pkl",
-        "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type + ".pkl",
-        "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type + ".pkl",
+        "bag_file": CFG["rep"]["cie"] + hparams.data_agg_type,
+        "bag_type": "cie",
         "load": load,
+        "standardized": True,
+        "subsample": 0
     }
     for split in splits:
-        datasets.append(JobsDatasetPoly(**common_hparams, split=split))
+        datasets.append(JobsDatasetSpe(**common_hparams, split=split))
 
     return datasets
 
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=1)
-    parser.add_argument("--b_size", type=int, default=512)
+    parser.add_argument("--b_size", type=int, default=16)
     parser.add_argument("--middle_size", type=int, default=20)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--bag_type", type=str, default="cie")

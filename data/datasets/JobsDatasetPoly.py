@@ -10,10 +10,10 @@ from torch.utils.data import Dataset
 
 
 class JobsDatasetPoly(Dataset):
-    def __init__(self, data_dir, cie_reps_file, clus_reps_file, dpt_reps_file, ppl_file, load, split, standardized):
-        if load == "True":
+    def __init__(self, data_dir, cie_reps_file, clus_reps_file, dpt_reps_file, ppl_file, load, split, standardized, subsample):
+        if load:
             print("Loading previously saved dataset...")
-            self.load_dataset(data_dir, split, standardized)
+            self.load_dataset(data_dir, split, standardized, subsample)
         else:
             if standardized is True:
                 file_name = "total_rep_jobs_unflattened_" + split + "_standardized.pkl"
@@ -37,18 +37,18 @@ class JobsDatasetPoly(Dataset):
                     ppl_reps_clus = pkl.load(f_name)
                 with open(os.path.join(data_dir, "lookup_ppl.pkl"), 'rb') as f_name:
                     ppl_lookup = pkl.load(f_name)
-                with open(os.path.join(data_dir, cie_reps_file), "rb") as f_name:
+                with open(os.path.join(data_dir, cie_reps_file + ".pkl"), "rb") as f_name:
                     cie_reps = pkl.load(f_name)
-                with open(os.path.join(data_dir, clus_reps_file), "rb") as f_name:
+                with open(os.path.join(data_dir, clus_reps_file + ".pkl"), "rb") as f_name:
                     clus_reps = pkl.load(f_name)
-                with open(os.path.join(data_dir, dpt_reps_file), "rb") as f_name:
+                with open(os.path.join(data_dir, dpt_reps_file + ".pkl"), "rb") as f_name:
                     dpt_reps = pkl.load(f_name)
             self.rep_dim = 300
             self.num_cie = len(cie_reps)
             self.num_clus = len(clus_reps)
             self.num_dpt = len(dpt_reps)
             self.bag_rep = self.build_bag_reps(cie_reps, clus_reps, dpt_reps)
-            self.tuples = build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, self.num_cie, self.num_clus, self.num_dpt, split, standardized)
+            self.tuples = build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, self.num_cie, self.num_clus, self.num_dpt, split, standardized, subsample)
             self.save_dataset(data_dir, split, standardized)
 
         print("Job dataset loaded.")
@@ -82,7 +82,7 @@ class JobsDatasetPoly(Dataset):
             with open(tgt_file, 'wb') as f:
                 pkl.dump(ds_dict, f)
 
-    def load_dataset(self, datadir, split, standardized):
+    def load_dataset(self, datadir, split, standardized, subsample):
         if standardized is True:
             tgt_file = os.path.join(datadir, "JobsDatasetPoly_" + split + "_standardized.pkl")
             with open(tgt_file, 'rb') as f:
@@ -97,10 +97,14 @@ class JobsDatasetPoly(Dataset):
         self.num_clus = ds_dict["num_clus"]
         self.num_dpt = ds_dict["num_dpt"]
         self.bag_rep = ds_dict["bag_rep"]
-        self.tuples = ds_dict["tuples"]
+        if subsample > 0:
+            np.random.shuffle(ds_dict["tuples"])
+            self.tuples = ds_dict["tuples"][:subsample]
+        else:
+            self.tuples = ds_dict["tuples"]
 
 
-def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num_dpt, split, standardized):
+def build_ppl_tuples(ppl_reps_clus, ppl_reps, ppl_lookup, num_cie, num_clus, num_dpt, split, standardized, subsample):
     lookup_to_reps = {}
     for cie in ppl_reps.keys():
         lookup_to_reps[cie] = {}

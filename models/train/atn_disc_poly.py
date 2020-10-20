@@ -38,7 +38,7 @@ def train(hparams):
                          logger=logger,
                          auto_lr_find=False
                          )
-    datasets = load_datasets(hparams, ["TRAIN", "VALID"], hparams.load_dataset)
+    datasets = load_datasets(hparams, ["TRAIN", "VALID"])
     dataset_train, dataset_valid = datasets[0], datasets[1]
 
     in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, len(dataset_train.bag_rep))
@@ -85,7 +85,7 @@ def train(hparams):
     trainer.fit(model.cuda(), train_loader, valid_loader)
 
 
-def load_datasets(hparams, splits, load):
+def load_datasets(hparams, splits):
     datasets = []
     common_hparams = {
         "data_dir": CFG["gpudatadir"],
@@ -93,12 +93,15 @@ def load_datasets(hparams, splits, load):
         "cie_reps_file": CFG["rep"]["cie"] + hparams.data_agg_type,
         "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type,
         "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type,
-        "load": load,
+        "load": False,
+        "subsample": hparams.subsample,
         "standardized": False
     }
     if hparams.standardized == "True":
         print("Loading standardized datasets...")
         common_hparams["standardized"] = True
+    if hparams.load_dataset == "True":
+        common_hparams["load"] = True
 
     for split in splits:
         datasets.append(JobsDatasetPoly(**common_hparams, split=split))
@@ -140,6 +143,7 @@ def init_lightning(hparams, xp_title):
 
     return logger, checkpoint_callback, early_stop_callback
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
@@ -155,6 +159,7 @@ if __name__ == "__main__":
     parser.add_argument("--checkpoint", type=int, default=45)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--DEBUG", type=bool, default=False)
+    parser.add_argument("--subsample", type=int, default=0)
     parser.add_argument("--model_type", type=str, default="atn_disc_poly_std")
     parser.add_argument("--lr", type=float, default=1e-8)
     parser.add_argument("--wd", type=float, default=0.7)

@@ -9,24 +9,32 @@ from tqdm import tqdm
 from torch.utils.data import Dataset
 
 
-class JobsDatasetPoly(Dataset):
-    def __init__(self, data_dir, bag_type, load, bag_file, subsample, split):
+class JobsDatasetSpe(Dataset):
+    def __init__(self, data_dir, bag_type, load, bag_file, subsample, split, standardized):
         if load == "True":
             print("Loading previously saved dataset...")
-            self.load_dataset(data_dir, split)
+            self.load_dataset(data_dir, split, standardized)
         else:
-            with open(os.path.join(data_dir, bag_file), "rb") as f_name:
-                bag_reps = pkl.load(f_name)
-            tgt_file = os.path.join(data_dir, "JobsDatasetPoly_" + split + ".pkl")
-            with open(tgt_file, 'rb') as f:
-                ds_dict = pkl.load(f)
+
+            if standardized:
+                tgt_file = os.path.join(data_dir, "JobsDatasetPoly_" + split + "_standardized.pkl")
+                with open(tgt_file, 'rb') as f:
+                    ds_dict = pkl.load(f)
+                with open(os.path.join(data_dir, bag_file + "_standardized.pkl"), "rb") as f_name:
+                    bag_reps = pkl.load(f_name)
+            else:
+                tgt_file = os.path.join(data_dir, "JobsDatasetPoly_" + split + ".pkl")
+                with open(tgt_file, 'rb') as f:
+                    ds_dict = pkl.load(f)
+                with open(os.path.join(data_dir, bag_file + ".pkl"), "rb") as f_name:
+                    bag_reps = pkl.load(f_name)
 
             self.rep_dim = 300
             self.num_bags = len(bag_reps)
             self.bag_reps = bag_reps
             self.tuples = []
-            self.select_relevant_tuples(ds_dict, bag_type, subsample)
-            self.save_dataset(data_dir, split)
+            self.select_relevant_tuples(ds_dict["tuples"], bag_type, subsample)
+            self.save_dataset(data_dir, split, standardized)
 
         print("Job dataset loaded.")
         print("Dataset Length: " + str(len(self.tuples)))
@@ -35,22 +43,31 @@ class JobsDatasetPoly(Dataset):
         return len(self.tuples)
 
     def __getitem__(self, idx):
-        return self.tuples[idx]["id"], self.tuples[idx]["rep"], self.tuples[idx]["cie"], self.tuples[idx]["clus"], self.tuples[idx]["dpt"], self.bag_rep
+        return self.tuples[idx]["id"], self.tuples[idx]["rep"], self.tuples[idx]["jobs_len"], self.tuples[idx]["label"], self.bag_reps
 
-
-    def save_dataset(self, datadir, split):
+    def save_dataset(self, datadir, split, standardized):
         ds_dict = {"rep_dim": self.rep_dim,
                    "num_bags": self.num_bags,
-                   "bag_rep": self.bag_rep,
+                   "bag_reps": self.bag_reps,
                    "tuples": self.tuples}
-        tgt_file = os.path.join(datadir, "JobsDatasetSpe_" + split + ".pkl")
-        with open(tgt_file, 'wb') as f:
-            pkl.dump(ds_dict, f)
+        if standardized:
+            tgt_file = os.path.join(datadir, "JobsDatasetSpe_" + split + "_standardized.pkl")
+            with open(tgt_file, 'wb') as f:
+                pkl.dump(ds_dict, f)
+        else:
+            tgt_file = os.path.join(datadir, "JobsDatasetSpe_" + split + ".pkl")
+            with open(tgt_file, 'wb') as f:
+                pkl.dump(ds_dict, f)
 
-    def load_dataset(self, datadir, split):
-        tgt_file = os.path.join(datadir, "JobsDatasetSpe_" + split + ".pkl")
-        with open(tgt_file, 'rb') as f:
-            ds_dict = pkl.load(f)
+    def load_dataset(self, datadir, split, standardized):
+        if standardized:
+            tgt_file = os.path.join(datadir, "JobsDatasetSpe_" + split + "_standardized.pkl")
+            with open(tgt_file, 'rb') as f:
+                ds_dict = pkl.load(f)
+        else:
+            tgt_file = os.path.join(datadir, "JobsDatasetSpe_" + split + ".pkl")
+            with open(tgt_file, 'rb') as f:
+                ds_dict = pkl.load(f)
         self.rep_dim = ds_dict["rep_dim"]
         self.num_bag = ds_dict["num_bags"]
         self.bag_rep = ds_dict["bag_rep"]
@@ -58,11 +75,11 @@ class JobsDatasetPoly(Dataset):
 
     def select_relevant_tuples(self, all_tuples, bag_type, subsample):
         tmp = []
-        for person in all_tuples:
+        for person in tqdm(all_tuples, desc="Selecting relevant tuples..."):
             tmp.append({"id": person["id"],
                         "rep": person["rep"],
                         "jobs_len": person["jobs_len"],
-                        "bag_rep": self.bag_rep,
+                        "bag_rep": self.bag_reps,
                         "label": person[bag_type]
                         })
             if subsample > 0:

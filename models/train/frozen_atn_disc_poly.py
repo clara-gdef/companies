@@ -49,8 +49,7 @@ def train(hparams):
     print("Dataloaders initiated.")
 
     print("Loading previously saved classifier...")
-    model_name = "disc_poly/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type +\
-                 "/512/0.0001/0.0/epoch=" + hparams.prev_model_ep +".ckpt"
+    model_name = "disc_poly_std/ft/avg/matMul/768/1e-08/0.0/epoch=49_v0.ckpt"
     weights = torch.load(os.path.join(CFG['modeldir'], model_name))["state_dict"]
 
     arguments = {'dim_size': 300,
@@ -87,11 +86,17 @@ def load_datasets(hparams, splits, load):
     common_hparams = {
         "data_dir": CFG["gpudatadir"],
         "ppl_file": CFG["rep"][hparams.rep_type]["total"],
-        "cie_reps_file": CFG["rep"]["cie"] + hparams.data_agg_type + ".pkl",
-        "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type + ".pkl",
-        "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type + ".pkl",
+        "cie_reps_file": CFG["rep"]["cie"] + hparams.data_agg_type,
+        "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type,
+        "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type,
         "load": load,
+        "subsample": hparams.subsample,
+        "standardized": False
     }
+    if hparams.standardized == "True":
+        print("Loading standardized datasets...")
+        common_hparams["standardized"] = True
+
     for split in splits:
         datasets.append(JobsDatasetPoly(**common_hparams, split=split))
 
@@ -133,12 +138,12 @@ def init_lightning(hparams, xp_title):
     return logger, checkpoint_callback, early_stop_callback
 
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--b_size", type=int, default=512)
+    parser.add_argument("--subsample", type=int, default=0)
     parser.add_argument("--middle_size", type=int, default=20)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", default="True")
@@ -151,6 +156,7 @@ if __name__ == "__main__":
     parser.add_argument("--model_type", type=str, default="frozenAtn_disc_poly")
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--wd", type=float, default=0.)
+    parser.add_argument("--standardized", type=str, default="True")
     parser.add_argument("--epochs", type=int, default=50)
     hparams = parser.parse_args()
     main(hparams)

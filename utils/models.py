@@ -21,6 +21,14 @@ def collate_for_attn_disc_poly_model(batch):
     return ids, reps, cies, clus, dpt, batch[0][-1]
 
 
+def collate_for_attn_disc_spe_model(batch):
+    ids = [i["id"] for i in batch]
+    reps = [i["rep"] for i in batch]
+    jobs_len = [i["jobs_len"] for i in batch]
+    label = [i["label"] for i in batch]
+    return ids, reps, jobs_len, label, batch[0][-1]
+
+
 def collate_for_gen_poly_model(batch):
     ppl = [i[0] for i in batch]
     bag_reps = [i[1] for i in batch]

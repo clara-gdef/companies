@@ -32,7 +32,6 @@ def grid_search(hparams):
                     dico["b_size"] = b_size
                     dico["middle_size"] = hparams.middle_size
                     dico["bag_type"] = bag_type
-                    #dico["wd"] = wd
                     arg = DotDict(dico)
                     if hparams.TRAIN == "True":
                         train.disc_spe.main(arg)
@@ -53,6 +52,8 @@ def init_args(hparams):
             'data_agg_type': 'avg',
             'epochs': hparams.epochs,
             "wd": 0.,
+            "subsample": 0,
+            "standardized" : True,
             "DEBUG": hparams.DEBUG,
             "load_from_checkpoint": False}
     print(hparams.epochs)
@@ -68,7 +69,7 @@ if __name__ == "__main__":
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", type=bool, default=True)
-    parser.add_argument("--model_type", type=str, default="SGDdisc_spe")
+    parser.add_argument("--model_type", type=str, default="disc_spe_std")
     parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--middle_size", type=int, default=100)
@@ -77,6 +78,6 @@ if __name__ == "__main__":
     parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--lr", nargs='+', default=[1e-4, 1e-6, 1e-8])
     parser.add_argument("--b_size", nargs='+', default=[64, 512, 16])
-    parser.add_argument("--bag_types", nargs='+', default=["cie", "clus", "dpt"])
+    parser.add_argument("--bag_types", nargs='+', default=["cie"])
     hparams = parser.parse_args()
     grid_search(hparams)

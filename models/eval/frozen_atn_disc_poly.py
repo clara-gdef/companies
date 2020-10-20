@@ -77,11 +77,16 @@ def load_datasets(hparams, splits, load):
     common_hparams = {
         "data_dir": CFG["gpudatadir"],
         "ppl_file": CFG["rep"][hparams.rep_type]["total"],
-        "cie_reps_file": CFG["rep"]["cie"] + hparams.data_agg_type + ".pkl",
-        "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type + ".pkl",
-        "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type + ".pkl",
-        "load": load
+        "cie_reps_file": CFG["rep"]["cie"] + hparams.data_agg_type,
+        "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type,
+        "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type,
+        "load": load,
+        "standardized": False
     }
+    if hparams.standardized == "True":
+        print("Loading standardized datasets...")
+        common_hparams["standardized"] = True
+
     for split in splits:
         datasets.append(JobsDatasetPoly(**common_hparams, split=split))
     return datasets
@@ -99,7 +104,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=1)
-    parser.add_argument("--b_size", type=int, default=512)
+    parser.add_argument("--b_size", type=int, default=768)
     parser.add_argument("--middle_size", type=int, default=20)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", default="False")
@@ -107,10 +112,11 @@ if __name__ == "__main__":
     parser.add_argument("--load_from_checkpoint", default=False)
     parser.add_argument("--checkpoint", type=int, default=45)
     parser.add_argument("--prev_model_ep", type=str, default='99')
+    parser.add_argument("--standardized", type=str, default="True")
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--model_type", type=str, default="frozenAtn_disc_poly")
-    parser.add_argument("--lr", type=float, default=1e-4)
+    parser.add_argument("--lr", type=float, default=1e-6)
     parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--epochs", type=int, default=50)
     hparams = parser.parse_args()
