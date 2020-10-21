@@ -38,7 +38,7 @@ def train(hparams):
     dataset_train, dataset_test = datasets[0], datasets[1]
 
     in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, len(dataset_train.bag_reps))
-    test_loader = DataLoader(dataset_test, batch_size=hparams.b_size, collate_fn=collate_for_attn_disc_spe_model,
+    test_loader = DataLoader(dataset_test, batch_size=1, collate_fn=collate_for_attn_disc_spe_model,
                               num_workers=0, shuffle=True)
     print("Dataloaders initiated.")
     arguments = {'dim_size': 300,
@@ -92,9 +92,6 @@ def init_lightning(hparams, xp_title):
         save_dir='./models/logs',
         name=xp_title)
     print("Logger initiated.")
-
-    print("early stopping procedure initiated.")
-
     return logger
 
 
