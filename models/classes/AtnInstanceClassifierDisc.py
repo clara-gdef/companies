@@ -176,10 +176,10 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
 
     def test_epoch_end(self, outputs):
         outputs = torch.stack(self.test_outputs)
-        # if self.type == "poly":
-        res = self.test_poly(outputs)
-        # else:
-        #     res = self.test_spe(outputs)
+        if self.type == "poly":
+            res = self.test_poly(outputs)
+        else:
+             res = self.test_spe(outputs)
         return res
 
     def test_poly(self, outputs):
@@ -216,7 +216,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             tmp = get_metrics_at_k(preds[:, :k].cpu(), labels.cpu(),  self.get_num_classes(),
                                                    self.bag_type + "_@" + str(k), 0)
             res_dict_trained = {**res_dict_trained, **tmp}
-        self.save_bag_outputs(preds, labels, confusion_matrix(preds[:, :1].cpu(), labels.cpu()), res_dict_trained)
+        # self.save_bag_outputs(preds, labels, confusion_matrix(preds[:, :1].cpu(), labels.cpu()), res_dict_trained)
         return res_dict_trained
 
     def save_bag_outputs(self, preds, labels, cm, res):
