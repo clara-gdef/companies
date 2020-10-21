@@ -60,8 +60,9 @@ def train(hparams):
     if hparams.input_type == "hadamard":
         model_name += "/" + str(hparams.middle_size)
     model_path = os.path.join(CFG['modeldir'], model_name)
-    model_file = os.path.join(model_path, "epoch=" + str(hparams.checkpoint) + ".ckpt")
-    model.load_state_dict(torch.load(model_file)["state_dict"])
+    model_files = glob.glob(os.path.join(model_path, "*"))
+    latest_file = max(model_files, key=os.path.getctime)
+    model.load_state_dict(torch.load(latest_file)["state_dict"])
     trainer.test(model.cuda(), test_loader)
 
 
