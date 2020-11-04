@@ -2,7 +2,6 @@ import os
 import argparse
 import pickle as pkl
 from tqdm import tqdm
-from utils.Utils import date_to_year
 import ipdb
 
 def main(args):
@@ -26,8 +25,7 @@ def build_track_info_from_person(person, tracks_dict):
     if len(jobs) > 0:
         for job in jobs:
             tracks_dict[track] = {}
-            start = date_to_year(job["from"])
-            end = date_to_year(job["to"])
+
             for year in range(start, end):
                 if track in track_list:
                     if year not in tracks_dict[track].keys():
