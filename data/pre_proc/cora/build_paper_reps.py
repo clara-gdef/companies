@@ -35,14 +35,15 @@ def main(args):
                 identifier = paper[0]
                 profile = paper[1]["Abstract"]
                 sentence_list = split_abstract_to_sentences(profile)
-                embedded_sentence_list = sentence_list_to_emb(sentence_list, embedder)
-                profile_emb = to_avg_emb(embedded_sentence_list)
-                new_person = {"id": identifier,
-                              "class": rev_class_dict[paper[1]["class"]],
-                              "avg_profile": profile_emb,
-                              "sentences_emb": embedded_sentence_list}
-                split_dataset.append(new_person)
-                tgt_file = os.path.join(CFG["gpudatadir"], "cora_embedded_" + args.ft_type + "_" + split + ".pkl")
+                if len(sentence_list) > 0:
+                    embedded_sentence_list = sentence_list_to_emb(sentence_list, embedder)
+                    profile_emb = to_avg_emb(embedded_sentence_list)
+                    new_person = {"id": identifier,
+                                  "class": rev_class_dict[paper[1]["class"]],
+                                  "avg_profile": profile_emb,
+                                  "sentences_emb": embedded_sentence_list}
+                    split_dataset.append(new_person)
+            tgt_file = os.path.join(CFG["gpudatadir"], "cora_embedded_" + args.ft_type + "_" + split + ".pkl")
             with open(tgt_file, 'wb') as f:
                 pkl.dump(split_dataset, f)
 
