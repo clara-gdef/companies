@@ -19,18 +19,35 @@ def main(args):
         ppl_file = os.path.join(CFG["gpudatadir"], "cora" + item + ".pkl")
         with open(ppl_file, 'rb') as fp:
             data.extend(pkl.load(fp))
-    track_lookup = build_track_lookup(data, classes)
+        paper_lookup_split = build_article_lookup(pkl.load(fp))
+        with open(os.path.join(CFG["gpudatadir"], "article_lookup" + item + ".pkl"), "wb") as f:
+            pkl.dump(paper_lookup_split, f)
+
+    paper_lookup_global = build_article_lookup(data)
+
+    with open(os.path.join(CFG["gpudatadir"], "article_lookup_global.pkl"), "wb") as f:
+        pkl.dump(paper_lookup_global, f)
+
+    track_lookup = build_track_lookup(data, classes, paper_lookup_global)
     with open(os.path.join(CFG["gpudatadir"], "track_dict.pkl"), 'wb') as f:
         pkl.dump(track_lookup, f)
 
 
-def build_track_lookup(articles, classes):
+def build_article_lookup(articles):
+    lookup = {}
+    for article in tqdm(articles, desc="Building lookup for articles..."):
+        lookup[article[0]] = article[1]
+    return lookup
+
+
+def build_track_lookup(articles, classes, paper_lookup_global):
     track_lookup = {}
     for article in tqdm(articles, desc="Building track lookup..."):
         track = article[1]["class"]
         if track not in track_lookup.keys():
-            track_lookup[track] = []
-        track_lookup[track].append(article[0])
+            track_lookup[track] = {"id": [], "profiles": []}
+        track_lookup[track]["id"].append(article[0])
+        track_lookup[track]["profiles"].append(paper_lookup_global[article[0]])
     assert len(track_lookup) == len(classes)
     return track_lookup
 
