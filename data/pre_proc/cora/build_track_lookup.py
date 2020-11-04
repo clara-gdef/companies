@@ -18,8 +18,9 @@ def main(args):
     for item in sets:
         ppl_file = os.path.join(CFG["gpudatadir"], "cora" + item + ".pkl")
         with open(ppl_file, 'rb') as fp:
-            data.extend(pkl.load(fp))
-        paper_lookup_split = build_article_lookup(pkl.load(fp))
+            tmp = pkl.load(fp)
+        data.extend(tmp)
+        paper_lookup_split = build_article_lookup(tmp)
         with open(os.path.join(CFG["gpudatadir"], "article_lookup" + item + ".pkl"), "wb") as f:
             pkl.dump(paper_lookup_split, f)
 
