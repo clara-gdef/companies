@@ -5,6 +5,7 @@ import fastText
 import yaml
 from tqdm import tqdm
 import ipdb
+import numpy as np
 from nltk.tokenize import word_tokenize
 
 
@@ -52,16 +53,22 @@ def split_abstract_to_sentences(profile):
     for sent in sentences:
         # check that sent is a non empty list
         if len(sent) > 0:
-           sentence_list.append(word_tokenize(sent))
+            sentence_list.append(word_tokenize(sent))
     return sentence_list
 
 
 def sentence_list_to_emb(sentence_list, embedder):
-    ipdb.set_trace()
+    embedded_sentences = []
+    for sent in sentence_list:
+        tmp = []
+        for word in sent:
+            tmp.append(embedder.get_word_vector(word))
+        embedded_sentences.append(np.mean(np.stack(tmp), axis=0))
+    return embedded_sentences
+
 
 def to_avg_emb(embedded_sentence_list):
-    ipdb.set_trace()
-
+    return np.mean(np.stack(embedded_sentence_list), axis=0)
 
 
 if __name__ == "__main__":
