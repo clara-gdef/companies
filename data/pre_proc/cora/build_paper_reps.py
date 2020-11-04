@@ -20,7 +20,7 @@ def main(args):
         rev_class_dict = {v: k for k, v in classes.items()}
         print("Loading word vectors...")
         if args.ft_type == "fs":
-            embedder = fastText.load_model(os.path.join(CFG["modeldir"], "ft_cora.bin"))
+            embedder = fastText.load_model(os.path.join(CFG["modeldir"], "ft_fs_cora.bin"))
         else:
             embedder = fastText.load_model(os.path.join(CFG["modeldir"], "ft_en.bin"))
         print("Word vectors loaded.")
