@@ -34,7 +34,7 @@ def select_relevant_papers(train_dataset, class_num):
     selected_papers = []
     for paper in train_dataset:
         if paper["class"] == class_num:
-            selected_papers.appen(paper["avg_profile"])
+            selected_papers.append(paper["avg_profile"])
     assert len(selected_papers) > 0
     return selected_papers
 
