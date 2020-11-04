@@ -3,6 +3,7 @@ import argparse
 import pickle as pkl
 import fastText
 import yaml
+import numpy as np
 from tqdm import tqdm
 import ipdb
 
@@ -13,20 +14,29 @@ def main(args):
     with open(os.path.join(CFG["gpudatadir"], "cora_classes_dict.pkl"), 'rb') as f:
         classes = pkl.load(f)
 
-    ppl_file = os.path.join(CFG["gpudatadir"], "cora_TRAIN.pkl")
-    with open(ppl_file, 'rb') as fp:
-        data = pkl.load(fp)
+    tgt_file = os.path.join(CFG["gpudatadir"], "cora_embedded_" + args.ft_type + "_TRAIN.pkl")
+    with open(tgt_file, 'rb') as f:
+        train_dataset = pkl.load(f)
 
-    print("Loading word vectors...")
-    if args.ft_type == "fs":
-        embedder = fastText.load_model(os.path.join(CFG["modeldir"], "ft_cora.bin"))
-    else:
-        embedder = fastText.load_model(os.path.join(CFG["modeldir"], "ft_en.bin"))
-    print("Word vectors loaded.")
+    classes_rep = []
+    for class_num in classes.keys():
+        papers = select_relevant_papers(train_dataset, class_num)
+        classes_rep.append(np.mean(np.stack(papers), axis=0))
 
-    track_reps =
+    assert len(classes_rep) == len(classes)
+
+    tgt_file = os.path.join(CFG["gpudatadir"], "tracks_reps_" + args.ft_type + ".pkl")
+    with open(tgt_file, 'wb') as f:
+        pkl.dump(classes_rep, f)
 
 
+def select_relevant_papers(train_dataset, class_num):
+    selected_papers = []
+    for paper in train_dataset:
+        if paper["class"] == class_num:
+            selected_papers.appen(paper["avg_profile"])
+    assert len(selected_papers) > 0
+    return selected_papers
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
