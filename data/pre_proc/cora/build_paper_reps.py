@@ -17,7 +17,7 @@ def main(args):
         with open(os.path.join(CFG["gpudatadir"], "cora_classes_dict.pkl"), 'rb') as f:
             classes = pkl.load(f)
 
-        rev_class_dict = {v: k for k, v in classes}
+        rev_class_dict = {v: k for k, v in classes.items()}
         print("Loading word vectors...")
         if args.ft_type == "fs":
             embedder = fastText.load_model(os.path.join(CFG["modeldir"], "ft_cora.bin"))
