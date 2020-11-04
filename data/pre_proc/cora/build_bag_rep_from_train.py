@@ -1,11 +1,10 @@
 import os
 import argparse
 import pickle as pkl
-import fastText
 import yaml
 import numpy as np
 from tqdm import tqdm
-import ipdb
+
 
 def main(args):
     global CFG
@@ -19,7 +18,7 @@ def main(args):
         train_dataset = pkl.load(f)
 
     classes_rep = []
-    for class_num in classes.keys():
+    for class_num in tqdm(classes.keys()):
         papers = select_relevant_papers(train_dataset, class_num)
         classes_rep.append(np.mean(np.stack(papers), axis=0))
 
