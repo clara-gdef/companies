@@ -61,10 +61,11 @@ def split_abstract_to_sentences(profile):
 def sentence_list_to_emb(sentence_list, embedder):
     embedded_sentences = []
     for sent in sentence_list:
-        tmp = []
-        for word in sent:
-            tmp.append(embedder.get_word_vector(word))
-        embedded_sentences.append(np.mean(np.stack(tmp), axis=0))
+        if len(sent) > 0:
+            tmp = []
+            for word in sent:
+                tmp.append(embedder.get_word_vector(word))
+            embedded_sentences.append(np.mean(np.stack(tmp), axis=0))
     return embedded_sentences
 
 
