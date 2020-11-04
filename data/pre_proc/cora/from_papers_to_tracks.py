@@ -7,40 +7,32 @@ from tqdm import tqdm
 import ipdb
 
 def main(args):
-    
+
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     with open(os.path.join(CFG["gpudatadir"], "cora_classes_dict.pkl"), 'rb') as f:
         classes = pkl.load(f)
-    with ipdb.launch_ipdb_on_exception():
-        sets = ["_TRAIN", "_VALID", "_TEST"]
-        for item in sets:
-            tracks_dict = {}
-            ppl_file = os.path.join(CFG["gpudatadir"], "cora" + item + ".pkl")
-            with open(ppl_file, 'rb') as fp:
-                data = pkl.load(fp)
-            ipdb.set_trace()
-            for person in tqdm(data, desc="Build track for " + str(item)):
-                build_track_info_from_person(person, tracks_dict, classes)
-            tgt_file = os.path.join(CFG["gpudatadir"], 'track' + item + ".pkl")
-            with open(tgt_file, 'wb') as fc:
-                pkl.dump(tracks_dict, fc)
+    sets = ["_TRAIN", "_VALID", "_TEST"]
+    data = []
+    for item in sets:
+        ppl_file = os.path.join(CFG["gpudatadir"], "cora" + item + ".pkl")
+        with open(ppl_file, 'rb') as fp:
+            data.extend(pkl.load(fp))
+    track_lookup = build_track_lookup(data, classes)
+    with open(os.path.join(CFG["gpudatadir"], "track_dict.pkl"), 'wb') as f:
+        pkl.dump(track_lookup, f)
 
 
-def build_track_info_from_person(person, tracks_dict, classes):
-    identifier, skills, industry, jobs = person
-    if len(jobs) > 0:
-        for job in jobs:
-            tracks_dict[track] = {}
-
-            for year in range(start, end):
-                if track in track_list:
-                    if year not in tracks_dict[track].keys():
-                        tracks_dict[track][year] = []
-                    tracks_dict[track][year].append([identifier, job["job"], skills, industry])
-    return tracks_dict
-
+def build_track_lookup(articles, classes):
+    track_lookup = {}
+    for article in tqdm(articles, desc="Building track lookup..."):
+        track = article[1]["class"]
+        if track not in track_lookup.keys():
+            track_lookup[track] = []
+        track_lookup[track].append(article[0])
+    assert len(track_lookup) == len(classes)
+    return track_lookup
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
