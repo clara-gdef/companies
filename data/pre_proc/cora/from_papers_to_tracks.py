@@ -25,11 +25,6 @@ def build_track_info_from_person(person, tracks_dict):
     identifier, skills, industry, jobs = person
     if len(jobs) > 0:
         for job in jobs:
-            if job["company"] not in track_list and job["company"] in track_syn.keys() :
-                track = track_syn[job["company"]]
-            else:
-                track = job["company"]
-            if track not in tracks_dict.keys() and track in track_list:
             tracks_dict[track] = {}
             start = date_to_year(job["from"])
             end = date_to_year(job["to"])
