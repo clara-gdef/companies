@@ -14,7 +14,7 @@ def main(args):
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
 
-    with open(os.path.join(CFG["datadir"], args.input_file + "_TRAIN.pkl"), 'rb') as f:
+    with open(os.path.join(CFG["gpudatadir"], args.input_file + "_TRAIN.pkl"), 'rb') as f:
         data_train = pkl.load(f)
 
     with ipdb.launch_ipdb_on_exception():
@@ -26,7 +26,7 @@ def main(args):
 
 
 def make_txt_file(data_train):
-    tgt_file = os.path.join(CFG["datadir"], "ft_unsupervised_input.txt")
+    tgt_file = os.path.join(CFG["gpudatadir"], "ft_unsupervised_input.txt")
     with open(tgt_file, "a") as f:
         for data in tqdm(data_train, "parsing train data..."):
             f.write(" ".join(data[1]['Abstract']))
