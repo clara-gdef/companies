@@ -13,7 +13,7 @@ from models.classes import InstanceClassifierDiscCora
 from utils.models import collate_for_disc_spe_model_cora, get_model_params
 
 
-def main(hparams):
+def init(hparams):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
@@ -24,7 +24,7 @@ def main(hparams):
         return train(hparams)
 
 
-def train(hparams):
+def main(hparams):
     xp_title = hparams.model_type + "_" + hparams.ft_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, CFG, xp_title)

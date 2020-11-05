@@ -21,8 +21,8 @@ def grid_search(hparams):
                     dico["middle_size"] = mid_size
                     arg = DotDict(dico)
                     if hparams.TRAIN == "True":
-                        train.cora.disc_spe.main(arg)
-                    test_results[lr][b_size][mid_size] = eval.cora.disc_spe.main(arg)
+                        train.cora.disc_spe.init(arg)
+                    test_results[lr][b_size][mid_size] = eval.cora.disc_spe.init(arg)
             else:
                 print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
                 dico['lr'] = lr
@@ -30,8 +30,8 @@ def grid_search(hparams):
                 dico["middle_size"] = hparams.middle_size
                 arg = DotDict(dico)
                 if hparams.TRAIN == "True":
-                    train.cora.disc_spe.main(arg)
-                test_results[lr][b_size] = eval.cora.disc_spe.main(arg)
+                    train.cora.disc_spe.init(arg)
+                test_results[lr][b_size] = eval.cora.disc_spe.init(arg)
     res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_cora_disc_spe_" + hparams.rep_type +
                             "_" + hparams.input_type)
     with open(res_path, "wb") as f:
