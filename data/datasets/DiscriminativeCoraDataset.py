@@ -11,10 +11,12 @@ from torch.utils.data import Dataset
 class DiscriminativeCoraDataset(Dataset):
     def __init__(self, datadir, paper_file, track_file, split, subsample, ft_type, load):
         self.datadir = datadir
-        self.tuples = []
+        self.ft_type = ft_type
+        self.split = split
         if load:
             self.load_dataset()
         else:
+            self.tuples = []
             self.ft_type = ft_type
             self.split = split
             self.build_tuples(os.path.join(datadir, paper_file + "_" + ft_type + "_" + split + ".pkl"))
@@ -33,16 +35,21 @@ class DiscriminativeCoraDataset(Dataset):
 
     def save_dataset(self):
         dico = {}
-        ipdb.set_trace()
         for attribute in vars(self):
             if not str(attribute).startswith("__"):
-                dico = {str(attribute): self.attribute}
+                dico[str(attribute)] = vars(self)[attribute]
         tgt_file = os.path.join(self.datadir, "cora_dataset_" + self.ft_type + "_" + self.split + '.pkl')
         with open(tgt_file, 'wb') as f:
             pkl.dump(dico, f)
+        print("Dataset saved : " + tgt_file)
 
     def load_dataset(self):
-        pass
+        tgt_file = os.path.join(self.datadir, "cora_dataset_" + self.ft_type + "_" + self.split + '.pkl')
+        with open(tgt_file, 'rb') as f:
+            dico = pkl.load(f)
+        for key in tqdm(dico, desc="Loading attributes from save..."):
+            vars(self)[key] = dico[key]
+        print("Dataset load from : " + tgt_file)
 
     def build_tuples(self, paper_file):
         with open(paper_file, 'rb') as f:
