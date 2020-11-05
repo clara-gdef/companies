@@ -71,7 +71,7 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--TRAIN", default="True")
     parser.add_argument("--DEBUG", type=bool, default=False)
-    parser.add_argument("--lr", nargs='+', default=[1e-4, 1e-6, 1e-8])
+    parser.add_argument("--lr", nargs='+', default=[1e-6, 1e-7, 1e-8])
     parser.add_argument("--b_size", nargs='+', default=[64, 512, 16])
     hparams = parser.parse_args()
     grid_search(hparams)
