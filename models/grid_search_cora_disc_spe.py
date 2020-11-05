@@ -32,8 +32,7 @@ def grid_search(hparams):
                 if hparams.TRAIN == "True":
                     train.cora.disc_spe.init(arg)
                 test_results[lr][b_size] = eval.cora.disc_spe.init(arg)
-    res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_cora_disc_spe_" + hparams.rep_type +
-                            "_" + hparams.input_type)
+    res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_cora_disc_spe_" + hparams.input_type)
     with open(res_path, "wb") as f:
         pkl.dump(test_results, f)
 
