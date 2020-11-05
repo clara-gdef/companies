@@ -75,7 +75,7 @@ def train(hparams):
 def load_datasets(hparams, CFG, splits):
     datasets = []
     common_hparams = {
-        "data_dir": CFG["gpudatadir"],
+        "datadir": CFG["gpudatadir"],
         "track_file": CFG["rep"]["cora"]["tracks"],
         "paper_file": CFG["rep"]["cora"]["papers"]["emb"],
         "ft_type": hparams.ft_type,

@@ -15,8 +15,8 @@ rep:
   cora:
     papers:
       plain: cora_
-      emb: cora_embedded_
-    tracks: tracks_reps_
+      emb: cora_embedded
+    tracks: tracks_reps
 lookup:
   ppl: lookup_ppl.pkl
   cie: lookup_cie.pkl
