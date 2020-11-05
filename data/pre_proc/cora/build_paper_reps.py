@@ -26,7 +26,7 @@ def main(args):
             embedder = fastText.load_model(os.path.join(CFG["modeldir"], "ft_en.bin"))
         print("Word vectors loaded.")
 
-        ds_mean, ds_std = build_for_train(embedder, rev_class_dict)
+        sent_mean, sent_std, prof_mean, prof_std = build_for_train(embedder, rev_class_dict)
 
         for split in ['VALID', "TEST"]:
             split_dataset = []
@@ -42,8 +42,8 @@ def main(args):
                     profile_emb = to_avg_emb(embedded_sentence_list)
                     new_person = {"id": identifier,
                                   "class": rev_class_dict[paper[1]["class"]],
-                                  "avg_profile": profile_emb,
-                                  "sentences_emb": embedded_sentence_list}
+                                  "avg_profile": (profile_emb - prof_mean) / sent_mean,
+                                  "sentences_emb": (embedded_sentence_list - sent_mean) /sent_std}
                     split_dataset.append(new_person)
             tgt_file = os.path.join(CFG["gpudatadir"], "cora_embedded_" + args.ft_type + "_" + split + ".pkl")
             with open(tgt_file, 'wb') as f:
@@ -84,12 +84,8 @@ def build_for_train(embedder, rev_class_dict):
     all_sentences = np.zeros(300)
     all_profiles = np.zeros(300)
 
-    ####################################@
-    counter = 0
     with ipdb.launch_ipdb_on_exception():
         for paper in tqdm(data, desc="Parsing articles for split TRAIN to get distribution parameters..."):
-            ####################################@
-            if counter < 100:
                 profile = paper[1]["Abstract"]
                 sentence_list = split_abstract_to_sentences(profile)
                 if len(sentence_list) > 0:
@@ -98,8 +94,6 @@ def build_for_train(embedder, rev_class_dict):
                         all_sentences = np.concatenate((all_sentences, sent), axis=0)
                     profile_emb = to_avg_emb(embedded_sentence_list)
                     all_profiles = np.concatenate((all_profiles, profile_emb), axis=0)
-            ####################################@
-            counter += 1
         sent_tmp = all_sentences[1:]
         sent_mean = np.mean(sent_tmp, axis=0)
         sent_std = np.std(sent_tmp, axis=0)
@@ -116,10 +110,7 @@ def build_for_train(embedder, rev_class_dict):
             sentence_list = split_abstract_to_sentences(profile)
             if len(sentence_list) > 0:
                 embedded_sentence_list = sentence_list_to_emb(sentence_list, embedder)
-                ####################################@
-                ipdb.set_trace()
                 std_emb_sent = (embedded_sentence_list - sent_mean) / sent_std
-                ####################################@
                 profile_emb = ((to_avg_emb(embedded_sentence_list) - prof_mean) / prof_std)
                 new_person = {"id": identifier,
                               "class": rev_class_dict[paper[1]["class"]],
