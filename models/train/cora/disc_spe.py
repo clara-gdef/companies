@@ -25,7 +25,7 @@ def main(hparams):
 
 
 def train(hparams):
-    xp_title = hparams.model_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
+    xp_title = hparams.model_type + "_" + hparams.ft_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, CFG, xp_title)
     print(hparams.auto_lr_find)
@@ -57,7 +57,7 @@ def train(hparams):
     print("Model Loaded.")
     if hparams.load_from_checkpoint:
         print("Loading from previous checkpoint...")
-        model_name = hparams.model_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
+        model_name = hparams.model_type + "/" + hparams.ft_type + "/" + hparams.data_agg_type + \
                      "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(
             hparams.wd)
         if hparams.input_type == "hadamard":
