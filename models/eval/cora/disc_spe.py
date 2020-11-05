@@ -43,7 +43,7 @@ def train(hparams):
                  'hparams': hparams,
                  'datadir': CFG["gpudatadir"],
                  'desc': xp_title,
-                 "num_tracks": len(test_loader.track_rep),
+                 "num_tracks": len(dataset_test.track_rep),
                  "input_type": hparams.input_type,
                  "ft_type": hparams.ft_type}
 

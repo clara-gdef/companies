@@ -92,11 +92,6 @@ class InstanceClassifierDiscCora(pl.LightningModule):
         tensorboard_logs = {'val_loss': val_loss}
         return {'loss': val_loss, 'log': tensorboard_logs}
 
-    def epoch_end(self):
-        train_loss_mean = np.mean(self.training_losses)
-        self.logger.experiment.add_scalar('training_mean_loss', train_loss_mean, global_step=self.current_epoch)
-        self.training_losses = []
-
     def validation_end(self, outputs):
         return outputs[-1]
 
@@ -106,30 +101,24 @@ class InstanceClassifierDiscCora(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         if self.input_type == "userOriented":
             bag_matrix, profiles = self.get_input_tensor(batch)
-            tmp_labels = self.get_labels(batch)
-            labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.num_tracks)
+            labels = batch[-2]
             self.test_outputs.append(torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0)).cuda())
         elif self.input_type == "b4Training":
-            # ipdb.set_trace()
             input_tensor = self.get_input_tensor(batch)
             self.test_outputs.append(input_tensor)
-            tmp_labels = self.get_labels(batch)
-            labels_one_hot = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.num_tracks)
+            labels = batch[-2]
         elif self.input_type == "bagTransformer":
             bag_matrix, profiles = self.get_input_tensor(batch)
-            tmp_labels = self.get_labels(batch)
-            labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.num_tracks)
+            labels = batch[-2]
             new_bags = self(bag_matrix.T)
             tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
             self.test_outputs.append(torch.transpose(tmp, 1, 0))
         else:
             input_tensor = self.get_input_tensor(batch)
-            tmp_labels = self.get_labels(batch)
-            labels_one_hot = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.num_tracks)
+            labels = batch[-2]
             self.test_outputs.append(self.forward(input_tensor))
             self.before_training.append(input_tensor)
-        self.test_labels_one_hot.append(labels_one_hot)
-        self.test_labels.append(tmp_labels)
+        self.test_labels.append(labels)
         self.test_ppl_id.append(batch[0])
 
     def test_epoch_end(self, outputs):
