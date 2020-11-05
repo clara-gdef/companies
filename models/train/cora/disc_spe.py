@@ -25,7 +25,7 @@ def main(hparams):
 
 
 def train(hparams):
-    xp_title = hparams.model_type + "_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
+    xp_title = hparams.model_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, CFG, xp_title)
     print(hparams.auto_lr_find)
@@ -48,7 +48,7 @@ def train(hparams):
                  'dataset': dataset_train,
                  'datadir': CFG["gpudatadir"],
                  'desc': xp_title,
-                 "bag_type": hparams.bag_type,
+                 "bag_type": "track",
                  "wd": hparams.wd,
                  "middle_size": hparams.middle_size}
 
@@ -57,7 +57,7 @@ def train(hparams):
     print("Model Loaded.")
     if hparams.load_from_checkpoint:
         print("Loading from previous checkpoint...")
-        model_name = hparams.model_type + "/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
+        model_name = hparams.model_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
                      "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(
             hparams.wd)
         if hparams.input_type == "hadamard":
@@ -89,11 +89,7 @@ def load_datasets(hparams, CFG, splits):
 
 
 def init_lightning(hparams, CFG, xp_title):
-    model_name = hparams.model_type + "/" + hparams.bag_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + \
-                 "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
-    if hparams.input_type == "hadamard":
-        model_name += "/" + str(hparams.middle_size)
-    model_path = os.path.join(CFG['modeldir'], model_name)
+    model_path = os.path.join(CFG['modeldir'], xp_title)
 
     logger = TensorBoardLogger(
         save_dir='./models/logs',
@@ -121,7 +117,7 @@ def init_lightning(hparams, CFG, xp_title):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rep_type", type=str, default='ft')
+    parser.add_argument("--ft_type", type=str, default='pt')
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--DEBUG", type=bool, default=False)
