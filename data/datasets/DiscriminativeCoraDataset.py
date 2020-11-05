@@ -54,7 +54,6 @@ class DiscriminativeCoraDataset(Dataset):
     def build_tuples(self, paper_file):
         with open(paper_file, 'rb') as f:
             data = pkl.load(f)
-        ipdb.set_trace()
         for tup in tqdm(data, desc="Building tuples for split " + self.split + '...'):
             self.tuples.append(tup)
 
