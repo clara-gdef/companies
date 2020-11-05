@@ -45,10 +45,10 @@ def collate_for_disc_spe_model(batch):
 
 def collate_for_disc_spe_model_cora(batch):
     ids = [i[0] for i in batch]
-    avg_profiles = [i[1] for i in batch]
-    sent_emb = [i[2] for i in batch]
+    avg_profiles = [torch.from_numpy(i[1]) for i in batch]
+    sent_emb = [torch.from_numpy(i[2]) for i in batch]
     labels = [i[3] for i in batch]
-    return ids, torch.stack(avg_profiles), torch.stack(sent_emb), labels, batch[0][-1]
+    return ids, torch.stack(avg_profiles), sent_emb, torch.LongTensor(labels), batch[0][-1]
 
 
 def labels_to_one_hot(b_size, classes_num, total_classes):

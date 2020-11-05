@@ -56,13 +56,12 @@ class InstanceClassifierDiscCora(pl.LightningModule):
             return self.lin(x)
 
     def training_step(self, batch, batch_nb):
+        labels = batch[-2]
         if self.input_type != "userOriented" and self.input_type != "bagTransformer":
             input_tensor = self.get_input_tensor(batch)
-            tmp_labels = self.get_labels(batch)
             output = self.forward(input_tensor)
         else:
             bag_matrix, profiles = self.get_input_tensor(batch)
-            tmp_labels = self.get_labels(batch)
             if self.input_type == "userOriented":
                 tmp = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
@@ -70,19 +69,18 @@ class InstanceClassifierDiscCora(pl.LightningModule):
                 new_bags = self(bag_matrix.T)
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
-        loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
+        loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(labels).view(output.shape[0]).cuda())
         tensorboard_logs = {'train_loss': loss}
         self.training_losses.append(loss.item())
         return {'loss': loss, 'log': tensorboard_logs}
 
     def validation_step(self, batch, batch_nb):
+        labels = batch[-2]
         if self.input_type != "userOriented" and self.input_type != "bagTransformer":
             input_tensor = self.get_input_tensor(batch)
-            tmp_labels = self.get_labels(batch)
             output = self.forward(input_tensor)
         else:
             bag_matrix, profiles = self.get_input_tensor(batch)
-            tmp_labels = self.get_labels(batch)
             if self.input_type == "userOriented":
                 tmp = torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
@@ -91,7 +89,7 @@ class InstanceClassifierDiscCora(pl.LightningModule):
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
         val_loss = torch.nn.functional.cross_entropy(output,
-                                                     torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
+                                                     torch.LongTensor(labels).view(output.shape[0]).cuda())
         tensorboard_logs = {'val_loss': val_loss}
         return {'loss': val_loss, 'log': tensorboard_logs}
 
@@ -181,23 +179,6 @@ class InstanceClassifierDiscCora(pl.LightningModule):
         with open(tgt_file, 'wb') as f:
             pkl.dump(res, f)
 
-    def get_labels(self, batch):
-        if self.type == "poly":
-            tmp_labels = [batch[2], batch[3], batch[4]]
-        elif self.type == "spe":
-            if self.bag_type == "cie":
-                tmp_labels = [batch[2]]
-            elif self.bag_type == "clus":
-                offset = self.num_cie
-                tmp_labels = [[i - offset for i in batch[2]]]
-            elif self.bag_type == "dpt":
-                offset = self.num_cie + self.num_clus
-                tmp_labels = [[i - offset for i in batch[2]]]
-            else:
-                raise Exception("Wrong bag type specified: " + str(self.bag_type))
-        else:
-            raise Exception("Wrong model type specified: " + str(self.type) + ", can be either \"poly\" or \"spe\"")
-        return tmp_labels
 
     def get_input_tensor(self, batch):
         profiles = batch[1]
