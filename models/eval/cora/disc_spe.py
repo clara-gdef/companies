@@ -35,8 +35,8 @@ def train(hparams):
     datasets = load_datasets(hparams, CFG, ["TEST"])
     dataset_test = datasets[0]
     in_size, out_size = get_model_params(hparams, 300, len(dataset_test.track_rep))
-    test_loader = DataLoader(dataset_test, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model_cora,
-                              num_workers=0, shuffle=True)
+    test_loader = DataLoader(dataset_test, batch_size=1, collate_fn=collate_for_disc_spe_model_cora, num_workers=8,
+                             shuffle=True)
 
     arguments = {'in_size': in_size,
                  'out_size': out_size,
@@ -72,7 +72,6 @@ def load_datasets(hparams, CFG, splits):
 
 
 def init_lightning(hparams, CFG, xp_title):
-
     logger = TensorBoardLogger(
         save_dir='./models/logs',
         name=xp_title)
