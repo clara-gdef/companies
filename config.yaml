@@ -12,6 +12,11 @@ rep:
   cie: cie_rep_
   clus: clus_rep_
   dpt: dpt_rep_
+  cora:
+    papers:
+      plain: cora_
+      emb: cora_embedded_
+    tracks: tracks_reps_
 lookup:
   ppl: lookup_ppl.pkl
   cie: lookup_cie.pkl

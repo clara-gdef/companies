@@ -76,8 +76,8 @@ def load_datasets(hparams, CFG, splits):
     datasets = []
     common_hparams = {
         "data_dir": CFG["gpudatadir"],
-        "track_file": CFG["cora"]["tracks"],
-        "paper_file": CFG["cora"]["papers"]["emb"],
+        "track_file": CFG["rep"]["cora"]["tracks"],
+        "paper_file": CFG["rep"]["cora"]["papers"]["emb"],
         "ft_type": hparams.ft_type,
         "subsample": 0,
         "load": hparams.load_dataset == "True"
