@@ -66,7 +66,7 @@ def train(hparams):
         print("Resuming training from checkpoint : " + model_file + ".")
     else:
         print("Starting training " + xp_title)
-    trainer.fit(model, train_loader, valid_loader)
+    trainer.fit(model.cuda(), train_loader, valid_loader)
 
 
 def load_datasets(hparams, CFG, splits):
