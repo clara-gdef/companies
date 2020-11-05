@@ -1,10 +1,8 @@
-import os
 import torch
 
 import ipdb
 import argparse
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
@@ -19,9 +17,9 @@ def init(hparams):
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     if hparams.DEBUG:
         with ipdb.launch_ipdb_on_exception():
-            return train(hparams)
+            return main(hparams)
     else:
-        return train(hparams)
+        return main(hparams)
 
 
 def main(hparams):
