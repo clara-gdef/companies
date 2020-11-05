@@ -12,7 +12,7 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 
 
 class InstanceClassifierDiscCora(pl.LightningModule):
-    def __init__(self, in_size, out_size, hparams, input_type, ft_type, num_tracks, datadir, desc, wd, middle_size=None):
+    def __init__(self, in_size, out_size, hparams, input_type, ft_type, num_tracks, datadir, desc):
         super().__init__()
         self.input_type = hparams.input_type
         self.num_tracks = num_tracks
