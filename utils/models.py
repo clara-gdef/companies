@@ -1,6 +1,8 @@
 import ipdb
 import torch
 import numpy as np
+import os
+import glob
 
 
 def collate_for_disc_poly_model(batch):
@@ -92,3 +94,9 @@ def get_model_params(hparams, rep_dim, num_bag):
         raise Exception("Wrong input data specified: " + str(hparams.input_type))
     return in_size, out_size
 
+
+def get_latest_model(modeldir, xp_title):
+    model_path = os.path.join(modeldir, xp_title)
+    model_files = glob.glob(os.path.join(model_path, "*"))
+    latest_file = max(model_files, key=os.path.getctime)
+    return latest_file
