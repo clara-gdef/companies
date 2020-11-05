@@ -42,7 +42,7 @@ def init_args(hparams):
     dico = {'ft_type': hparams.ft_type,
             'gpus': hparams.gpus,
             'input_type': hparams.input_type,
-            'load_dataset': True,
+            'load_dataset': hparams.load_dataset,
             'auto_lr_find': False,
             "model_type": hparams.model_type,
             'data_agg_type': 'avg',
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     parser.add_argument("--ft_type", type=str, default='fs')
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--input_type", type=str, default="matMul")
-    parser.add_argument("--load_dataset", type=bool, default=True)
+    parser.add_argument("--load_dataset", type=str, default="True")
     parser.add_argument("--model_type", type=str, default="cora_disc_spe")
     parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
