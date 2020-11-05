@@ -22,7 +22,7 @@ def init(hparams):
 
 
 def main(hparams):
-    xp_title = hparams.model_type + "_" + hparams.ft_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
+    xp_title = hparams.model_type + "_" + hparams.ft_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
     logger = init_lightning(hparams, CFG, xp_title)
     print(hparams.auto_lr_find)
@@ -86,7 +86,6 @@ if __name__ == "__main__":
     parser.add_argument("--b_size", type=int, default=16)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--model_type", type=str, default="cora_disc_spe")
-    parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--load_dataset", type=str, default="False")
     parser.add_argument("--middle_size", type=int, default=250)
     parser.add_argument("--load_from_checkpoint", type=bool, default=False)
