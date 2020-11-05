@@ -33,7 +33,7 @@ def train(hparams):
                          max_epochs=hparams.epochs,
                          callbacks=[checkpoint_callback, early_stop_callback],
                          logger=logger,
-                         auto_lr_find=hparams.auto_lr_find
+                         auto_lr_find=True
                          )
     datasets = load_datasets(hparams, CFG, ["TRAIN", "VALID"])
     dataset_train, dataset_valid = datasets[0], datasets[1]
