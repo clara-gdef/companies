@@ -127,13 +127,12 @@ class InstanceClassifierDiscCora(pl.LightningModule):
 
     def test_spe(self, outputs):
         preds = torch.argsort(outputs.view(-1, self.num_tracks), dim=-1, descending=True)
-        labels = torch.LongTensor([i[0][0] for i in self.test_labels]).cuda()
-        res_dict_trained = get_metrics(preds[:, :1].cpu(), labels.cpu(), self.num_tracks, self.bag_type, 0)
+        labels = torch.LongTensor([i.item() for i in self.test_labels]).cuda()
+        res_dict_trained = get_metrics(preds[:, :1].cpu(), labels.cpu(), self.num_tracks, "tracks", 0)
         for k in [10]:
-            tmp = get_metrics_at_k(preds[:, :k].cpu(), labels.cpu(), self.num_tracks,
-                                                   self.bag_type + "_@" + str(k), 0)
+            tmp = get_metrics_at_k(preds[:, :k].cpu(), labels.cpu(), self.num_tracks, "tracks_@" + str(k), 0)
             res_dict_trained = {**res_dict_trained, **tmp}
-        self.save_bag_outputs(preds, labels, confusion_matrix(preds[:, :1].cpu(), labels.cpu()), res_dict_trained)
+        # self.save_bag_outputs(preds, labels, confusion_matrix(preds[:, :1].cpu(), labels.cpu()), res_dict_trained)
         return res_dict_trained
 
     def save_bag_outputs(self, preds, labels, cm, res):
@@ -166,7 +165,6 @@ class InstanceClassifierDiscCora(pl.LightningModule):
         tgt_file = os.path.join(self.data_dir, "OUTPUTS_" + self.description + ".pkl")
         with open(tgt_file, 'wb') as f:
             pkl.dump(res, f)
-
 
     def get_input_tensor(self, batch):
         profiles = batch[1]
