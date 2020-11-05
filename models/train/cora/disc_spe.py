@@ -78,12 +78,10 @@ def load_datasets(hparams, CFG, splits):
         "data_dir": CFG["gpudatadir"],
         "track_file": CFG["cora"]["tracks"],
         "paper_file": CFG["cora"]["papers"]["emb"],
+        "ft_type": hparams.ft_type,
         "subsample": 0,
+        "load": hparams.load_dataset == "True"
     }
-    if hparams.standardized == "True":
-        print("Loading standardized datasets...")
-        common_hparams["standardized"] = True
-
     for split in splits:
         datasets.append(DiscriminativeSpecializedDataset(**common_hparams, split=split))
 
@@ -132,7 +130,7 @@ if __name__ == "__main__":
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--model_type", type=str, default="cora_disc_spe_std")
     parser.add_argument("--data_agg_type", type=str, default="avg")
-    parser.add_argument("--load_dataset", type=bool, default=True)
+    parser.add_argument("--load_dataset", type=str, default="False")
     parser.add_argument("--middle_size", type=int, default=250)
     parser.add_argument("--load_from_checkpoint", type=bool, default=False)
     parser.add_argument("--checkpoint", type=str, default=49)
