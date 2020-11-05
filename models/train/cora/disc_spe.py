@@ -9,7 +9,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
 from data.datasets import DiscriminativeCoraDataset
-from models.classes import InstanceClassifierDisc
+from models.classes import InstanceClassifierDiscCora
 from utils.models import collate_for_disc_spe_model, get_model_params
 
 
@@ -53,7 +53,7 @@ def train(hparams):
                  "middle_size": hparams.middle_size}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
-    model = InstanceClassifierDisc(**arguments)
+    model = InstanceClassifierDiscCora(**arguments)
     print("Model Loaded.")
     if hparams.load_from_checkpoint:
         print("Loading from previous checkpoint...")
