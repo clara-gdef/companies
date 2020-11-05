@@ -83,17 +83,23 @@ def build_for_train(embedder, rev_class_dict):
 
     all_sentences = np.zeros(300)
     all_profiles = np.zeros(300)
+
+    ####################################@
+    counter = 0
     with ipdb.launch_ipdb_on_exception():
         for paper in tqdm(data, desc="Parsing articles for split TRAIN to get distribution parameters..."):
-            profile = paper[1]["Abstract"]
-            sentence_list = split_abstract_to_sentences(profile)
-            if len(sentence_list) > 0:
-                embedded_sentence_list = sentence_list_to_emb(sentence_list, embedder)
-                for sent in embedded_sentence_list:
-                    all_sentences = np.concatenate((all_sentences, sent), axis=0)
-                profile_emb = to_avg_emb(embedded_sentence_list)
-                all_profiles = np.concatenate((all_profiles, profile_emb), axis=0)
-
+            ####################################@
+            if counter < 100:
+                profile = paper[1]["Abstract"]
+                sentence_list = split_abstract_to_sentences(profile)
+                if len(sentence_list) > 0:
+                    embedded_sentence_list = sentence_list_to_emb(sentence_list, embedder)
+                    for sent in embedded_sentence_list:
+                        all_sentences = np.concatenate((all_sentences, sent), axis=0)
+                    profile_emb = to_avg_emb(embedded_sentence_list)
+                    all_profiles = np.concatenate((all_profiles, profile_emb), axis=0)
+            ####################################@
+            counter += 1
         sent_tmp = all_sentences[1:]
         sent_mean = np.mean(sent_tmp, axis=0)
         sent_std = np.std(sent_tmp, axis=0)

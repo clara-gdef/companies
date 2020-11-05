@@ -76,10 +76,9 @@ def load_datasets(hparams, CFG, splits):
     datasets = []
     common_hparams = {
         "data_dir": CFG["gpudatadir"],
-        "track_file": hparams.rep_type,
-        "paper_file": hparams.data_agg_type,
+        "track_file": CFG["cora"]["tracks"],
+        "paper_file": CFG["cora"]["papers"]["emb"],
         "subsample": 0,
-        "standardized": False
     }
     if hparams.standardized == "True":
         print("Loading standardized datasets...")
