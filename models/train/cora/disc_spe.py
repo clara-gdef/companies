@@ -37,7 +37,7 @@ def train(hparams):
                          )
     datasets = load_datasets(hparams, CFG, ["TRAIN", "VALID"])
     dataset_train, dataset_valid = datasets[0], datasets[1]
-    in_size, out_size = get_model_params(hparams, dataset_train.rep_dim, dataset_train.get_num_bag())
+    in_size, out_size = get_model_params(hparams, 300, len(dataset_train.track_rep))
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model,
                               num_workers=0, shuffle=True)
     valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model,
@@ -122,7 +122,6 @@ if __name__ == "__main__":
     parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--b_size", type=int, default=16)
-    parser.add_argument("--standardized", type=str, default="True")
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--model_type", type=str, default="cora_disc_spe_std")
     parser.add_argument("--data_agg_type", type=str, default="avg")
