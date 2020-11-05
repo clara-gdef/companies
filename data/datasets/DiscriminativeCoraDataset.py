@@ -51,7 +51,7 @@ class DiscriminativeCoraDataset(Dataset):
         for tup in tqdm(data, desc="Building tuples for split " + self.split + '...'):
             self.tuples.append(tup)
 
-    def build_tuples(self, track_file):
+    def build_bag_reps(self, track_file):
         with open(track_file, 'rb') as f:
             tracks = pkl.load(f)
-        self.track_rep = torch.from_numpy(tracks)
+        self.track_rep = torch.from_numpy(np.stack(tracks))
