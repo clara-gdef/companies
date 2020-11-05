@@ -8,7 +8,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
-from data.datasets import DiscriminativeSpecializedDataset
+from data.datasets import DiscriminativeCoraDataset
 from models.classes import InstanceClassifierDisc
 from utils.models import collate_for_disc_spe_model, get_model_params
 
@@ -83,7 +83,7 @@ def load_datasets(hparams, CFG, splits):
         "load": hparams.load_dataset == "True"
     }
     for split in splits:
-        datasets.append(DiscriminativeSpecializedDataset(**common_hparams, split=split))
+        datasets.append(DiscriminativeCoraDataset(**common_hparams, split=split))
 
     return datasets
 
