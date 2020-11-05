@@ -39,7 +39,7 @@ def grid_search(hparams):
 
 
 def init_args(hparams):
-    dico = {'ft_type': hparams.rep_type,
+    dico = {'ft_type': hparams.ft_type,
             'gpus': hparams.gpus,
             'input_type': hparams.input_type,
             'load_dataset': True,
