@@ -45,21 +45,18 @@ def train(hparams):
     arguments = {'in_size': in_size,
                  'out_size': out_size,
                  'hparams': hparams,
-                 'dataset': dataset_train,
                  'datadir': CFG["gpudatadir"],
                  'desc': xp_title,
-                 "bag_type": "track",
-                 "wd": hparams.wd,
-                 "middle_size": hparams.middle_size}
+                 "num_tracks": len(dataset_train.track_rep),
+                 "input_type": hparams.input_type,
+                 "ft_type": hparams.ft_type}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = InstanceClassifierDiscCora(**arguments)
     print("Model Loaded.")
     if hparams.load_from_checkpoint:
         print("Loading from previous checkpoint...")
-        model_name = hparams.model_type + "/" + hparams.ft_type + "/" + hparams.data_agg_type + \
-                     "/" + hparams.input_type + "/" + str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(
-            hparams.wd)
+        model_name = xp_title
         if hparams.input_type == "hadamard":
             model_name += "/" + str(hparams.middle_size)
 
