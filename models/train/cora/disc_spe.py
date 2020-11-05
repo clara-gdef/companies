@@ -39,9 +39,9 @@ def main(hparams):
     dataset_train, dataset_valid = datasets[0], datasets[1]
     in_size, out_size = get_model_params(hparams, 300, len(dataset_train.track_rep))
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model_cora,
-                              num_workers=8, shuffle=True)
+                              num_workers=2, shuffle=True)
     valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model_cora,
-                              num_workers=8)
+                              num_workers=2)
     arguments = {'in_size': in_size,
                  'out_size': out_size,
                  'hparams': hparams,
