@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 import yaml
 from data.datasets import DiscriminativeCoraDataset
 from models.classes import InstanceClassifierDiscCora
-from utils.models import collate_for_disc_spe_model, get_model_params
+from utils.models import collate_for_disc_spe_model_cora, get_model_params
 
 
 def main(hparams):
@@ -38,9 +38,9 @@ def train(hparams):
     datasets = load_datasets(hparams, CFG, ["TRAIN", "VALID"])
     dataset_train, dataset_valid = datasets[0], datasets[1]
     in_size, out_size = get_model_params(hparams, 300, len(dataset_train.track_rep))
-    train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model,
+    train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model_cora,
                               num_workers=0, shuffle=True)
-    valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model,
+    valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model_cora,
                               num_workers=0)
     arguments = {'in_size': in_size,
                  'out_size': out_size,

@@ -24,8 +24,8 @@ class InstanceClassifierDiscCora(pl.LightningModule):
         self.description = desc
 
         if self.input_type == "hadamard":
-            self.lin_dim_reduction = torch.nn.Linear(in_size, middle_size)
-            self.lin_class_prediction = torch.nn.Linear(middle_size, out_size)
+            self.lin_dim_reduction = torch.nn.Linear(in_size, self.hp.middle_size)
+            self.lin_class_prediction = torch.nn.Linear(self.hp.middle_size, out_size)
             torch.nn.init.eye_(self.lin_dim_reduction.weight)
             torch.nn.init.eye_(self.lin_class_prediction.weight)
             torch.nn.init.zeros_(self.lin_dim_reduction.bias)
@@ -110,25 +110,25 @@ class InstanceClassifierDiscCora(pl.LightningModule):
         if self.input_type == "userOriented":
             bag_matrix, profiles = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
-            labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
+            labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.num_tracks)
             self.test_outputs.append(torch.matmul(self.forward(bag_matrix), torch.transpose(profiles, 1, 0)).cuda())
         elif self.input_type == "b4Training":
             # ipdb.set_trace()
             input_tensor = self.get_input_tensor(batch)
             self.test_outputs.append(input_tensor)
             tmp_labels = self.get_labels(batch)
-            labels_one_hot = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.get_num_classes())
+            labels_one_hot = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.num_tracks)
         elif self.input_type == "bagTransformer":
             bag_matrix, profiles = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
-            labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.get_num_classes())
+            labels_one_hot = labels_to_one_hot(profiles.shape[0], tmp_labels, self.num_tracks)
             new_bags = self(bag_matrix.T)
             tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
             self.test_outputs.append(torch.transpose(tmp, 1, 0))
         else:
             input_tensor = self.get_input_tensor(batch)
             tmp_labels = self.get_labels(batch)
-            labels_one_hot = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.get_num_classes())
+            labels_one_hot = labels_to_one_hot(input_tensor.shape[0], tmp_labels, self.num_tracks)
             self.test_outputs.append(self.forward(input_tensor))
             self.before_training.append(input_tensor)
         self.test_labels_one_hot.append(labels_one_hot)
@@ -140,11 +140,11 @@ class InstanceClassifierDiscCora(pl.LightningModule):
         return self.test_spe(outputs)
 
     def test_spe(self, outputs):
-        preds = torch.argsort(outputs.view(-1, self.get_num_classes()), dim=-1, descending=True)
+        preds = torch.argsort(outputs.view(-1, self.num_tracks), dim=-1, descending=True)
         labels = torch.LongTensor([i[0][0] for i in self.test_labels]).cuda()
-        res_dict_trained = get_metrics(preds[:, :1].cpu(), labels.cpu(), self.get_num_classes(), self.bag_type, 0)
+        res_dict_trained = get_metrics(preds[:, :1].cpu(), labels.cpu(), self.num_tracks, self.bag_type, 0)
         for k in [10]:
-            tmp = get_metrics_at_k(preds[:, :k].cpu(), labels.cpu(),  self.get_num_classes(),
+            tmp = get_metrics_at_k(preds[:, :k].cpu(), labels.cpu(), self.num_tracks,
                                                    self.bag_type + "_@" + str(k), 0)
             res_dict_trained = {**res_dict_trained, **tmp}
         self.save_bag_outputs(preds, labels, confusion_matrix(preds[:, :1].cpu(), labels.cpu()), res_dict_trained)
@@ -200,10 +200,7 @@ class InstanceClassifierDiscCora(pl.LightningModule):
         return tmp_labels
 
     def get_input_tensor(self, batch):
-        if len(batch[1].shape) > 2:
-            profiles = batch[1].squeeze(1)
-        else:
-            profiles = batch[1]
+        profiles = batch[1]
         if self.input_type == "matMul" or self.input_type == "b4Training" or self.input_type == "hadamard":
             bag_rep = batch[-1].T
             input_tensor = torch.matmul(profiles, bag_rep)
@@ -219,17 +216,6 @@ class InstanceClassifierDiscCora(pl.LightningModule):
         else:
             raise Exception("Wrong input data specified: " + str(self.input_type))
         return input_tensor
-
-    def get_num_classes(self):
-        if self.type == "spe":
-            if self.bag_type == "cie":
-                return self.num_cie
-            elif self.bag_type == "clus":
-                return self.num_clus
-            elif self.bag_type == "dpt":
-                return self.num_dpt
-        else:
-            return self.num_cie + self.num_clus + self.num_dpt
 
     def get_outputs_and_labels(self, test_loader):
         idx = []
