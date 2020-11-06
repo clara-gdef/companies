@@ -28,7 +28,7 @@ def main(hparams):
 
     datasets = load_datasets(hparams, CFG, ["TEST"])
     dataset_test = datasets[0]
-    test_loader = DataLoader(dataset_test, batch_size=1, collate_fn=collate_for_disc_spe_model_cora, num_workers=1,
+    test_loader = DataLoader(dataset_test, batch_size=1, collate_fn=collate_for_disc_spe_model_cora, num_workers=0,
                              shuffle=True)
 
     in_size, out_size = get_model_params(hparams, 300, len(dataset_test.track_rep))
@@ -48,6 +48,7 @@ def main(hparams):
     print("Model Loaded.")
     print("Starting eval for " + xp_title + "...")
     preds_and_labels = model.get_outputs_and_labels(test_loader)
+    ipdb.set_trace()
     if hparams.eval_top_k:
         res = {}
         preds = preds_and_labels["preds"]
