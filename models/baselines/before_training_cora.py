@@ -8,7 +8,7 @@ import argparse
 from torch.utils.data import DataLoader
 import yaml
 import pickle as pkl
-from data.datasets import DiscriminativeSpecializedDataset, DiscriminativePolyvalentDataset
+from data.datasets import DiscriminativeCoraDataset
 from models.classes import InstanceClassifierDiscCora
 from models.classes.InstanceClassifierDisc import get_metrics_at_k, get_metrics
 from utils.models import get_model_params, collate_for_disc_spe_model_cora
@@ -26,7 +26,7 @@ def init(hparams):
 def main(hparams):
     xp_title = "b4Traing_" + hparams.model_type + "_" + hparams.ft_type + "_" + hparams.input_type
 
-    datasets = load_datasets(hparams, ["TEST"], hparams.load_dataset)
+    datasets = load_datasets(hparams, CFG, ["TEST"])
     dataset_test = datasets[0]
     test_loader = DataLoader(dataset_test, batch_size=1, collate_fn=collate_for_disc_spe_model_cora, num_workers=8,
                              shuffle=True)
@@ -83,42 +83,19 @@ def main(hparams):
             pkl.dump(well_classified, f)
 
 
-def load_datasets(hparams, splits, load):
+def load_datasets(hparams, CFG, splits):
     datasets = []
-    if hparams.type == "poly":
-        common_hparams = {
-            "data_dir": CFG["gpudatadir"],
-            "ppl_file": CFG["rep"][hparams.rep_type]["total"],
-            "rep_type": hparams.rep_type,
-            "cie_reps_file": CFG["rep"]["cie"] + hparams.data_agg_type,
-            "clus_reps_file": CFG["rep"]["clus"] + hparams.data_agg_type,
-            "dpt_reps_file": CFG["rep"]["dpt"] + hparams.data_agg_type,
-            "agg_type": hparams.data_agg_type,
-            "load": load,
-            "subsample": 0,
-            "standardized": False
-        }
-        if hparams.standardized == "True":
-            print("Loading standardized datasets...")
-            common_hparams["standardized"] = True
+    common_hparams = {
+        "datadir": CFG["gpudatadir"],
+        "track_file": CFG["rep"]["cora"]["tracks"],
+        "paper_file": CFG["rep"]["cora"]["papers"]["emb"],
+        "ft_type": hparams.ft_type,
+        "subsample": 0,
+        "load": hparams.load_dataset == "True"
+    }
+    for split in splits:
+        datasets.append(DiscriminativeCoraDataset(**common_hparams, split=split))
 
-        for split in splits:
-            datasets.append(DiscriminativePolyvalentDataset(**common_hparams, split=split))
-    else:
-        common_hparams = {
-            "data_dir": CFG["gpudatadir"],
-            "rep_type": hparams.rep_type,
-            "bag_type": "cie",
-            "agg_type": hparams.data_agg_type,
-            "subsample": 0,
-            "standardized": False
-        }
-        if hparams.standardized == "True":
-            print("Loading standardized datasets...")
-            common_hparams["standardized"] = True
-
-        for split in splits:
-            datasets.append(DiscriminativeSpecializedDataset(**common_hparams, split=split))
     return datasets
 
 
