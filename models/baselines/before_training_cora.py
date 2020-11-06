@@ -12,7 +12,7 @@ from data.datasets import DiscriminativeSpecializedDataset, DiscriminativePolyva
 from models.classes import InstanceClassifierDiscCora
 from models.classes.InstanceClassifierDisc import get_metrics_at_k, get_metrics
 from utils.models import get_model_params, collate_for_disc_spe_model_cora
-from sklearn.metrics import f1_score,  accuracy_score, precision_score, recall_score
+from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
 
 
 def init(hparams):
@@ -24,8 +24,8 @@ def init(hparams):
 
 
 def main(hparams):
-    xp_title = hparams.model_type + "_" + hparams.ft_type + "_" + hparams.input_type + "_bs" + str(
-        hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
+    xp_title = "b4Traing_" + hparams.model_type + "_" + hparams.ft_type + "_" + hparams.input_type + "_bs1_" + str(
+        hparams.lr) + '_' + str(hparams.wd)
 
     datasets = load_datasets(hparams, ["TEST"], hparams.load_dataset)
     dataset_test = datasets[0]
@@ -58,7 +58,8 @@ def main(hparams):
             for handle, offset, num_c in zip(["cie", "clus", "dpt"], [0, 207, 237], [207, 30, 5888]):
                 predicted_classes = torch.argsort(preds[handle], dim=-1, descending=True)
                 for k in [1, 10]:
-                    res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], num_c, handle + "_@"+str(k), offset)
+                    res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], num_c, handle + "_@" + str(k),
+                                             offset)
                     res = {**res, **res_k}
             gen_res = get_general_results_poly(preds, labels, len(dataset_test.track_rep))
         else:
@@ -67,7 +68,7 @@ def main(hparams):
             num_c = 207
             predicted_classes = torch.argsort(preds, dim=-1, descending=True)
             for k in [1, 10]:
-                res_k = get_metrics_at_k(predicted_classes[:, :k], labels, num_c, handle + "_@"+str(k), offset)
+                res_k = get_metrics_at_k(predicted_classes[:, :k], labels, num_c, handle + "_@" + str(k), offset)
                 res = {**res, **res_k}
             gen_res = res
 
@@ -126,12 +127,16 @@ def get_well_classified_outputs(res_dict):
     well_classified = {}
     for k, offset in zip(res_dict["preds"].keys(), [0, 207, 237]):
         predicted_classes = get_predicted_classes(res_dict["preds"][k], offset)
-        print("F1 for " + str(k) + ': ' + str(f1_score(predicted_classes, res_dict["labels"][k], average="weighted", zero_division=0) * 100))
+        print("F1 for " + str(k) + ': ' + str(
+            f1_score(predicted_classes, res_dict["labels"][k], average="weighted", zero_division=0) * 100))
         print("Acc for " + str(k) + ': ' + str(accuracy_score(predicted_classes, res_dict["labels"][k]) * 100))
-        print("Prec for " + str(k) + ': ' + str(precision_score(predicted_classes, res_dict["labels"][k], average="weighted", zero_division=0) * 100))
-        print("Rec for " + str(k) + ': ' + str(recall_score(predicted_classes, res_dict["labels"][k], average="weighted", zero_division=0) * 100))
+        print("Prec for " + str(k) + ': ' + str(
+            precision_score(predicted_classes, res_dict["labels"][k], average="weighted", zero_division=0) * 100))
+        print("Rec for " + str(k) + ': ' + str(
+            recall_score(predicted_classes, res_dict["labels"][k], average="weighted", zero_division=0) * 100))
 
-        good_outputs, labels, good_idx = find_well_classified_outputs(predicted_classes, res_dict["preds"][k], res_dict["labels"][k], res_dict["indices"])
+        good_outputs, labels, good_idx = find_well_classified_outputs(predicted_classes, res_dict["preds"][k],
+                                                                      res_dict["labels"][k], res_dict["indices"])
         well_classified[k] = {v: (k.numpy(), j.item()) for v, k, j in zip(good_idx, good_outputs, labels)}
     return well_classified
 
@@ -163,7 +168,7 @@ def get_general_results_poly(preds, labels, num_classes):
         all_preds_max.append([tup[0], tup[1], tup[2]])
 
     res_all = get_metrics(np.array(all_preds_max).reshape(-1, 1), np.array(all_labels).reshape(-1, 1),
-                                num_classes, "all", 0)
+                          num_classes, "all", 0)
 
     cie_preds_at_k = [i for i in torch.argsort(preds["cie"], dim=-1, descending=True)]
     clus_preds_at_k = [i + 207 for i in torch.argsort(preds["clus"], dim=-1, descending=True)]
@@ -171,7 +176,8 @@ def get_general_results_poly(preds, labels, num_classes):
 
     all_preds_k = []
     chained_labels = [i.item() for i in itertools.chain(labels["cie"], labels["clus"], labels["dpt"])]
-    for preds, labs in tqdm(zip(itertools.chain(cie_preds_at_k, clus_preds_at_k, dpt_preds_at_k), chained_labels), desc="Computing at k=10..."):
+    for preds, labs in tqdm(zip(itertools.chain(cie_preds_at_k, clus_preds_at_k, dpt_preds_at_k), chained_labels),
+                            desc="Computing at k=10..."):
         if labs in preds[:10]:
             all_preds_k.append(labs)
         else:
