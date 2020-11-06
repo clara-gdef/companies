@@ -101,4 +101,4 @@ if __name__ == "__main__":
     parser.add_argument("--auto_lr_find", type=bool, default=False)
     parser.add_argument("--epochs", type=int, default=50)
     hparams = parser.parse_args()
-    main(hparams)
+    init(hparams)
