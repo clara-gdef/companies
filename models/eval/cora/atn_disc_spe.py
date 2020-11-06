@@ -87,6 +87,8 @@ if __name__ == "__main__":
     parser.add_argument("--ft_type", type=str, default='pt')
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--wd", type=float, default=0.)
+    parser.add_argument("--init", type=str, default="False")
+    parser.add_argument("--frozen", type=str, default="False")
     parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--b_size", type=int, default=16)
     parser.add_argument("--input_type", type=str, default="matMul")
