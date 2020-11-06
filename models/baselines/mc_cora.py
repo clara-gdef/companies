@@ -18,7 +18,7 @@ def main():
     classes = Counter()
     for paper in tqdm(data):
         classes[paper["class"]] += 1
-    mc_class = classes.most_common(1)[0]
+    mc_class = classes.most_common(1)[0][0]
     paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["emb"] + "_fs_TEST.pkl")
     with open(paper_file, 'rb') as f:
         data_test = pkl.load(f)
@@ -30,8 +30,7 @@ def main():
     with ipdb.launch_ipdb_on_exception():
         res_1 = get_metrics(preds, labels, 70, "mc_@1", 0)
         print(res_1)
-
-        mc_class_10 = [i[0] for i in classes.most_common(10)]
+        mc_class_10 = [[i[0] for i in classes.most_common(10)]] * len(labels)
         res_2 = get_metrics_at_k(mc_class_10, labels, 70, "mc_@1", 0)
         print(res_2)
 
@@ -53,8 +52,8 @@ def get_metrics_at_k(predictions, labels, num_classes, handle, offset):
     out_predictions = []
     transformed_predictions = predictions + offset
     for index, pred in enumerate(transformed_predictions):
-        if labels[index].item() in pred:
-            out_predictions.append(labels[index].item())
+        if labels[index] in pred:
+            out_predictions.append(labels[index])
         else:
             if type(pred[0]) == torch.Tensor:
                 out_predictions.append(pred[0].item())
