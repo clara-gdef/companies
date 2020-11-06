@@ -9,10 +9,9 @@ from torch.utils.data import DataLoader
 import yaml
 import pickle as pkl
 from data.datasets import DiscriminativeSpecializedDataset, DiscriminativePolyvalentDataset
-from models.classes import InstanceClassifierDisc, InstanceClassifierDiscCora
+from models.classes import InstanceClassifierDiscCora
 from models.classes.InstanceClassifierDisc import get_metrics_at_k, get_metrics
-from utils.models import collate_for_disc_poly_model, get_model_params, collate_for_disc_spe_model, \
-    collate_for_disc_spe_model_cora
+from utils.models import get_model_params, collate_for_disc_spe_model_cora
 from sklearn.metrics import f1_score,  accuracy_score, precision_score, recall_score
 
 
@@ -187,19 +186,13 @@ def get_general_results_poly(preds, labels, num_classes):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rep_type", type=str, default='ft')
-    parser.add_argument("--gpus", type=int, default=1)
-    parser.add_argument("--b_size", type=int, default=1)
-    parser.add_argument("--middle_size", type=int, default=20)
+    parser.add_argument("--ft_type", type=str, default='pt')
+    parser.add_argument("--gpus", type=int, default=0)
     parser.add_argument("--wd", type=float, default=0.)
-    parser.add_argument("--input_type", type=str, default="b4Training")
-    parser.add_argument("--type", type=str, default="spe")
-    parser.add_argument("--load_dataset", type=bool, default=False)
-    parser.add_argument("--eval_top_k", type=bool, default=True)
-    parser.add_argument("--auto_lr_find", type=bool, default=False)
-    parser.add_argument("--standardized", type=str, default="True")
-    parser.add_argument("--data_agg_type", type=str, default="avg")
-    parser.add_argument("--lr", type=float, default=1e-6)
-    parser.add_argument("--epochs", type=int, default=20)
+    parser.add_argument("--DEBUG", type=bool, default=False)
+    parser.add_argument("--input_type", type=str, default="matMul")
+    parser.add_argument("--model_type", type=str, default="cora_disc_spe_std")
+    parser.add_argument("--load_dataset", type=str, default="False")
+    parser.add_argument("--middle_size", type=int, default=250)
     hparams = parser.parse_args()
     init(hparams)
