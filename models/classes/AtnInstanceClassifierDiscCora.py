@@ -12,7 +12,7 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 
 
 class AtnInstanceClassifierDiscCora(pl.LightningModule):
-    def __init__(self, in_size, out_size, hparams, input_type, ft_type, num_tracks, datadir, desc):
+    def __init__(self, in_size, out_size, hparams, input_type, ft_type, num_tracks, datadir, desc, frozen):
         super().__init__()
         self.input_type = hparams.input_type
         self.num_tracks = num_tracks
@@ -35,6 +35,8 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
             self.lin = torch.nn.Linear(in_size, out_size)
             torch.nn.init.eye_(self.lin.weight)
             torch.nn.init.zeros_(self.lin.bias)
+        if frozen:
+            self.lin.requires_grad = False
 
         self.training_losses = []
         self.test_outputs = []
@@ -101,9 +103,9 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
         self.log("val_loss_CE", val_loss)
         return {'val_loss': val_loss}
 
-
     def configure_optimizers(self):
-        return torch.optim.SGD(self.parameters(), lr=self.hp.lr, weight_decay=self.hp.wd)
+        params = filter(lambda p: p.requires_grad, self.parameters())
+        return torch.optim.SGD(params, lr=self.hp.lr, weight_decay=self.hp.wd)
 
     def test_step(self, batch, batch_idx):
         if self.input_type == "userOriented":
@@ -121,10 +123,11 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
             tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
             self.test_outputs.append(torch.transpose(tmp, 1, 0))
         else:
-            input_tensor = self.get_input_tensor(batch)
+            bags, profiles = self.get_input_tensor(batch)
+            output = self.forward(profiles, bags)
             labels = batch[-2]
-            self.test_outputs.append(self.forward(input_tensor))
-            self.before_training.append(input_tensor)
+            self.test_outputs.append(self.forward(profiles, bags))
+            # self.before_training.append(input_tensor)
         self.test_labels.append(labels)
         self.test_ppl_id.append(batch[0])
 

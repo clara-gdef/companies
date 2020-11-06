@@ -51,7 +51,8 @@ def main(hparams):
                  'desc': xp_title,
                  "num_tracks": len(dataset_train.track_rep),
                  "input_type": hparams.input_type,
-                 "ft_type": hparams.ft_type}
+                 "ft_type": hparams.ft_type,
+                 "frozen": hparams.frozen == "True"}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = AtnInstanceClassifierDiscCora(**arguments)
@@ -129,7 +130,8 @@ if __name__ == "__main__":
     parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--b_size", type=int, default=128)
-    parser.add_argument("--init", type=str, default="True")
+    parser.add_argument("--init", type=str, default="False")
+    parser.add_argument("--frozen", type=str, default="False")
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--model_type", type=str, default="atn_cora_disc_spe_std")
     parser.add_argument("--load_dataset", type=str, default="False")
