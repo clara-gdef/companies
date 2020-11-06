@@ -35,6 +35,7 @@ def main(hparams):
                  'datadir': CFG["gpudatadir"],
                  'desc': xp_title,
                  "wd": hparams.wd,
+                 "bag_type": "cie",
                  "middle_size": hparams.middle_size}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
