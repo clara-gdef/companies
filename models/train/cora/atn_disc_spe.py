@@ -27,6 +27,8 @@ def init(hparams):
 def main(hparams):
     xp_title = hparams.model_type + "_" + hparams.ft_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
+    if hparams.init == "True":
+        xp_title += "_init"
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, CFG, xp_title)
     print(hparams.auto_lr_find)
     trainer = pl.Trainer(gpus=hparams.gpus,
@@ -64,6 +66,12 @@ def main(hparams):
         model_file = os.path.join(model_path, "epoch=" + str(hparams.checkpoint) + ".ckpt")
         model.load_state_dict(torch.load(model_file)["state_dict"])
         print("Resuming training from checkpoint : " + model_file + ".")
+    elif hparams.init == "True":
+        print("Loading from previous checkpoint...")
+        model_name = "cora_disc_spe_fs_matMul_bs128_1e-06_0.0/epoch=00-v0.ckpt"
+        model_file = os.path.join(CFG['modeldir'], model_name)
+        model.load_state_dict(torch.load(model_file)["state_dict"])
+        print("Initialized model weights with : " + model_file + ".")
     else:
         print("Starting training " + xp_title)
 
@@ -120,6 +128,7 @@ if __name__ == "__main__":
     parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--b_size", type=int, default=16)
+    parser.add_argument("--init", type=str, default="True")
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--model_type", type=str, default="atn_cora_disc_spe_std")
     parser.add_argument("--load_dataset", type=str, default="False")
