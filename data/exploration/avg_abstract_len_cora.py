@@ -1,7 +1,9 @@
 import os
 import pickle as pkl
 import ipdb
+import numpy as np
 import yaml
+from tqdm import tqdm
 
 
 def main():
@@ -12,10 +14,9 @@ def main():
     with open(paper_file, 'rb') as f:
         data = pkl.load(f)
     num_sentences = []
-    for paper in data:
-        ipdb.set_trace()
-        num_sentences.append(len(paper))
-
+    for paper in tqdm(data):
+        num_sentences.append(len(paper["sentences_emb"]))
+    print(np.percentile(num_sentences, 90))
 
 if __name__ == "__main__":
     main()

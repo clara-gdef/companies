@@ -52,10 +52,20 @@ class DiscriminativeCoraDataset(Dataset):
         print("Dataset load from : " + tgt_file)
 
     def build_tuples(self, paper_file):
+        # length that keeps 90% of the dataset untrimmed
+        max_abstract_len = 12
         with open(paper_file, 'rb') as f:
             data = pkl.load(f)
         for tup in tqdm(data, desc="Building tuples for split " + self.split + '...'):
-            self.tuples.append(tup)
+            new_tup = {}
+            for k in ['id', 'class', 'avg_profile']:
+                new_tup[k] = tup[k]
+            ipdb.set_trace()
+            sent_emb = np.zeros((max_abstract_len, 300))
+            for num, sent in enumerate(tup["sentences_emb"]):
+                if num > max_abstract_len:
+                    sent_emb[num, :] = sent
+            self.tuples.append(new_tup)
 
     def build_bag_reps(self, track_file):
         with open(track_file, 'rb') as f:
