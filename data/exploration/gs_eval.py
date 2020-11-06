@@ -18,7 +18,7 @@ def main(args):
         with open(res_path, "rb") as f:
             test_results = pkl.load(f)
         ipdb.sey_trace()
-        get_best_params(test_results, 'all', True, False)
+        get_best_params(test_results, 'tracks', False, False)
 
 
 def get_best_params(test_results, handle, weight_decay, mid_size):

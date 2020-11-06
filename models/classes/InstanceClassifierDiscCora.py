@@ -188,49 +188,12 @@ class InstanceClassifierDiscCora(pl.LightningModule):
             idx.append(batch[0][0])
             self.test_step(batch, 0)
         outputs = torch.stack(self.test_outputs)
-        if self.type == "poly":
-            if self.input_type != "userOriented":
-                cie_preds = outputs[:, 0, :self.num_cie]
-                clus_preds = outputs[:, 0, self.num_cie: self.num_cie + self.num_clus]
-                dpt_preds = outputs[:, 0, -self.num_dpt:]
-            else:
-                cie_preds = outputs[:, :self.num_cie, 0]
-                clus_preds = outputs[:, self.num_cie: self.num_cie + self.num_clus, 0]
-                dpt_preds = outputs[:, -self.num_dpt:, 0]
-
-            cie_labels = torch.LongTensor([i[0][0] for i in self.test_labels])
-            clus_labels = torch.LongTensor([i[1][0] for i in self.test_labels])
-            dpt_labels = torch.LongTensor([i[2][0] for i in self.test_labels])
-
-            return {"indices": idx,
-                    "preds":
-                        {"cie": cie_preds,
-                         "clus": clus_preds,
-                         "dpt": dpt_preds},
-                    "labels":
-                        {"cie": cie_labels,
-                         "clus": clus_labels,
-                         "dpt": dpt_labels},
-                    }
-        else:
-            if self.bag_type == "cie":
-                offset = 0
-                limit = self.num_cie
-            elif self.bag_type == "clus":
-                offset = self.num_cie
-                limit = self.num_cie + self.num_clus
-            elif self.bag_type == "dpt":
-                offset = self.num_cie + self.num_clus
-                limit = self.num_cie  + self.num_clus + self.num_dpt
-            if self.input_type != "userOriented":
-                preds = outputs[:, 0, offset:limit]
-            else:
-                preds = outputs[:, offset:limit, 0]
-            labels = torch.LongTensor([i[0][0] for i in self.test_labels])
-            return {"indices": idx,
-                    "preds": preds,
-                    "labels": labels
-                    }
+        preds = outputs[:, 0, :]
+        labels = torch.LongTensor([i[0][0] for i in self.test_labels])
+        return {"indices": idx,
+                "preds": preds,
+                "labels": labels
+                }
 
     def get_jobs_outputs(self, test_loader):
         jobs_ouputs = {}
