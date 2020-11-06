@@ -64,6 +64,7 @@ class DiscriminativeCoraDataset(Dataset):
             for num, sent in enumerate(tup["sentences_emb"]):
                 if num < max_abstract_len:
                     sent_emb[num, :] = sent
+            new_tup["sentences_emb"] = sent_emb
             self.tuples.append(new_tup)
 
     def build_bag_reps(self, track_file):
