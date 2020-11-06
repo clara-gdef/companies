@@ -70,7 +70,8 @@ def main(hparams):
         print("Loading from previous checkpoint...")
         model_name = "cora_disc_spe_fs_matMul_bs128_1e-06_0.0/epoch=00-v0.ckpt"
         model_file = os.path.join(CFG['modeldir'], model_name)
-        model.load_state_dict(torch.load(model_file)["state_dict"])
+        model.lin.weight = torch.nn.Parameter(torch.load(model_file)["state_dict"]["lin.weight"])
+        model.lin.bias = torch.nn.Parameter(torch.load(model_file)["state_dict"]["lin.bias"])
         print("Initialized model weights with : " + model_file + ".")
     else:
         print("Starting training " + xp_title)
@@ -127,7 +128,7 @@ if __name__ == "__main__":
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--DEBUG", type=bool, default=False)
-    parser.add_argument("--b_size", type=int, default=16)
+    parser.add_argument("--b_size", type=int, default=128)
     parser.add_argument("--init", type=str, default="True")
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--model_type", type=str, default="atn_cora_disc_spe_std")
