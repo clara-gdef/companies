@@ -24,8 +24,7 @@ def init(hparams):
 
 
 def main(hparams):
-    xp_title = "b4Traing_" + hparams.model_type + "_" + hparams.ft_type + "_" + hparams.input_type + "_bs1_" + str(
-        hparams.lr) + '_' + str(hparams.wd)
+    xp_title = "b4Traing_" + hparams.model_type + "_" + hparams.ft_type + "_" + hparams.input_type
 
     datasets = load_datasets(hparams, ["TEST"], hparams.load_dataset)
     dataset_test = datasets[0]
@@ -194,11 +193,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--ft_type", type=str, default='pt')
     parser.add_argument("--gpus", type=int, default=0)
-    parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--model_type", type=str, default="cora_disc_spe_std")
     parser.add_argument("--load_dataset", type=str, default="False")
-    parser.add_argument("--middle_size", type=int, default=250)
     hparams = parser.parse_args()
     init(hparams)
