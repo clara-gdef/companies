@@ -29,6 +29,9 @@ def main(hparams):
         hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
     if hparams.init == "True":
         xp_title += "_init"
+    if hparams.frozen == "True":
+        xp_title += "_frozen"
+        
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, CFG, xp_title)
     print(hparams.auto_lr_find)
     trainer = pl.Trainer(gpus=hparams.gpus,
