@@ -10,7 +10,7 @@ import numpy as np
 
 def main(args):
     global CFG
-    with open("../../config.yaml", "r") as ymlfile:
+    with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     file_name = "EVAL_gs_cora_disc_spe_matMul"
     with ipdb.launch_ipdb_on_exception():
