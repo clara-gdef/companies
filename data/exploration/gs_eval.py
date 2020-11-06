@@ -14,7 +14,7 @@ def main(args):
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     file_name = "EVAL_gs_cora_disc_spe_matMul"
     with ipdb.launch_ipdb_on_exception():
-        res_path = os.path.join(CFG["datadir"], file_name)
+        res_path = os.path.join(CFG["gpudatadir"], file_name)
         with open(res_path, "rb") as f:
             test_results = pkl.load(f)
         ipdb.sey_trace()

@@ -49,7 +49,7 @@ def main(hparams):
     latest_model = get_latest_model(CFG["modeldir"], xp_title)
     print("Evaluating model " + latest_model)
     model.load_state_dict(torch.load(latest_model)["state_dict"])
-    trainer.test(model.cuda(), test_loader)
+    return trainer.test(model.cuda(), test_loader)
 
 
 def load_datasets(hparams, CFG, splits):
