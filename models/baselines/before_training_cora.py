@@ -47,39 +47,27 @@ def main(hparams):
     print("Starting eval for " + xp_title + "...")
     preds_and_labels = model.get_outputs_and_labels(test_loader)
     ipdb.set_trace()
-    if hparams.eval_top_k:
-        res = {}
-        preds = preds_and_labels["preds"]
-        labels = preds_and_labels["labels"]
 
-        if hparams.type == "poly":
-            for handle, offset, num_c in zip(["cie", "clus", "dpt"], [0, 207, 237], [207, 30, 5888]):
-                predicted_classes = torch.argsort(preds[handle], dim=-1, descending=True)
-                for k in [1, 10]:
-                    res_k = get_metrics_at_k(predicted_classes[:, :k], labels[handle], num_c, handle + "_@" + str(k),
-                                             offset)
-                    res = {**res, **res_k}
-            gen_res = get_general_results_poly(preds, labels, len(dataset_test.track_rep))
-        else:
-            handle = "cie"
-            offset = 0
-            num_c = 207
-            predicted_classes = torch.argsort(preds, dim=-1, descending=True)
-            for k in [1, 10]:
-                res_k = get_metrics_at_k(predicted_classes[:, :k], labels, num_c, handle + "_@" + str(k), offset)
-                res = {**res, **res_k}
-            gen_res = res
+    res = {}
+    preds = preds_and_labels["preds"]
+    labels = preds_and_labels["labels"]
 
-        res = {**res, **gen_res}
+    handle = "tracks"
+    offset = 0
+    num_c = len(dataset_test.track_rep)
+    predicted_classes = torch.argsort(preds, dim=-1, descending=True)
+    for k in [1, 10]:
+        res_k = get_metrics_at_k(predicted_classes[:, :k], labels, num_c, handle + "_@" + str(k), offset)
+        res = {**res, **res_k}
+    gen_res = res
 
-        print(sorted(res.items()))
+    res = {**res, **gen_res}
 
-        with open(os.path.join(CFG["gpudatadir"], "OUTPUTS_well_classified_topK_" + xp_title), 'wb') as f:
-            pkl.dump(res, f)
-    else:
-        well_classified = get_well_classified_outputs(preds_and_labels)
-        with open(os.path.join(CFG["gpudatadir"], "OUTPUTS_well_classified_" + xp_title), 'wb') as f:
-            pkl.dump(well_classified, f)
+    print(sorted(res.items()))
+
+    with open(os.path.join(CFG["gpudatadir"], "OUTPUTS_well_classified_topK_" + xp_title), 'wb') as f:
+        pkl.dump(res, f)
+
 
 
 def load_datasets(hparams, CFG, splits):
