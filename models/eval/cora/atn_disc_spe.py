@@ -85,7 +85,7 @@ def init_lightning(hparams, CFG, xp_title):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ft_type", type=str, default='pt')
+    parser.add_argument("--ft_type", type=str, default='fs')
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--init", type=str, default="False")

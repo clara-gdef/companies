@@ -31,7 +31,7 @@ def main(hparams):
         xp_title += "_init"
     if hparams.frozen == "True":
         xp_title += "_frozen"
-        
+
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, CFG, xp_title)
     print(hparams.auto_lr_find)
     trainer = pl.Trainer(gpus=hparams.gpus,
@@ -72,7 +72,7 @@ def main(hparams):
         print("Resuming training from checkpoint : " + model_file + ".")
     elif hparams.init == "True":
         print("Loading from previous checkpoint...")
-        model_name = "cora_disc_spe_fs_matMul_bs128_1e-06_0.0/epoch=00-v0.ckpt"
+        model_name = "cora_disc_spe_fs_matMul_bs16_1e-08_0.0/epoch=06.ckpt"
         model_file = os.path.join(CFG['modeldir'], model_name)
         model.lin.weight = torch.nn.Parameter(torch.load(model_file)["state_dict"]["lin.weight"])
         model.lin.bias = torch.nn.Parameter(torch.load(model_file)["state_dict"]["lin.bias"])
@@ -128,7 +128,7 @@ def init_lightning(hparams, CFG, xp_title):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ft_type", type=str, default='pt')
+    parser.add_argument("--ft_type", type=str, default='fs')
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--DEBUG", type=bool, default=False)
