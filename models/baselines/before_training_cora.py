@@ -28,7 +28,7 @@ def main(hparams):
 
     datasets = load_datasets(hparams, CFG, ["TEST"])
     dataset_test = datasets[0]
-    test_loader = DataLoader(dataset_test, batch_size=1, collate_fn=collate_for_disc_spe_model_cora, num_workers=8,
+    test_loader = DataLoader(dataset_test, batch_size=1, collate_fn=collate_for_disc_spe_model_cora, num_workers=1,
                              shuffle=True)
 
     in_size, out_size = get_model_params(hparams, 300, len(dataset_test.track_rep))
@@ -173,6 +173,6 @@ if __name__ == "__main__":
     parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--model_type", type=str, default="cora_disc_spe_std")
-    parser.add_argument("--load_dataset", type=str, default="False")
+    parser.add_argument("--load_dataset", type=str, default="True")
     hparams = parser.parse_args()
     init(hparams)
