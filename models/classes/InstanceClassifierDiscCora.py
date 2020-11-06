@@ -93,6 +93,7 @@ class InstanceClassifierDiscCora(pl.LightningModule):
         return {'val_loss': val_loss, 'log': tensorboard_logs}
 
     def validation_end(self, outputs):
+        ipdb.set_trace()
         return outputs[-1]
 
     def configure_optimizers(self):
