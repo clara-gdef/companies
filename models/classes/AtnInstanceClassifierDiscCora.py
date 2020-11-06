@@ -67,8 +67,8 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
     def training_step(self, batch, batch_nb):
         labels = batch[-2]
         if self.input_type != "userOriented" and self.input_type != "bagTransformer":
-            input_tensor = self.get_input_tensor(batch)
-            output = self.forward(input_tensor)
+            bags, profiles = self.get_input_tensor(batch)
+            output = self.forward(profiles, bags)
         else:
             bag_matrix, profiles = self.get_input_tensor(batch)
             if self.input_type == "userOriented":
