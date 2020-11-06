@@ -6,7 +6,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
 from data.datasets import DiscriminativeCoraDataset
-from models.classes import InstanceClassifierDiscCora
+from models.classes import AtnInstanceClassifierDiscCora
 from utils.models import collate_for_disc_spe_model_cora, get_model_params, get_latest_model
 
 
@@ -50,7 +50,7 @@ def main(hparams):
                  "ft_type": hparams.ft_type}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
-    model = InstanceClassifierDiscCora(**arguments)
+    model = AtnInstanceClassifierDiscCora(**arguments)
     latest_model = get_latest_model(CFG["modeldir"], xp_title)
     print("Evaluating model " + latest_model)
     model.load_state_dict(torch.load(latest_model)["state_dict"])
