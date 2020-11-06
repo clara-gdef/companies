@@ -11,7 +11,7 @@ from utils.models import labels_to_one_hot
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score, confusion_matrix
 
 
-class InstanceClassifierDiscCora(pl.LightningModule):
+class AtnInstanceClassifierDiscCora(pl.LightningModule):
     def __init__(self, in_size, out_size, hparams, input_type, ft_type, num_tracks, datadir, desc):
         super().__init__()
         self.input_type = hparams.input_type
@@ -23,6 +23,7 @@ class InstanceClassifierDiscCora(pl.LightningModule):
         self.data_dir = datadir
         self.description = desc
 
+        self.atn_layer = torch.nn.Linear(in_size, 1)
         if self.input_type == "hadamard":
             self.lin_dim_reduction = torch.nn.Linear(in_size, self.hp.middle_size)
             self.lin_class_prediction = torch.nn.Linear(self.hp.middle_size, out_size)
@@ -173,7 +174,7 @@ class InstanceClassifierDiscCora(pl.LightningModule):
             pkl.dump(res, f)
 
     def get_input_tensor(self, batch):
-        profiles = batch[1]
+        profiles = batch[2]
         bags = batch[-1].T
         return bags, profiles
 
@@ -204,60 +205,18 @@ class InstanceClassifierDiscCora(pl.LightningModule):
             counter += 1
         return jobs_ouputs
 
-
-def test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds, dpt_preds, num_classes):
-    all_labels = []
-    for tup in zip(cie_labels, clus_labels, dpt_labels):
-        all_labels.append([tup[0].item(), tup[1].item(), tup[2].item()])
-    cie_preds_max = [i.item() for i in torch.argmax(cie_preds, dim=1)]
-    clus_preds_max = [i.item() + 207 for i in torch.argmax(clus_preds, dim=1)]
-    dpt_preds_max = [i.item() + 237 for i in torch.argmax(dpt_preds, dim=1)]
-    all_preds_max = []
-    for tup in zip(cie_preds_max, clus_preds_max, dpt_preds_max):
-        all_preds_max.append([tup[0], tup[1], tup[2]])
-
-    general_res = get_metrics(np.array(all_preds_max).reshape(-1, 1), np.array(all_labels).reshape(-1, 1), num_classes,
-                              "all", 0)
-    cie_preds_at_k = [i for i in torch.argsort(cie_preds, dim=-1, descending=True)]
-    clus_preds_at_k = [i + 207 for i in torch.argsort(clus_preds, dim=-1, descending=True)]
-    dpt_preds_at_k = [i + 237 for i in torch.argsort(dpt_preds, dim=-1, descending=True)]
-
-    all_preds_k = []
-    chained_labels = [i for i in itertools.chain(cie_labels, clus_labels, dpt_labels)]
-    for preds, labels in tqdm(zip(itertools.chain(cie_preds_at_k, clus_preds_at_k, dpt_preds_at_k), chained_labels), desc="Computing at k=10..."):
-        if labels.item() in preds[:10]:
-            all_preds_k.append(labels.item())
-        else:
-            if type(preds) == torch.Tensor:
-                all_preds_k.append(preds[0].item())
-            else:
-                all_preds_k.append(preds)
-
-    res_at_k = get_metrics(all_preds_k, chained_labels, num_classes, "all_@k", 0)
-
-    return {**general_res, **res_at_k}
-
-
-def test_for_bag(preds, labels, b4_training, offset, num_classes, bag_type):
-    predicted_classes = torch.argsort(preds, dim=-1, descending=True)
-    res_dict_trained = get_metrics([i.item() + offset for i in predicted_classes[:, 0]], labels.cpu(), num_classes,
-                                      bag_type, offset)
-
-    for k in [10]:
-        tmp = get_metrics_at_k(predicted_classes[:, :k].cpu(), labels.cpu(), num_classes,
-                                               bag_type + "_@" + str(k), offset)
-        res_dict_trained = {**res_dict_trained, **tmp}
-    return res_dict_trained
-
-
-def get_average_metrics(res_dict):
-    precision = []
-    recall = []
-    numerical_keys = [i for i in res_dict.keys()][:-3]
-    for k in numerical_keys:
-        precision.append(res_dict[k]["precision"])
-        recall.append(res_dict[k]["recall"])
-    return np.mean(precision), np.mean(recall)
+    def ponderate_jobs(self, people, atn):
+        new_people = torch.zeros(len(people), 300).cuda()
+        for num, person in enumerate(people):
+            job_counter = 0
+            new_p = torch.zeros(300).cuda()
+            for j, job in enumerate(person):
+                # that means the job is a placeholder, and equal to zero everywhere
+                if (job != torch.zeros(300).cuda()).all():
+                    job_counter += 1
+                    new_p += atn[num][j] * job
+            new_people[num] = new_p / job_counter
+        return new_people
 
 
 def get_metrics(preds, labels, num_classes, handle, offset):
