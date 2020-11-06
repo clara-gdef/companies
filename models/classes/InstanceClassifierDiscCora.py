@@ -70,9 +70,9 @@ class InstanceClassifierDiscCora(pl.LightningModule):
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
         loss = torch.nn.functional.cross_entropy(output, labels)
-        tensorboard_logs = {'train_loss_CE': loss}
+        self.log("train_loss_CE", loss)
         self.training_losses.append(loss.item())
-        return {'loss': loss, 'log': tensorboard_logs}
+        return {'loss': loss}
 
     def validation_step(self, batch, batch_nb):
         labels = batch[-2]
@@ -89,13 +89,9 @@ class InstanceClassifierDiscCora(pl.LightningModule):
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
         val_loss = torch.nn.functional.cross_entropy(output, labels)
-        tensorboard_logs = {'val_loss_CE': val_loss}
-        ipdb.set_trace()
-        return {'val_loss': val_loss, 'log': tensorboard_logs}
+        self.log("val_loss_CE", val_loss)
+        return {'val_loss': val_loss}
 
-    def validation_end(self, outputs):
-        ipdb.set_trace()
-        return outputs[-1]
 
     def configure_optimizers(self):
         return torch.optim.SGD(self.parameters(), lr=self.hp.lr, weight_decay=self.hp.wd)
