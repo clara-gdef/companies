@@ -46,7 +46,7 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
         self.before_training = []
 
     def forward(self, tmp_people, bags):
-        people = torch.from_numpy(np.stack(tmp_people)).type(torch.FloatTensor).cuda()
+        people = torch.stack(tmp_people).type(torch.FloatTensor).cuda()
         atn = self.atn_layer(people)
         normed_atn = atn.clone()
         for ind, sample in enumerate(atn):
@@ -86,8 +86,8 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
     def validation_step(self, batch, batch_nb):
         labels = batch[-2]
         if self.input_type != "userOriented" and self.input_type != "bagTransformer":
-            input_tensor = self.get_input_tensor(batch)
-            output = self.forward(input_tensor)
+            bags, profiles = self.get_input_tensor(batch)
+            output = self.forward(profiles, bags)
         else:
             bag_matrix, profiles = self.get_input_tensor(batch)
             if self.input_type == "userOriented":
