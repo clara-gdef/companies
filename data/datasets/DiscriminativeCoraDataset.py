@@ -60,7 +60,6 @@ class DiscriminativeCoraDataset(Dataset):
             new_tup = {}
             for k in ['id', 'class', 'avg_profile']:
                 new_tup[k] = tup[k]
-            ipdb.set_trace()
             sent_emb = np.zeros((max_abstract_len, 300))
             for num, sent in enumerate(tup["sentences_emb"]):
                 if num > max_abstract_len:
