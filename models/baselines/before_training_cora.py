@@ -44,8 +44,6 @@ def main(hparams):
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = InstanceClassifierDiscCora(**arguments)
-    print("Model Loaded.")
-    print("Model Loaded.")
     print("Starting eval for " + xp_title + "...")
     preds_and_labels = model.get_outputs_and_labels(test_loader)
     ipdb.set_trace()

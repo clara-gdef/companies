@@ -189,7 +189,7 @@ class InstanceClassifierDiscCora(pl.LightningModule):
             self.test_step(batch, 0)
         outputs = torch.stack(self.test_outputs)
         preds = outputs[:, 0, :]
-        labels = torch.LongTensor([i[0][0] for i in self.test_labels])
+        labels = torch.LongTensor([i.item() for i in self.test_labels])
         return {"indices": idx,
                 "preds": preds,
                 "labels": labels
