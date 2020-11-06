@@ -47,7 +47,8 @@ def main(hparams):
                  'desc': xp_title,
                  "num_tracks": len(dataset_test.track_rep),
                  "input_type": hparams.input_type,
-                 "ft_type": hparams.ft_type}
+                 "ft_type": hparams.ft_type,
+                 "frozen": hparams.frozen == "True"}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = AtnInstanceClassifierDiscCora(**arguments)
