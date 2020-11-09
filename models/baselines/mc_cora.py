@@ -19,6 +19,7 @@ def main():
     for paper in tqdm(data):
         classes[paper["class"]] += 1
     mc_class = classes.most_common(1)[0][0]
+    ipdb.set_trace()
     paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["emb"] + "_fs_TEST.pkl")
     with open(paper_file, 'rb') as f:
         data_test = pkl.load(f)
