@@ -54,7 +54,7 @@ def main(hparams):
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = InstanceClassifierDiscCora(**arguments)
     print("Model Loaded.")
-    if hparams.load_from_checkpoint:
+    if hparams.load_from_checkpoint == "True":
         print("Loading from previous checkpoint...")
         model_name = xp_title
         if hparams.input_type == "hadamard":
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     parser.add_argument("--model_type", type=str, default="cora_disc_spe")
     parser.add_argument("--load_dataset", type=str, default="True")
     parser.add_argument("--middle_size", type=int, default=250)
-    parser.add_argument("--load_from_checkpoint", type=str, default=False)
+    parser.add_argument("--load_from_checkpoint", type=str, default="False")
     parser.add_argument("--checkpoint", type=str, default='06')
     parser.add_argument("--lr", type=float, default=1e-8)
     parser.add_argument("--auto_lr_find", type=bool, default=False)
