@@ -12,6 +12,7 @@ def grid_search(hparams):
     for lr in hparams.lr:
         test_results[lr] = {}
         for b_size in hparams.b_size:
+            test_results[lr][b_size] = {}
             if hparams.input_type == "hadamard":
                 test_results[lr][b_size] = {}
                 for mid_size in [200, 600, 1000]:
@@ -24,14 +25,15 @@ def grid_search(hparams):
                         train.cora.disc_spe.init(arg)
                     test_results[lr][b_size][mid_size] = eval.cora.disc_spe.init(arg)
             else:
-                print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
-                dico['lr'] = lr
-                dico["b_size"] = b_size
-                dico["middle_size"] = hparams.middle_size
-                arg = DotDict(dico)
-                if hparams.TRAIN == "True":
-                    train.cora.disc_spe.init(arg)
-                test_results[lr][b_size] = eval.cora.disc_spe.init(arg)
+                for wd in [0., 4., 8.]:
+                    print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ", wd=" + str(wd) + ")")
+                    dico['lr'] = lr
+                    dico["b_size"] = b_size
+                    dico["wd"] = wd
+                    arg = DotDict(dico)
+                    if hparams.TRAIN == "True":
+                        train.cora.disc_spe.init(arg)
+                    test_results[lr][b_size][wd] = eval.cora.disc_spe.init(arg)
     res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_cora_disc_spe_" + hparams.input_type)
     with open(res_path, "wb") as f:
         pkl.dump(test_results, f)
@@ -46,8 +48,8 @@ def init_args(hparams):
             "model_type": hparams.model_type,
             'data_agg_type': 'avg',
             'epochs': hparams.epochs,
-            "wd": 0.,
             "subsample": 0,
+            "middle_size": hparams.middle_size,
             "DEBUG": hparams.DEBUG,
             "load_from_checkpoint": False}
     print(hparams.epochs)
@@ -70,7 +72,7 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--TRAIN", default="True")
     parser.add_argument("--DEBUG", type=bool, default=False)
-    parser.add_argument("--lr", nargs='+', default=[1e-6, 1e-7, 1e-8])
+    parser.add_argument("--lr", nargs='+', default=[1e-7, 1e-8, 1e-9])
     parser.add_argument("--b_size", nargs='+', default=[64, 128, 16])
     hparams = parser.parse_args()
     grid_search(hparams)
