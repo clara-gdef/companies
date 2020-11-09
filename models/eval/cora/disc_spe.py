@@ -85,7 +85,7 @@ if __name__ == "__main__":
     parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--b_size", type=int, default=16)
     parser.add_argument("--input_type", type=str, default="matMul")
-    parser.add_argument("--model_type", type=str, default="cora_disc_spe")
+    parser.add_argument("--model_type", type=str, default="cora_disc_spe_adam")
     parser.add_argument("--load_dataset", type=str, default="False")
     parser.add_argument("--middle_size", type=int, default=250)
     parser.add_argument("--load_from_checkpoint", type=bool, default=False)
