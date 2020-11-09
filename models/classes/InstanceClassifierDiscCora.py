@@ -89,7 +89,6 @@ class InstanceClassifierDiscCora(pl.LightningModule):
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
         val_loss = torch.nn.functional.cross_entropy(output, labels)
-        ipdb.set_trace()
         self.log("val_loss_CE", val_loss)
         return {'val_loss': val_loss}
 
