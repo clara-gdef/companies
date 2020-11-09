@@ -35,7 +35,6 @@ class InstanceClassifierDiscCora(pl.LightningModule):
             torch.nn.init.eye_(self.lin.weight)
             torch.nn.init.zeros_(self.lin.bias)
 
-        self.training_losses = []
         self.test_outputs = []
         self.test_labels_one_hot = []
         self.test_labels = []
@@ -71,7 +70,6 @@ class InstanceClassifierDiscCora(pl.LightningModule):
                 output = torch.transpose(tmp, 1, 0)
         loss = torch.nn.functional.cross_entropy(output, labels, reduction="mean")
         self.log("train_loss_CE", loss)
-        self.training_losses.append(loss.item())
         return {'loss': loss}
 
     def validation_step(self, batch, batch_nb):
@@ -89,9 +87,10 @@ class InstanceClassifierDiscCora(pl.LightningModule):
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
         val_loss = torch.nn.functional.cross_entropy(output, labels, reduction="mean")
+        if val_loss.item() > 10:
+            ipdb.set_trace()
         self.log("val_loss_CE", val_loss)
         return {'val_loss': val_loss}
-
 
     def configure_optimizers(self):
         return torch.optim.SGD(self.parameters(), lr=self.hp.lr, weight_decay=self.hp.wd)
@@ -188,61 +187,6 @@ class InstanceClassifierDiscCora(pl.LightningModule):
             jobs_ouputs[batch[0][0]]["labels"] = self.test_labels[counter]
             counter += 1
         return jobs_ouputs
-
-
-def test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds, dpt_preds, num_classes):
-    all_labels = []
-    for tup in zip(cie_labels, clus_labels, dpt_labels):
-        all_labels.append([tup[0].item(), tup[1].item(), tup[2].item()])
-    cie_preds_max = [i.item() for i in torch.argmax(cie_preds, dim=1)]
-    clus_preds_max = [i.item() + 207 for i in torch.argmax(clus_preds, dim=1)]
-    dpt_preds_max = [i.item() + 237 for i in torch.argmax(dpt_preds, dim=1)]
-    all_preds_max = []
-    for tup in zip(cie_preds_max, clus_preds_max, dpt_preds_max):
-        all_preds_max.append([tup[0], tup[1], tup[2]])
-
-    general_res = get_metrics(np.array(all_preds_max).reshape(-1, 1), np.array(all_labels).reshape(-1, 1), num_classes,
-                              "all", 0)
-    cie_preds_at_k = [i for i in torch.argsort(cie_preds, dim=-1, descending=True)]
-    clus_preds_at_k = [i + 207 for i in torch.argsort(clus_preds, dim=-1, descending=True)]
-    dpt_preds_at_k = [i + 237 for i in torch.argsort(dpt_preds, dim=-1, descending=True)]
-
-    all_preds_k = []
-    chained_labels = [i for i in itertools.chain(cie_labels, clus_labels, dpt_labels)]
-    for preds, labels in tqdm(zip(itertools.chain(cie_preds_at_k, clus_preds_at_k, dpt_preds_at_k), chained_labels), desc="Computing at k=10..."):
-        if labels.item() in preds[:10]:
-            all_preds_k.append(labels.item())
-        else:
-            if type(preds) == torch.Tensor:
-                all_preds_k.append(preds[0].item())
-            else:
-                all_preds_k.append(preds)
-
-    res_at_k = get_metrics(all_preds_k, chained_labels, num_classes, "all_@k", 0)
-
-    return {**general_res, **res_at_k}
-
-
-def test_for_bag(preds, labels, b4_training, offset, num_classes, bag_type):
-    predicted_classes = torch.argsort(preds, dim=-1, descending=True)
-    res_dict_trained = get_metrics([i.item() + offset for i in predicted_classes[:, 0]], labels.cpu(), num_classes,
-                                      bag_type, offset)
-
-    for k in [10]:
-        tmp = get_metrics_at_k(predicted_classes[:, :k].cpu(), labels.cpu(), num_classes,
-                                               bag_type + "_@" + str(k), offset)
-        res_dict_trained = {**res_dict_trained, **tmp}
-    return res_dict_trained
-
-
-def get_average_metrics(res_dict):
-    precision = []
-    recall = []
-    numerical_keys = [i for i in res_dict.keys()][:-3]
-    for k in numerical_keys:
-        precision.append(res_dict[k]["precision"])
-        recall.append(res_dict[k]["recall"])
-    return np.mean(precision), np.mean(recall)
 
 
 def get_metrics(preds, labels, num_classes, handle, offset):
