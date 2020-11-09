@@ -69,7 +69,7 @@ class InstanceClassifierDiscCora(pl.LightningModule):
                 new_bags = self(bag_matrix.T)
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
-        loss = torch.nn.functional.cross_entropy(output, labels)
+        loss = torch.nn.functional.cross_entropy(output, labels, reduction="mean")
         self.log("train_loss_CE", loss)
         self.training_losses.append(loss.item())
         return {'loss': loss}
@@ -88,7 +88,7 @@ class InstanceClassifierDiscCora(pl.LightningModule):
                 new_bags = self(bag_matrix.T)
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
-        val_loss = torch.nn.functional.cross_entropy(output, labels)
+        val_loss = torch.nn.functional.cross_entropy(output, labels, reduction="mean")
         self.log("val_loss_CE", val_loss)
         return {'val_loss': val_loss}
 
