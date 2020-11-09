@@ -1,3 +1,5 @@
+import os
+
 import torch
 import ipdb
 import argparse
@@ -52,7 +54,12 @@ def main(hparams):
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = AtnInstanceClassifierDiscCora(**arguments)
-    latest_model = get_latest_model(CFG["modeldir"], xp_title)
+    if hparams.load_from_checkpoint == "True":
+        model_name = xp_title
+        model_path = os.path.join(CFG['modeldir'], model_name)
+        latest_model = os.path.join(model_path, "epoch=" + str(hparams.checkpoint) + ".ckpt")
+    else:
+        latest_model = get_latest_model(CFG["modeldir"], xp_title)
     print("Evaluating model " + latest_model)
     model.load_state_dict(torch.load(latest_model)["state_dict"])
     return trainer.test(model.cuda(), test_loader)
