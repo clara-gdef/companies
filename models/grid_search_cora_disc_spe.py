@@ -25,7 +25,7 @@ def grid_search(hparams):
                         train.cora.disc_spe.init(arg)
                     test_results[lr][b_size][mid_size] = eval.cora.disc_spe.init(arg)
             else:
-                for wd in [0., 4., 8.]:
+                for wd in [0.]:
                     print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ", wd=" + str(wd) + ")")
                     dico['lr'] = lr
                     dico["b_size"] = b_size
@@ -65,14 +65,14 @@ if __name__ == "__main__":
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", type=str, default="False")
-    parser.add_argument("--model_type", type=str, default="cora_disc_spe_build_ds")
+    parser.add_argument("--model_type", type=str, default="cora_disc_spe")
     parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--middle_size", type=int, default=100)
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--TRAIN", default="True")
     parser.add_argument("--DEBUG", type=bool, default=False)
-    parser.add_argument("--lr", nargs='+', default=[1e-7, 1e-8, 1e-9])
+    parser.add_argument("--lr", nargs='+', default=[1e-4, 1e-6, 1e-8])
     parser.add_argument("--b_size", nargs='+', default=[64, 128, 16])
     hparams = parser.parse_args()
     grid_search(hparams)
