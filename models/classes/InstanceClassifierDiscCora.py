@@ -89,6 +89,7 @@ class InstanceClassifierDiscCora(pl.LightningModule):
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
         val_loss = torch.nn.functional.cross_entropy(output, labels)
+        ipdb.set_trace()
         self.log("val_loss_CE", val_loss)
         return {'val_loss': val_loss}
 
@@ -143,26 +144,6 @@ class InstanceClassifierDiscCora(pl.LightningModule):
         with open(tgt_file, 'wb') as f:
             pkl.dump(res, f)
 
-    def save_outputs(self, ci_preds, cie_labels, ci_cm, ci_res,
-                     cl_preds, clus_labels, cl_cm, cl_res,
-                     d_preds, dpt_labels, d_cm, d_res):
-        res = {"cie": {"preds": ci_preds,
-                       "labels": cie_labels,
-                       "cm": ci_cm,
-                       "res": ci_res},
-               "clus": {"preds": cl_preds,
-                        "labels": clus_labels,
-                        "cm": cl_cm,
-                        "res": cl_res},
-               "dpt": {"preds": d_preds,
-                       "labels": dpt_labels,
-                       "cm": d_cm,
-                       "res": d_res},
-               "ppl": self.test_ppl_id
-               }
-        tgt_file = os.path.join(self.data_dir, "OUTPUTS_" + self.description + ".pkl")
-        with open(tgt_file, 'wb') as f:
-            pkl.dump(res, f)
 
     def get_input_tensor(self, batch):
         profiles = batch[1]
