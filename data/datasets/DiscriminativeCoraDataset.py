@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 
 
 class DiscriminativeCoraDataset(Dataset):
-    def __init__(self, datadir, paper_file, track_file, split, subsample, ft_type, high_level, load):
+    def __init__(self, datadir, paper_file, bag_file, split, subsample, ft_type, high_level, load):
         self.datadir = datadir
         self.ft_type = ft_type
         self.split = split
@@ -21,7 +21,7 @@ class DiscriminativeCoraDataset(Dataset):
             self.ft_type = ft_type
             self.split = split
             self.build_tuples(os.path.join(datadir, paper_file + "_" + ft_type + "_" + split + ".pkl"))
-            self.build_bag_reps(os.path.join(datadir, track_file + "_" + ft_type + ".pkl"))
+            self.build_bag_reps(os.path.join(datadir, bag_file + "_" + ft_type + ".pkl"))
             self.save_dataset()
 
     def __len__(self):
