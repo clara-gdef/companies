@@ -15,7 +15,8 @@ def main(args):
         high_level = (args.high_level_classes == "True")
         if high_level:
             with open(os.path.join(CFG["gpudatadir"], "cora_high_level_classes_dict.pkl"), 'rb') as f:
-                classes = pkl.load(f)
+                tmp = pkl.load(f)
+            classes = {v :k for k, v in tmp.items()}
             with open(os.path.join(CFG["gpudatadir"], "cora_track_to_hl_classes_map.pkl"), 'rb') as f:
                 high_level_mapper = pkl.load(f)
         else:
