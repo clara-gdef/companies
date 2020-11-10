@@ -23,9 +23,10 @@ def main():
     with open(paper_file, 'rb') as f:
         data_train = pkl.load(f)
 
-    # paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["plain"] + "VALID.pkl")
-    # with open(paper_file, 'rb') as f:
-    #     data_valid = pkl.load(f)
+    paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["plain"] + "VALID.pkl")
+    with open(paper_file, 'rb') as f:
+        data_valid = pkl.load(f)
+    data_train.extend(data_valid)
 
     paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["plain"] + "TEST.pkl")
     with open(paper_file, 'rb') as f:
@@ -46,7 +47,7 @@ def main():
         for sample, lab in zip(predictions, labels_test):
             predictions_at_1.append(get_pred_at_k(sample, lab, 1))
         res_at_1 = eval_model(labels_test, predictions_at_1, len(class_dict), "SVM_BOW")
-        
+
         predictions_at_10 = []
         for sample, lab in zip(predictions, labels_test):
             predictions_at_10.append(get_pred_at_k(sample, lab, 10))
