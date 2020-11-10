@@ -3,6 +3,7 @@ import os
 import pickle as pkl
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.svm import LinearSVC
+import numpy as np
 import ipdb
 from nltk.corpus import stopwords
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score, confusion_matrix
@@ -39,13 +40,19 @@ def main():
         # TEST
         cleaned_abstracts_test, labels_test = pre_proc_data(data_test, rev_class_dict)
         test_features = fit_vectorizer(cleaned_abstracts_test)
-        predicted_labels = model.predict(test_features)
-        print(model.score(test_features, labels_test))
-        ipdb.set_trace()
+        predictions = model.decision_function(test_features)
 
-        res = eval_model(labels_test, predicted_labels)
+        predictions_at_1 = []
+        for sample, lab in zip(predictions, labels_test):
+            predictions_at_1.append(get_pred_at_k(sample, lab, 1))
+        res_at_1 = eval_model(labels_test, predictions_at_1, len(class_dict), "SVM_BOW")
+        
+        predictions_at_10 = []
+        for sample, lab in zip(predictions, labels_test):
+            predictions_at_10.append(get_pred_at_k(sample, lab, 10))
+        res_at_10 = eval_model(labels_test, predictions_at_10, len(class_dict), "SVM_BOW_@10")
 
-        print(res)
+        print({**res_at_1, **res_at_10})
 
 
 def pre_proc_data(data, class_dict):
@@ -76,15 +83,25 @@ def train_svm(data, labels):
     print("SVM fitted!")
     return model
 
-def eval_model(labels, predicted_labels):
-    num_c = range(offset, offset + num_classes)
+
+def eval_model(labels, preds, num_classes, handle):
+    num_c = range(num_classes)
     res_dict = {
         "acc_" + handle: accuracy_score(labels, preds) * 100,
         "precision_" + handle: precision_score(labels, preds, average='weighted',
                                                labels=num_c, zero_division=0) * 100,
         "recall_" + handle: recall_score(labels, preds, average='weighted', labels=num_c, zero_division=0) * 100,
         "f1_" + handle: f1_score(labels, preds, average='weighted', labels=num_c, zero_division=0) * 100}
+    return res_dict
 
+
+def get_pred_at_k(pred, label, k):
+    ranked = np.argsort(pred, axis=-1)
+    largest_indices = ranked[::-1][:len(pred)]
+    new_pred = largest_indices[0]
+    if label in largest_indices[:k]:
+        new_pred = label
+    return new_pred
 
 if __name__ == "__main__":
     main()
