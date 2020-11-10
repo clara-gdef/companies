@@ -22,23 +22,31 @@ def main():
     with open(paper_file, 'rb') as f:
         data_train = pkl.load(f)
 
-    cleaned_abstracts, labels = pre_proc_data(data_train, class_dict)
-    train_features = fit_vectorizer(cleaned_abstracts)
-    model = train_svm(train_features, labels)
+    # paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["plain"] + "VALID.pkl")
+    # with open(paper_file, 'rb') as f:
+    #     data_valid = pkl.load(f)
 
     paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["plain"] + "TEST.pkl")
     with open(paper_file, 'rb') as f:
         data_test = pkl.load(f)
 
-    cleaned_abstracts_test, labels_test = pre_proc_data(data_test, class_dict)
-    test_features = fit_vectorizer(cleaned_abstracts_test)
-    predicted_labels = model.predict(test_features)
-    print(model.score(test_features, labels_test))
-    ipdb.set_trace()
+    with ipdb.launch_ipdb_on_exception():
+        # TRAIN
+        cleaned_abstracts, labels = pre_proc_data(data_train, class_dict)
+        train_features = fit_vectorizer(cleaned_abstracts)
+        model = train_svm(train_features, labels)
 
-    res = eval_model(labels_test, predicted_labels)
 
-    print(res)
+        # TEST
+        cleaned_abstracts_test, labels_test = pre_proc_data(data_test, class_dict)
+        test_features = fit_vectorizer(cleaned_abstracts_test)
+        predicted_labels = model.predict(test_features)
+        print(model.score(test_features, labels_test))
+        ipdb.set_trace()
+
+        res = eval_model(labels_test, predicted_labels)
+
+        print(res)
 
 
 
