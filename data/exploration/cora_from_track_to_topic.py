@@ -4,7 +4,7 @@ import pickle as pkl
 import ipdb
 from collections import Counter
 from tqdm import tqdm
-
+from itertools import chain
 
 def main():
     global CFG
@@ -28,10 +28,22 @@ def main():
         with open(paper_file, 'rb') as f:
             data_test = pkl.load(f)
 
+        hl_class_count = Counter()
         class_count = Counter()
-        for paper in tqdm(zip(data_train, data_valid, data_test)):
-            high_lvl_class = rev_class_dict[paper[1]["class"]].split("/")[1]
-            class_count[high_lvl_class] += 1
+        for paper in tqdm(chain(data_train, data_valid, data_test)):
+            class_count[paper[1]["class"]] += 1
+            high_lvl_class = paper[1]["class"].split("/")[1]
+            hl_class_count[high_lvl_class] += 1
+
+        high_lvl_classes = sorted(hl_class_count.values())
+        hl_class_dict = {name: num for num, name in enumerate(high_lvl_classes)}
+
+        track_to_hl_dict = {}
+        for low_level_class in class_count.keys():
+            ll_class_ind = rev_class_dict[low_level_class]
+            high_lvl_class = low_level_class.split("/")[1]
+            track_to_hl_dict[ll_class_ind] = hl_class_dict[high_lvl_class]
+
 
     ipdb.set_trace()
 
