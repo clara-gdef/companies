@@ -13,13 +13,13 @@ def main():
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
-    paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["plain"] + "_fs_TRAIN.pkl")
+    paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["plain"] + "fs_TRAIN.pkl")
     with open(paper_file, 'rb') as f:
         data_train = pkl.load(f)
 
     cleaned_data = pre_proc_data(data_train)
 
-    paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["plain"] + "_fs_TEST.pkl")
+    paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["plain"] + "fs_TEST.pkl")
     with open(paper_file, 'rb') as f:
         data_test = pkl.load(f)
 
