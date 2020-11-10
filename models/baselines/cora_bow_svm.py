@@ -36,7 +36,6 @@ def main():
         train_features = fit_vectorizer(cleaned_abstracts)
         model = train_svm(train_features, labels)
 
-
         # TEST
         cleaned_abstracts_test, labels_test = pre_proc_data(data_test, rev_class_dict)
         test_features = fit_vectorizer(cleaned_abstracts_test)
@@ -49,7 +48,6 @@ def main():
         print(res)
 
 
-
 def pre_proc_data(data, class_dict):
     stop_words = set(stopwords.words("english"))
     labels = []
@@ -58,7 +56,7 @@ def pre_proc_data(data, class_dict):
         if "Abstract" in article[1].keys() and "class" in article[1].keys():
             labels.append(class_dict[article[1]["class"]])
             cleaned_ab = [w for w in article[1]["Abstract"] if w not in stop_words]
-            abstracts.append(cleaned_ab)
+            abstracts.append(" ".join(cleaned_ab))
     return abstracts, labels
 
 
