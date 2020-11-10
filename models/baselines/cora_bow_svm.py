@@ -17,7 +17,7 @@ def main():
 
     with open(os.path.join(CFG["gpudatadir"], "cora_classes_dict.pkl"), 'rb') as f:
         class_dict = pkl.load(f)
-
+    rev_class_dict = {v: k for k, v in class_dict.items()}
     paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["plain"] + "TRAIN.pkl")
     with open(paper_file, 'rb') as f:
         data_train = pkl.load(f)
@@ -32,13 +32,13 @@ def main():
 
     with ipdb.launch_ipdb_on_exception():
         # TRAIN
-        cleaned_abstracts, labels = pre_proc_data(data_train, class_dict)
+        cleaned_abstracts, labels = pre_proc_data(data_train, rev_class_dict)
         train_features = fit_vectorizer(cleaned_abstracts)
         model = train_svm(train_features, labels)
 
 
         # TEST
-        cleaned_abstracts_test, labels_test = pre_proc_data(data_test, class_dict)
+        cleaned_abstracts_test, labels_test = pre_proc_data(data_test, rev_class_dict)
         test_features = fit_vectorizer(cleaned_abstracts_test)
         predicted_labels = model.predict(test_features)
         print(model.score(test_features, labels_test))
