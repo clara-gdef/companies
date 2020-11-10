@@ -37,8 +37,7 @@ def main(hparams):
     datasets = load_datasets(hparams, CFG, ["TEST"], high_level)
     dataset_test = datasets[0]
     in_size, out_size = get_model_params(hparams, 300, len(dataset_test.track_rep))
-    test_loader = DataLoader(dataset_test, batch_size=1, collate_fn=collate_for_disc_spe_model_cora, num_workers=8,
-                             shuffle=True)
+    test_loader = DataLoader(dataset_test, batch_size=1, collate_fn=collate_for_disc_spe_model_cora, num_workers=0)
 
     arguments = {'in_size': in_size,
                  'out_size': out_size,
@@ -89,7 +88,7 @@ def init_lightning(hparams, CFG, xp_title):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ft_type", type=str, default='pt')
+    parser.add_argument("--ft_type", type=str, default='fs')
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--DEBUG", type=bool, default=False)
