@@ -25,8 +25,13 @@ def init(hparams):
 
 
 def main(hparams):
-    xp_title = hparams.model_type + "_" + hparams.ft_type + "_" + hparams.input_type + "_bs" + str(
-        hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
+    high_level = (hparams.high_level_classes == "True")
+    if high_level:
+        xp_title = hparams.model_type + "_HL_" + hparams.ft_type + "_" + hparams.input_type + "_bs" + str(
+            hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
+    else:
+        xp_title = hparams.model_type + "_" + hparams.ft_type + "_" + hparams.input_type + "_bs" + str(
+            hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, CFG, xp_title)
     print(hparams.auto_lr_find)
     trainer = pl.Trainer(gpus=hparams.gpus,
@@ -35,7 +40,7 @@ def main(hparams):
                          logger=logger,
                          auto_lr_find=True
                          )
-    datasets = load_datasets(hparams, CFG, ["TRAIN", "VALID"])
+    datasets = load_datasets(hparams, CFG, ["TRAIN", "VALID"], high_level)
     dataset_train, dataset_valid = datasets[0], datasets[1]
     in_size, out_size = get_model_params(hparams, 300, len(dataset_train.track_rep))
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model_cora,
@@ -70,14 +75,19 @@ def main(hparams):
     trainer.fit(model.cuda(), train_loader, valid_loader)
 
 
-def load_datasets(hparams, CFG, splits):
+def load_datasets(hparams, CFG, splits, high_level):
+    if high_level:
+        bag_file = CFG["rep"]["cora"]["tracks"]
+    else:
+        bag_file = CFG["rep"]["cora"]["tracks"]
     datasets = []
     common_hparams = {
         "datadir": CFG["gpudatadir"],
-        "track_file": CFG["rep"]["cora"]["tracks"],
+        "bag_file": bag_file,
         "paper_file": CFG["rep"]["cora"]["papers"]["emb"],
         "ft_type": hparams.ft_type,
         "subsample": 0,
+        "high_level": high_level,
         "load": hparams.load_dataset == "True"
     }
     for split in splits:
@@ -123,6 +133,7 @@ if __name__ == "__main__":
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--model_type", type=str, default="cora_disc_spe_adam")
     parser.add_argument("--load_dataset", type=str, default="True")
+    parser.add_argument("--high_level_classes", type=str, default="True")
     parser.add_argument("--middle_size", type=int, default=250)
     parser.add_argument("--load_from_checkpoint", type=str, default="False")
     parser.add_argument("--checkpoint", type=str, default='06')

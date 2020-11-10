@@ -17,6 +17,7 @@ rep:
       plain: cora_
       emb: cora_embedded
     tracks: tracks_reps
+    highlevelclasses: areas_reps
 lookup:
   ppl: lookup_ppl.pkl
   cie: lookup_cie.pkl

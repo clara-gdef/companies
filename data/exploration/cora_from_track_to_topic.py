@@ -35,15 +35,19 @@ def main():
             high_lvl_class = paper[1]["class"].split("/")[1]
             hl_class_count[high_lvl_class] += 1
 
-        high_lvl_classes = sorted(hl_class_count.values())
+        high_lvl_classes = sorted(hl_class_count.keys())
         hl_class_dict = {name: num for num, name in enumerate(high_lvl_classes)}
+
+        with open(os.path.join(CFG["gpudatadir"], "cora_high_level_classes_dict.pkl"), 'wb') as f:
+            pkl.dump(hl_class_dict, f)
 
         track_to_hl_dict = {}
         for low_level_class in class_count.keys():
             ll_class_ind = rev_class_dict[low_level_class]
             high_lvl_class = low_level_class.split("/")[1]
             track_to_hl_dict[ll_class_ind] = hl_class_dict[high_lvl_class]
-
+        with open(os.path.join(CFG["gpudatadir"], "cora_track_to_hl_classes_map.pkl"), 'wb') as f:
+            pkl.dump(track_to_hl_dict, f)
 
     ipdb.set_trace()
 
