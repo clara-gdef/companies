@@ -34,7 +34,7 @@ def pre_proc_data(data):
 
 
 def train_svm():
-
+    pass
 
 
 if __name__ == "__main__":
