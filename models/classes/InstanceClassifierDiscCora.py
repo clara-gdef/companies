@@ -91,7 +91,7 @@ class InstanceClassifierDiscCora(pl.LightningModule):
         return {'val_loss': val_loss}
 
     def configure_optimizers(self):
-        return torch.optim.SGD(self.parameters(), lr=self.hp.lr, weight_decay=self.hp.wd)
+        return torch.optim.Adam(self.parameters(), lr=self.hp.lr, weight_decay=self.hp.wd)
 
     def test_step(self, batch, batch_idx):
         if self.input_type == "userOriented":
