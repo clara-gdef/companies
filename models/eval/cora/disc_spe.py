@@ -34,7 +34,7 @@ def main(hparams):
     trainer = pl.Trainer(gpus=hparams.gpus,
                          logger=logger,
                          )
-    datasets = load_datasets(hparams, CFG, ["TEST"])
+    datasets = load_datasets(hparams, CFG, ["TEST"], high_level)
     dataset_test = datasets[0]
     in_size, out_size = get_model_params(hparams, 300, len(dataset_test.track_rep))
     test_loader = DataLoader(dataset_test, batch_size=1, collate_fn=collate_for_disc_spe_model_cora, num_workers=8,
