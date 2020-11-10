@@ -17,10 +17,10 @@ def main(args):
         res_path = os.path.join(CFG["gpudatadir"], file_name)
         with open(res_path, "rb") as f:
             test_results = pkl.load(f)
-        ipdb.set_trace()
         best_hp_acc, best_hp_f1 = get_best_params(test_results, 'tracks', True, False)
         print("Best accuracy :" + str(test_results[best_hp_acc[0]][best_hp_acc[1]][best_hp_acc[2]]))
         print("Best F1 :" + str(test_results[best_hp_f1[0]][best_hp_f1[1]][best_hp_f1[2]]))
+        ipdb.set_trace()
 
 
 def get_best_params(test_results, handle, weight_decay, mid_size):
