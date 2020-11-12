@@ -46,7 +46,7 @@ def init_model(hparams, dataset, datadir, xp_title, model_class):
                  "ft_type": hparams.ft_type,
                  "optim": hparams.optim,
                  'init_type': hparams.init_type}
-    ipdb.set_trace
+    ipdb.set_trace()
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = model_class(**arguments)
     print("Model Loaded.")
