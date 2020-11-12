@@ -12,7 +12,13 @@ def main(args):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
-    file_name = "EVAL_gs_cora_disc_spe_matMul"
+    xp_name = hparams.model_type
+    if hparams.high_level_classes == "True":
+        xp_name += "_HL"
+    xp_name += '_' + hparams.init_type + "_" + hparams.optim + "_" + hparams.ft_type + "_" + hparams.input_type
+
+    file_name = xp_name
+    print(file_name)
     with ipdb.launch_ipdb_on_exception():
         res_path = os.path.join(CFG["gpudatadir"], file_name)
         with open(res_path, "rb") as f:
@@ -83,6 +89,9 @@ if __name__=="__main__":
     parser.add_argument("--load_from_checkpoint", type=bool, default=False)
     parser.add_argument("--checkpoint", type=str, default=49)
     parser.add_argument("--lr", type=float, default=1e-6)
+    parser.add_argument("--high_level_classes", type=str, default="True")
+    parser.add_argument("--optim", type=str, default="adam")
+    parser.add_argument("--init_type", type=str, default="zeros")
     parser.add_argument("--auto_lr_find", type=bool, default=False)
     parser.add_argument("--epochs", type=int, default=50)
     hparams = parser.parse_args()
