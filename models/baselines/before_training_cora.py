@@ -13,6 +13,7 @@ from models.classes import InstanceClassifierDiscCora
 from models.classes.InstanceClassifierDisc import get_metrics_at_k, get_metrics
 from utils.models import get_model_params, collate_for_disc_spe_model_cora
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
+from utils.cora import load_datasets, collate_for_disc_spe_model_cora, init_model, xp_title_from_params
 
 
 def init(hparams):
@@ -24,26 +25,15 @@ def init(hparams):
 
 
 def main(hparams):
-    xp_title = "b4Traing_" + hparams.model_type + "_" + hparams.ft_type + "_" + hparams.input_type
+    xp_title = xp_title_from_params(hparams)
 
-    datasets = load_datasets(hparams, CFG, ["TEST"])
+    datasets = load_datasets(hparams, CFG, ["TEST"], hparams.high_level_classes == "True")
     dataset_test = datasets[0]
     test_loader = DataLoader(dataset_test, batch_size=1, collate_fn=collate_for_disc_spe_model_cora, num_workers=0,
                              shuffle=True)
 
-    in_size, out_size = get_model_params(hparams, 300, len(dataset_test.track_rep))
+    model = init_model(hparams, dataset_test, CFG["gpudatadir"], xp_title, InstanceClassifierDiscCora)
 
-    arguments = {'in_size': in_size,
-                 'out_size': out_size,
-                 'hparams': hparams,
-                 'datadir': CFG["gpudatadir"],
-                 'desc': xp_title,
-                 "num_tracks": len(dataset_test.track_rep),
-                 "input_type": hparams.input_type,
-                 "ft_type": hparams.ft_type}
-
-    print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
-    model = InstanceClassifierDiscCora(**arguments)
     print("Starting eval for " + xp_title + "...")
     preds_and_labels = model.get_outputs_and_labels(test_loader)
     ipdb.set_trace()
@@ -68,22 +58,6 @@ def main(hparams):
     with open(os.path.join(CFG["gpudatadir"], "OUTPUTS_well_classified_topK_" + xp_title), 'wb') as f:
         pkl.dump(res, f)
 
-
-
-def load_datasets(hparams, CFG, splits):
-    datasets = []
-    common_hparams = {
-        "datadir": CFG["gpudatadir"],
-        "track_file": CFG["rep"]["cora"]["tracks"],
-        "paper_file": CFG["rep"]["cora"]["papers"]["emb"],
-        "ft_type": hparams.ft_type,
-        "subsample": 0,
-        "load": hparams.load_dataset == "True"
-    }
-    for split in splits:
-        datasets.append(DiscriminativeCoraDataset(**common_hparams, split=split))
-
-    return datasets
 
 
 def get_well_classified_outputs(res_dict):
@@ -161,5 +135,8 @@ if __name__ == "__main__":
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--model_type", type=str, default="cora_disc_spe_std")
     parser.add_argument("--load_dataset", type=str, default="True")
+    parser.add_argument("--optim", type=str, default="sgd")
+    parser.add_argument("--init_type", type=str, default="zeros")
+    parser.add_argument("--high_level_classes", type=str, default="True")
     hparams = parser.parse_args()
     init(hparams)
