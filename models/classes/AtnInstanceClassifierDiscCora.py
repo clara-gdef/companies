@@ -12,13 +12,15 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 
 
 class AtnInstanceClassifierDiscCora(pl.LightningModule):
-    def __init__(self, in_size, out_size, hparams, input_type, ft_type, num_tracks, datadir, desc, frozen):
+    def __init__(self, in_size, out_size, hparams, input_type, ft_type, num_tracks, datadir, desc, frozen, init_type, optim):
         super().__init__()
         self.input_type = hparams.input_type
         self.num_tracks = num_tracks
         self.ft_type = ft_type
         self.input_type = input_type
-
+        self.init_type = init_type
+        self.optim = optim
+        
         self.hp = hparams
         self.data_dir = datadir
         self.description = desc
@@ -33,8 +35,12 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
             torch.nn.init.zeros_(self.lin_class_prediction.bias)
         else:
             self.lin = torch.nn.Linear(in_size, out_size)
-            # torch.nn.init.eye_(self.lin.weight)
-            # torch.nn.init.zeros_(self.lin.bias)
+            if init_type == "eye":
+                torch.nn.init.eye_(self.lin.weight)
+                torch.nn.init.zeros_(self.lin.bias)
+            elif init_type == "zeros":
+                torch.nn.init.zeros_(self.lin.weight)
+                torch.nn.init.zeros_(self.lin.bias)
         if frozen:
             self.lin.requires_grad = False
 
@@ -105,7 +111,10 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
 
     def configure_optimizers(self):
         params = filter(lambda p: p.requires_grad, self.parameters())
-        return torch.optim.SGD(params, lr=self.hp.lr, weight_decay=self.hp.wd)
+        if self.optim == "adam":
+            return torch.optim.Adam(params, lr=self.hp.lr, weight_decay=self.hp.wd)
+        else:
+            return torch.optim.SGD(params, lr=self.hp.lr, weight_decay=self.hp.wd)
 
     def test_step(self, batch, batch_idx):
         if self.input_type == "userOriented":
