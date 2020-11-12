@@ -4,7 +4,7 @@ from data.datasets import DiscriminativeCoraDataset
 
 
 def load_datasets(hparams, CFG, splits, high_level):
-    if high_level:
+    if not high_level:
         bag_file = CFG["rep"]["cora"]["tracks"]
     else:
         bag_file = CFG["rep"]["cora"]["highlevelclasses"]
