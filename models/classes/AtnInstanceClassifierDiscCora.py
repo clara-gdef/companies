@@ -20,7 +20,7 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
         self.input_type = input_type
         self.init_type = init_type
         self.optim = optim
-        
+
         self.hp = hparams
         self.data_dir = datadir
         self.description = desc
