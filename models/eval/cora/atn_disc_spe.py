@@ -78,5 +78,6 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--optim", type=str, default="sgd")
     parser.add_argument("--init_type", type=str, default="zeros")
+    parser.add_argument("--high_level_classes", type=str, default="False")
     hparams = parser.parse_args()
     init(hparams)
