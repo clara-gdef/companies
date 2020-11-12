@@ -32,10 +32,10 @@ def main(args):
     with open(paper_file, 'rb') as f:
         data_train = pkl.load(f)
 
-    # paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["plain"] + "VALID.pkl")
-    # with open(paper_file, 'rb') as f:
-    #     data_valid = pkl.load(f)
-    # data_train.extend(data_valid)
+    paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["plain"] + "VALID.pkl")
+    with open(paper_file, 'rb') as f:
+        data_valid = pkl.load(f)
+    data_train.extend(data_valid)
 
     paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["plain"] + "TEST.pkl")
     with open(paper_file, 'rb') as f:
