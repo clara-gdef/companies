@@ -57,11 +57,12 @@ def xp_title_from_params(hparams):
     if hparams.high_level_classes == "True":
         string += "_HL"
     string += '_' + hparams.init_type + "-" + hparams.optim
-    ipdb.set_trace()
-    if hparams.init == "True":
-        string += "_init"
-    if hparams.frozen == "True":
-        string += "_frozen"
+    if hasattr(hparams, 'init'):
+        if hparams.init == "True":
+            string += "_init"
+    if hasattr(hparams, 'frozen'):
+        if hparams.frozen == "True":
+            string += "_frozen"
     string += "_" + hparams.ft_type + "_" + hparams.input_type + "_bs" + str(hparams.b_size)
     string += "_" + str(hparams.lr) + '_' + str(hparams.wd)
     return string
