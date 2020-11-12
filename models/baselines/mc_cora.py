@@ -1,3 +1,4 @@
+import argparse
 import os
 import pickle as pkl
 import ipdb
@@ -8,7 +9,7 @@ from tqdm import tqdm
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score, confusion_matrix
 
 
-def main():
+def main(args):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
@@ -16,8 +17,15 @@ def main():
     with open(paper_file, 'rb') as f:
         data = pkl.load(f)
     classes = Counter()
+
+    high_level = (args.high_level_classes == "True")
+
+    mapper_dict = pkl.load(open(os.path.join(CFG["gpudatadir"], "cora_track_to_hl_classes_map.pkl"), 'rb'))
     for paper in tqdm(data):
-        classes[paper["class"]] += 1
+        if high_level:
+            classes[mapper_dict[paper["class"]]] += 1
+        else:
+            classes[paper["class"]] += 1
     mc_class = classes.most_common(1)[0][0]
     ipdb.set_trace()
     paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["emb"] + "_fs_TEST.pkl")
@@ -63,4 +71,7 @@ def get_metrics_at_k(predictions, labels, num_classes, handle, offset):
     return get_metrics(out_predictions, labels, num_classes, handle, offset)
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--high_level_classes", type=str, default="True")
+    args = parser.parse_args()
+    main(args)
