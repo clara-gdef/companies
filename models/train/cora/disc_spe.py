@@ -10,7 +10,8 @@ from torch.utils.data import DataLoader
 import yaml
 from data.datasets import DiscriminativeCoraDataset
 from models.classes import InstanceClassifierDiscCora
-from utils.models import collate_for_disc_spe_model_cora, get_model_params
+from utils.models import get_model_params
+from utils.cora import load_datasets, collate_for_disc_spe_model_cora
 
 
 def init(hparams):
@@ -73,27 +74,6 @@ def main(hparams):
         print("Starting training " + xp_title)
 
     trainer.fit(model.cuda(), train_loader, valid_loader)
-
-
-def load_datasets(hparams, CFG, splits, high_level):
-    if high_level:
-        bag_file = CFG["rep"]["cora"]["tracks"]
-    else:
-        bag_file = CFG["rep"]["cora"]["highlevelclasses"]
-    datasets = []
-    common_hparams = {
-        "datadir": CFG["gpudatadir"],
-        "bag_file": bag_file,
-        "paper_file": CFG["rep"]["cora"]["papers"]["emb"],
-        "ft_type": hparams.ft_type,
-        "subsample": 0,
-        "high_level": high_level,
-        "load": hparams.load_dataset == "True"
-    }
-    for split in splits:
-        datasets.append(DiscriminativeCoraDataset(**common_hparams, split=split))
-
-    return datasets
 
 
 def init_lightning(hparams, CFG, xp_title):
