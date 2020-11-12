@@ -1,5 +1,6 @@
 import torch
 import ipdb
+from utils import DotDict
 from data.datasets import DiscriminativeCoraDataset
 from utils.models import get_model_params
 
@@ -57,12 +58,20 @@ def xp_title_from_params(hparams):
     if hparams.high_level_classes == "True":
         string += "_HL"
     string += '_' + hparams.init_type + "_" + hparams.optim
-    if hasattr(hparams, 'init'):
-        if hparams.init == "True":
-            string += "_init"
-    if hasattr(hparams, 'frozen'):
-        if hparams.frozen == "True":
-            string += "_frozen"
+    if type(hparams) == DotDict:
+        if "init" in hparams.keys():
+            if hparams.init == "True":
+                string += "_init"
+        if 'frozen' in hparams.keys():
+            if hparams.frozen == "True":
+                string += "_frozen"
+    else:
+        if hasattr(hparams, 'init'):
+            if hparams.init == "True":
+                string += "_init"
+        if hasattr(hparams, 'frozen'):
+            if hparams.frozen == "True":
+                string += "_frozen"
     string += "_" + hparams.ft_type + "_" + hparams.input_type + "_bs" + str(hparams.b_size)
     string += "_" + str(hparams.lr) + '_' + str(hparams.wd)
     return string
