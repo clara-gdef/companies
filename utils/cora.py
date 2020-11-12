@@ -56,7 +56,7 @@ def xp_title_from_params(hparams):
     string = hparams.model_type
     if hparams.high_level_classes == "True":
         string += "_HL"
-    string += '_' + hparams.init_type + "-" + hparams.optim
+    string += '_' + hparams.init_type + "_" + hparams.optim
     if hasattr(hparams, 'init'):
         if hparams.init == "True":
             string += "_init"
