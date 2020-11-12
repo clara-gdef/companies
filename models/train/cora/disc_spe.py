@@ -8,7 +8,6 @@ from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
-from data.datasets import DiscriminativeCoraDataset
 from models.classes import InstanceClassifierDiscCora
 from utils.models import get_model_params
 from utils.cora import load_datasets, collate_for_disc_spe_model_cora
@@ -43,6 +42,7 @@ def main(hparams):
                          )
     datasets = load_datasets(hparams, CFG, ["TRAIN", "VALID"], high_level)
     dataset_train, dataset_valid = datasets[0], datasets[1]
+    ipdb.set_trace()
     in_size, out_size = get_model_params(hparams, 300, len(dataset_train.track_rep))
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model_cora,
                               num_workers=0, shuffle=True)
