@@ -71,7 +71,7 @@ if __name__ == "__main__":
     parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", type=str, default="False")
-    parser.add_argument("--model_type", type=str, default="cora_disc_spe_eye_init_adam")
+    parser.add_argument("--model_type", type=str, default="cora_disc_spe")
     parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--high_level_classes", type=str, default="True")
     parser.add_argument("--middle_size", type=int, default=100)
