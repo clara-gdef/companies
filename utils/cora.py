@@ -1,6 +1,7 @@
 import torch
-
+import ipdb
 from data.datasets import DiscriminativeCoraDataset
+from utils.models import get_model_params
 
 
 def load_datasets(hparams, CFG, splits, high_level):
@@ -30,3 +31,37 @@ def collate_for_disc_spe_model_cora(batch):
     sent_emb = [torch.from_numpy(i[2]) for i in batch]
     labels = [i[3] for i in batch]
     return ids, torch.stack(avg_profiles), sent_emb, torch.LongTensor(labels), batch[0][-1]
+
+
+def init_model(hparams, dataset, datadir, xp_title, model_class):
+    in_size, out_size = get_model_params(hparams, 300, len(dataset.track_rep))
+    arguments = {'in_size': in_size,
+                 'out_size': out_size,
+                 'hparams': hparams,
+                 'datadir': datadir,
+                 'desc': xp_title,
+                 "num_tracks": len(dataset.track_rep),
+                 "input_type": hparams.input_type,
+                 "ft_type": hparams.ft_type,
+                 "optim": hparams.optim,
+                 'init_type': hparams.init_type}
+
+    print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
+    model = model_class(**arguments)
+    print("Model Loaded.")
+    return model
+
+
+def xp_title_from_params(hparams):
+    string = hparams.model_type
+    if hparams.high_level_classes == "True":
+        string += "_HL"
+    string += '_' + hparams.init_type + "-" + hparams.optim
+    ipdb.set_trace()
+    if hparams.init == "True":
+        string += "_init"
+    if hparams.frozen == "True":
+        string += "_frozen"
+    string += "_" + hparams.ft_type + "_" + hparams.input_type + "_bs" + str(hparams.b_size)
+    string += "_" + str(hparams.lr) + '_' + str(hparams.wd)
+    return string

@@ -9,8 +9,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
 from models.classes import InstanceClassifierDiscCora
-from utils.models import get_model_params
-from utils.cora import load_datasets, collate_for_disc_spe_model_cora
+from utils.cora import load_datasets, collate_for_disc_spe_model_cora, init_model, xp_title_from_params
 
 
 def init(hparams):
@@ -25,13 +24,8 @@ def init(hparams):
 
 
 def main(hparams):
-    high_level = (hparams.high_level_classes == "True")
-    if high_level:
-        xp_title = hparams.model_type + "_HL_" + hparams.ft_type + "_" + hparams.input_type + "_bs" + str(
-            hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
-    else:
-        xp_title = hparams.model_type + "_" + hparams.ft_type + "_" + hparams.input_type + "_bs" + str(
-            hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
+    xp_title = xp_title_from_params(hparams)
+
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, CFG, xp_title)
     print(hparams.auto_lr_find)
     trainer = pl.Trainer(gpus=hparams.gpus,
@@ -40,25 +34,15 @@ def main(hparams):
                          logger=logger,
                          auto_lr_find=True
                          )
-    datasets = load_datasets(hparams, CFG, ["TRAIN", "VALID"], high_level)
+    datasets = load_datasets(hparams, CFG, ["TRAIN", "VALID"], (hparams.high_level_classes == "True"))
     dataset_train, dataset_valid = datasets[0], datasets[1]
-    in_size, out_size = get_model_params(hparams, 300, len(dataset_train.track_rep))
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model_cora,
                               num_workers=0, shuffle=True)
     valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model_cora,
                               num_workers=0)
-    arguments = {'in_size': in_size,
-                 'out_size': out_size,
-                 'hparams': hparams,
-                 'datadir': CFG["gpudatadir"],
-                 'desc': xp_title,
-                 "num_tracks": len(dataset_train.track_rep),
-                 "input_type": hparams.input_type,
-                 "ft_type": hparams.ft_type}
 
-    print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
-    model = InstanceClassifierDiscCora(**arguments)
-    print("Model Loaded.")
+    model = init_model(hparams, dataset_train, CFG["gpudatadir"], xp_title, InstanceClassifierDiscCora)
+
     if hparams.load_from_checkpoint == "True":
         print("Loading from previous checkpoint...")
         model_name = xp_title
@@ -115,6 +99,8 @@ if __name__ == "__main__":
     parser.add_argument("--high_level_classes", type=str, default="True")
     parser.add_argument("--middle_size", type=int, default=250)
     parser.add_argument("--load_from_checkpoint", type=str, default="False")
+    parser.add_argument("--optim", type=str, default="sgd")
+    parser.add_argument("--init_type", type=str, default="zeros")
     parser.add_argument("--checkpoint", type=str, default='06')
     parser.add_argument("--lr", type=float, default=1e-8)
     parser.add_argument("--auto_lr_find", type=bool, default=False)

@@ -9,8 +9,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
 from models.classes import AtnInstanceClassifierDiscCora
-from utils import get_model_params
-from utils.cora import load_datasets, collate_for_disc_spe_model_cora
+from utils.cora import load_datasets, collate_for_disc_spe_model_cora, init_model, xp_title_from_params
 
 
 def init(hparams):
@@ -25,17 +24,7 @@ def init(hparams):
 
 
 def main(hparams):
-    high_level = (hparams.high_level_classes == "True")
-    if high_level:
-        xp_title = hparams.model_type + "_HL_" + hparams.ft_type + "_" + hparams.input_type + "_bs" + str(
-            hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
-    else:
-        xp_title = hparams.model_type + "_" + hparams.ft_type + "_" + hparams.input_type + "_bs" + str(
-            hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
-    if hparams.init == "True":
-        xp_title += "_init"
-    if hparams.frozen == "True":
-        xp_title += "_frozen"
+    xp_title = xp_title_from_params(hparams)
 
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, CFG, xp_title)
     print(hparams.auto_lr_find)
@@ -45,26 +34,15 @@ def main(hparams):
                          logger=logger,
                          auto_lr_find=True
                          )
-    datasets = load_datasets(hparams, CFG, ["TRAIN", "VALID"], high_level)
+    datasets = load_datasets(hparams, CFG, ["TRAIN", "VALID"], hparams.high_level_classes == "True")
     dataset_train, dataset_valid = datasets[0], datasets[1]
-    in_size, out_size = get_model_params(hparams, 300, len(dataset_train.track_rep))
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model_cora,
                               num_workers=2, shuffle=True)
     valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model_cora,
                               num_workers=2)
-    arguments = {'in_size': in_size,
-                 'out_size': out_size,
-                 'hparams': hparams,
-                 'datadir': CFG["gpudatadir"],
-                 'desc': xp_title,
-                 "num_tracks": len(dataset_train.track_rep),
-                 "input_type": hparams.input_type,
-                 "ft_type": hparams.ft_type,
-                 "frozen": hparams.frozen == "True"}
 
-    print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
-    model = AtnInstanceClassifierDiscCora(**arguments)
-    print("Model Loaded.")
+    model = init_model(hparams, dataset_train, CFG["gpudatadir"], xp_title, AtnInstanceClassifierDiscCora)
+
     if hparams.load_from_checkpoint:
         print("Loading from previous checkpoint...")
         model_name = xp_title

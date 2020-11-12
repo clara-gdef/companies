@@ -8,8 +8,8 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
 from models.classes import AtnInstanceClassifierDiscCora
-from utils.models import get_model_params, get_latest_model
-from utils.cora import load_datasets, collate_for_disc_spe_model_cora
+from utils.models import get_latest_model
+from utils.cora import load_datasets, collate_for_disc_spe_model_cora, init_model, xp_title_from_params
 
 
 def init(hparams):
@@ -24,12 +24,7 @@ def init(hparams):
 
 
 def main(hparams):
-    xp_title = hparams.model_type + "_" + hparams.ft_type + "_" + hparams.input_type + "_bs" + str(
-        hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
-    if hparams.init == "True":
-        xp_title += "_init"
-    if hparams.frozen == "True":
-        xp_title += "_frozen"
+    xp_title = xp_title_from_params(hparams)
 
     logger = init_lightning(hparams, CFG, xp_title)
     print(hparams.auto_lr_find)
@@ -38,22 +33,11 @@ def main(hparams):
                          )
     datasets = load_datasets(hparams, CFG, ["TEST"])
     dataset_test = datasets[0]
-    in_size, out_size = get_model_params(hparams, 300, len(dataset_test.track_rep))
     test_loader = DataLoader(dataset_test, batch_size=1, collate_fn=collate_for_disc_spe_model_cora, num_workers=8,
                              shuffle=True)
 
-    arguments = {'in_size': in_size,
-                 'out_size': out_size,
-                 'hparams': hparams,
-                 'datadir': CFG["gpudatadir"],
-                 'desc': xp_title,
-                 "num_tracks": len(dataset_test.track_rep),
-                 "input_type": hparams.input_type,
-                 "ft_type": hparams.ft_type,
-                 "frozen": hparams.frozen == "True"}
+    model = init_model(hparams, dataset_test, CFG["gpudatadir"], xp_title, AtnInstanceClassifierDiscCora)
 
-    print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
-    model = AtnInstanceClassifierDiscCora(**arguments)
     if hparams.load_from_checkpoint == "True":
         model_name = xp_title
         model_path = os.path.join(CFG['modeldir'], model_name)
