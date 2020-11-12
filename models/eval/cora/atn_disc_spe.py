@@ -7,7 +7,6 @@ import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
-from data.datasets import DiscriminativeCoraDataset
 from models.classes import AtnInstanceClassifierDiscCora
 from utils.models import get_model_params, get_latest_model
 from utils.cora import load_datasets, collate_for_disc_spe_model_cora
