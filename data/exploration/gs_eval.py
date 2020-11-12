@@ -12,7 +12,7 @@ def main(args):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
-    xp_name = hparams.model_type
+    xp_name = "EVAL_gs_" + hparams.model_type
     if hparams.high_level_classes == "True":
         xp_name += "_HL"
     xp_name += '_' + hparams.init_type + "_" + hparams.optim + "_" + hparams.ft_type + "_" + hparams.input_type
