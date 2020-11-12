@@ -19,14 +19,11 @@ def main(args):
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
 
     high_level = (args.high_level_classes == "True")
-
+    with open(os.path.join(CFG["gpudatadir"], "cora_classes_dict.pkl"), 'rb') as f:
+        class_dict = pkl.load(f)
     if not high_level:
-        with open(os.path.join(CFG["gpudatadir"], "cora_classes_dict.pkl"), 'rb') as f:
-            class_dict = pkl.load(f)
         mapper_dict = None
     else:
-        with open(os.path.join(CFG["gpudatadir"], "cora_high_level_classes_dict.pkl"), 'rb') as f:
-            class_dict = pkl.load(f)
         mapper_dict = pkl.load(open(os.path.join(CFG["gpudatadir"], "cora_track_to_hl_classes_map.pkl"), 'rb'))
 
     rev_class_dict = {v: k for k, v in class_dict.items()}
@@ -59,12 +56,17 @@ def main(args):
         predictions_at_1 = []
         for sample, lab in zip(predictions, labels_test):
             predictions_at_1.append(get_pred_at_k(sample, lab, 1))
-        res_at_1 = eval_model(labels_test, predictions_at_1, len(class_dict), "SVM_BOW")
+
+        num_c = 10 if high_level else len(class_dict)
+
+        res_at_1 = eval_model(labels_test, predictions_at_1, num_c, "SVM_BOW")
 
         predictions_at_10 = []
         for sample, lab in zip(predictions, labels_test):
             predictions_at_10.append(get_pred_at_k(sample, lab, 10))
-        res_at_10 = eval_model(labels_test, predictions_at_10, len(class_dict), "SVM_BOW_@10")
+        res_at_10 = eval_model(labels_test, predictions_at_10, num_c, "SVM_BOW_@10")
+
+        ipdb.set_trace()
 
         print({**res_at_1, **res_at_10})
 
@@ -73,19 +75,14 @@ def pre_proc_data(data, class_dict, mapper_dict):
     stop_words = set(stopwords.words("english"))
     labels = []
     abstracts = []
-    if mapper_dict is not None:
-        ipdb.set_trace()
-        for article in tqdm(data, desc="Parsing articles..."):
-            if "Abstract" in article[1].keys() and "class" in article[1].keys():
+    for article in tqdm(data, desc="Parsing articles..."):
+        if "Abstract" in article[1].keys() and "class" in article[1].keys():
+            if mapper_dict is not None:
+                labels.append(mapper_dict[class_dict[article[1]["class"]]])
+            else:
                 labels.append(class_dict[article[1]["class"]])
-                cleaned_ab = [w for w in article[1]["Abstract"] if w not in stop_words]
-                abstracts.append(" ".join(cleaned_ab))
-    else:
-        for article in tqdm(data, desc="Parsing articles..."):
-            if "Abstract" in article[1].keys() and "class" in article[1].keys():
-                labels.append(class_dict[article[1]["class"]])
-                cleaned_ab = [w for w in article[1]["Abstract"] if w not in stop_words]
-                abstracts.append(" ".join(cleaned_ab))
+            cleaned_ab = [w for w in article[1]["Abstract"] if w not in stop_words]
+            abstracts.append(" ".join(cleaned_ab))
     return abstracts, labels
 
 
