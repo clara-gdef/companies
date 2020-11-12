@@ -1,3 +1,5 @@
+import argparse
+
 import yaml
 import os
 import pickle as pkl
@@ -11,14 +13,24 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 from tqdm import tqdm
 
 
-def main():
+def main(args):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
 
-    with open(os.path.join(CFG["gpudatadir"], "cora_classes_dict.pkl"), 'rb') as f:
-        class_dict = pkl.load(f)
+    high_level = (args.high_level_classes == "True")
+
+    if not high_level:
+        with open(os.path.join(CFG["gpudatadir"], "cora_classes_dict.pkl"), 'rb') as f:
+            class_dict = pkl.load(f)
+        mapper_dict = None
+    else:
+        with open(os.path.join(CFG["gpudatadir"], "cora_high_level_classes_dict.pkl"), 'rb') as f:
+            class_dict = pkl.load(f)
+        mapper_dict = pkl.load(open(os.path.join(CFG["gpudatadir"], "cora_track_to_hl_classes_map.pkl"), 'rb'))
+
     rev_class_dict = {v: k for k, v in class_dict.items()}
+
     paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["plain"] + "TRAIN.pkl")
     with open(paper_file, 'rb') as f:
         data_train = pkl.load(f)
@@ -33,13 +45,14 @@ def main():
         data_test = pkl.load(f)
 
     with ipdb.launch_ipdb_on_exception():
+
         # TRAIN
-        cleaned_abstracts, labels = pre_proc_data(data_train, rev_class_dict)
+        cleaned_abstracts, labels = pre_proc_data(data_train, rev_class_dict, mapper_dict)
         train_features = fit_vectorizer(cleaned_abstracts)
         model = train_svm(train_features, labels)
 
         # TEST
-        cleaned_abstracts_test, labels_test = pre_proc_data(data_test, rev_class_dict)
+        cleaned_abstracts_test, labels_test = pre_proc_data(data_test, rev_class_dict, mapper_dict)
         test_features = fit_vectorizer(cleaned_abstracts_test)
         predictions = model.decision_function(test_features)
 
@@ -56,15 +69,23 @@ def main():
         print({**res_at_1, **res_at_10})
 
 
-def pre_proc_data(data, class_dict):
+def pre_proc_data(data, class_dict, mapper_dict):
     stop_words = set(stopwords.words("english"))
     labels = []
     abstracts = []
-    for article in tqdm(data, desc="Parsing articles..."):
-        if "Abstract" in article[1].keys() and "class" in article[1].keys():
-            labels.append(class_dict[article[1]["class"]])
-            cleaned_ab = [w for w in article[1]["Abstract"] if w not in stop_words]
-            abstracts.append(" ".join(cleaned_ab))
+    if mapper_dict is not None:
+        ipdb.set_trace()
+        for article in tqdm(data, desc="Parsing articles..."):
+            if "Abstract" in article[1].keys() and "class" in article[1].keys():
+                labels.append(class_dict[article[1]["class"]])
+                cleaned_ab = [w for w in article[1]["Abstract"] if w not in stop_words]
+                abstracts.append(" ".join(cleaned_ab))
+    else:
+        for article in tqdm(data, desc="Parsing articles..."):
+            if "Abstract" in article[1].keys() and "class" in article[1].keys():
+                labels.append(class_dict[article[1]["class"]])
+                cleaned_ab = [w for w in article[1]["Abstract"] if w not in stop_words]
+                abstracts.append(" ".join(cleaned_ab))
     return abstracts, labels
 
 
@@ -105,4 +126,7 @@ def get_pred_at_k(pred, label, k):
     return new_pred
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--high_level_classes", type=str, default="True")
+    args = parser.parse_args()
+    main(args)

@@ -34,13 +34,17 @@ def main(args):
 
     labels = []
     for paper in tqdm(data_test):
-        labels.append(paper["class"])
+        if high_level:
+            labels.append(mapper_dict[paper["class"]])
+        else:
+            labels.append(paper["class"])
     preds = [mc_class] * len(labels)
+
     with ipdb.launch_ipdb_on_exception():
-        res_1 = get_metrics(preds, labels, 70, "mc_@1", 0)
+        res_1 = get_metrics(preds, labels, len(classes), "mc_@1", 0)
         print(res_1)
         mc_class_10 = [[i[0] for i in classes.most_common(10)]] * len(labels)
-        res_2 = get_metrics_at_k(mc_class_10, labels, 70, "mc_@1", 0)
+        res_2 = get_metrics_at_k(mc_class_10, labels, len(classes), "mc_@10", 0)
         print(res_2)
 
         ipdb.set_trace()
