@@ -16,7 +16,7 @@ def main(args):
     if hparams.high_level_classes == "True":
         xp_name += "_HL"
     xp_name += '_' + hparams.init_type + "_" + hparams.optim + "_" + hparams.ft_type + "_" + hparams.input_type
-    
+
     file_name = xp_name
     print(file_name)
     with ipdb.launch_ipdb_on_exception():
