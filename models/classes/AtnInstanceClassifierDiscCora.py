@@ -33,8 +33,8 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
             torch.nn.init.zeros_(self.lin_class_prediction.bias)
         else:
             self.lin = torch.nn.Linear(in_size, out_size)
-            torch.nn.init.eye_(self.lin.weight)
-            torch.nn.init.zeros_(self.lin.bias)
+            # torch.nn.init.eye_(self.lin.weight)
+            # torch.nn.init.zeros_(self.lin.bias)
         if frozen:
             self.lin.requires_grad = False
 

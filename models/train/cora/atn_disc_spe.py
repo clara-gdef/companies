@@ -72,7 +72,7 @@ def main(hparams):
         print("Resuming training from checkpoint : " + model_file + ".")
     elif hparams.init == "True":
         print("Loading from previous checkpoint...")
-        model_name = "cora_disc_spe_fs_matMul_bs16_1e-08_0.0/epoch=06.ckpt"
+        model_name = "cora_disc_spe_rdn_init_fs_matMul_bs16_1e-08_0.0/epoch=188.ckpt"
         model_file = os.path.join(CFG['modeldir'], model_name)
         model.lin.weight = torch.nn.Parameter(torch.load(model_file)["state_dict"]["lin.weight"])
         model.lin.bias = torch.nn.Parameter(torch.load(model_file)["state_dict"]["lin.bias"])
@@ -136,8 +136,9 @@ if __name__ == "__main__":
     parser.add_argument("--init", type=str, default="False")
     parser.add_argument("--frozen", type=str, default="False")
     parser.add_argument("--input_type", type=str, default="matMul")
-    parser.add_argument("--model_type", type=str, default="atn_cora_disc_spe")
-    parser.add_argument("--load_dataset", type=str, default="False")
+    parser.add_argument("--model_type", type=str, default="atn_cora_disc_spe_rdn_init")
+    parser.add_argument("--load_dataset", type=str, default="True")
+    parser.add_argument("--high_level_classes", type=str, default="False")
     parser.add_argument("--middle_size", type=int, default=250)
     parser.add_argument("--load_from_checkpoint", type=bool, default=False)
     parser.add_argument("--checkpoint", type=str, default=49)
