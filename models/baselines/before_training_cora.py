@@ -23,7 +23,7 @@ def init(hparams):
 
 
 def main(hparams):
-    xp_title = xp_title_from_params(hparams)
+    xp_title = "cora HL b4 training"
 
     datasets = load_datasets(hparams, CFG, ["TEST"], hparams.high_level_classes == "True")
     dataset_test = datasets[0]
