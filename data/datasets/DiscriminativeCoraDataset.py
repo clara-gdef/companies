@@ -81,7 +81,6 @@ class DiscriminativeCoraDataset(Dataset):
             self.tuples.append(new_tup)
 
     def build_bag_reps(self, track_file):
-        ipdb.set_trace()
         with open(track_file, 'rb') as f:
             tracks = pkl.load(f)
         self.track_rep = torch.from_numpy(np.stack(tracks))
