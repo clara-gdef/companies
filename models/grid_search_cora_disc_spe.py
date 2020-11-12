@@ -46,7 +46,6 @@ def init_args(hparams):
             'load_dataset': hparams.load_dataset,
             'auto_lr_find': False,
             "model_type": hparams.model_type,
-            'data_agg_type': 'avg',
             'epochs': hparams.epochs,
             "subsample": 0,
             "middle_size": hparams.middle_size,
@@ -69,7 +68,6 @@ if __name__ == "__main__":
     parser.add_argument("--model_type", type=str, default="cora_disc_spe_rdn_init_adam")
     parser.add_argument("--auto_lr_find", type=bool, default=True)
     parser.add_argument("--high_level_classes", type=str, default="True")
-    parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--middle_size", type=int, default=100)
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--TRAIN", default="True")
