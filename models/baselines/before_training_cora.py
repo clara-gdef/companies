@@ -34,7 +34,6 @@ def main(hparams):
 
     print("Starting eval for " + xp_title + "...")
     preds_and_labels = model.get_outputs_and_labels(test_loader)
-    ipdb.set_trace()
 
     res = {}
     preds = preds_and_labels["preds"]
@@ -48,6 +47,7 @@ def main(hparams):
         res_k = get_metrics_at_k(predicted_classes[:, :k], labels, num_c, handle + "_@" + str(k), offset)
         res = {**res, **res_k}
     gen_res = res
+    ipdb.set_trace()
 
     res = {**res, **gen_res}
 
@@ -127,7 +127,7 @@ def get_general_results_poly(preds, labels, num_classes):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ft_type", type=str, default='pt')
+    parser.add_argument("--ft_type", type=str, default='fs')
     parser.add_argument("--gpus", type=int, default=0)
     parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--input_type", type=str, default="matMul")
