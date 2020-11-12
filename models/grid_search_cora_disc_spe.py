@@ -80,7 +80,7 @@ if __name__ == "__main__":
     parser.add_argument("--DEBUG", type=bool, default=False)
     parser.add_argument("--lr", nargs='+', default=[1e-4, 1e-6, 1e-8])
     parser.add_argument("--b_size", nargs='+', default=[64, 128, 16])
-    parser.add_argument("--optim", type=str, default="sgd")
+    parser.add_argument("--optim", type=str, default="adam")
     parser.add_argument("--init_type", type=str, default="zeros")
     hparams = parser.parse_args()
     grid_search(hparams)
