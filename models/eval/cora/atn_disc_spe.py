@@ -76,5 +76,7 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default=1e-8)
     parser.add_argument("--auto_lr_find", type=bool, default=False)
     parser.add_argument("--epochs", type=int, default=50)
+    parser.add_argument("--optim", type=str, default="sgd")
+    parser.add_argument("--init_type", type=str, default="zeros")
     hparams = parser.parse_args()
     init(hparams)
