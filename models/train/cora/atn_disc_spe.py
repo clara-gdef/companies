@@ -25,8 +25,13 @@ def init(hparams):
 
 
 def main(hparams):
-    xp_title = hparams.model_type + "_" + hparams.ft_type + "_" + hparams.input_type + "_bs" + str(
-        hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
+    high_level = (hparams.high_level_classes == "True")
+    if high_level:
+        xp_title = hparams.model_type + "_HL_" + hparams.ft_type + "_" + hparams.input_type + "_bs" + str(
+            hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
+    else:
+        xp_title = hparams.model_type + "_" + hparams.ft_type + "_" + hparams.input_type + "_bs" + str(
+            hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
     if hparams.init == "True":
         xp_title += "_init"
     if hparams.frozen == "True":
@@ -40,7 +45,7 @@ def main(hparams):
                          logger=logger,
                          auto_lr_find=True
                          )
-    datasets = load_datasets(hparams, CFG, ["TRAIN", "VALID"])
+    datasets = load_datasets(hparams, CFG, ["TRAIN", "VALID"], high_level)
     dataset_train, dataset_valid = datasets[0], datasets[1]
     in_size, out_size = get_model_params(hparams, 300, len(dataset_train.track_rep))
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model_cora,
@@ -83,11 +88,15 @@ def main(hparams):
     trainer.fit(model.cuda(), train_loader, valid_loader)
 
 
-def load_datasets(hparams, CFG, splits):
+def load_datasets(hparams, CFG, splits, high_level):
+    if high_level:
+        bag_file = CFG["rep"]["cora"]["tracks"]
+    else:
+        bag_file = CFG["rep"]["cora"]["highlevelclasses"]
     datasets = []
     common_hparams = {
         "datadir": CFG["gpudatadir"],
-        "track_file": CFG["rep"]["cora"]["tracks"],
+        "bag_file": bag_file,
         "paper_file": CFG["rep"]["cora"]["papers"]["emb"],
         "ft_type": hparams.ft_type,
         "subsample": 0,
