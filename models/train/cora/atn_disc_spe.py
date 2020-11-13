@@ -55,7 +55,10 @@ def main(hparams):
         print("Resuming training from checkpoint : " + model_file + ".")
     elif hparams.init == "True":
         print("Loading from previous checkpoint...")
-        model_name = "cora_disc_spe_rdn_init_fs_matMul_bs16_1e-08_0.0/epoch=188.ckpt"
+        if hparams.high_level_classes == "True":
+            model_name = "cora_disc_spe_HL_zeros_sgd_fs_matMul_bs16_0.0001_0.0/epoch=21.ckpt"
+        else:
+            model_name = "cora_disc_spe_rdn_init_fs_matMul_bs16_1e-08_0.0/epoch=188.ckpt"
         model_file = os.path.join(CFG['modeldir'], model_name)
         model.lin.weight = torch.nn.Parameter(torch.load(model_file)["state_dict"]["lin.weight"])
         model.lin.bias = torch.nn.Parameter(torch.load(model_file)["state_dict"]["lin.bias"])
