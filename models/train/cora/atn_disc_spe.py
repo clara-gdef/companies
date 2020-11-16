@@ -56,7 +56,7 @@ def main(hparams):
     elif hparams.init == "True":
         print("Loading from previous checkpoint...")
         if hparams.high_level_classes == "True":
-            model_name = "cora_disc_spe_HL_eye_sgd_fs_matMul_bs16_1e-06_0.0/epoch=14.ckpt"
+            model_name = "cora_disc_spe_HL_rdn_sgd_fs_matMul_bs16_0.0001_0.0/epoch=11.ckpt"
         else:
             model_name = "cora_disc_spe_rdn_init_fs_matMul_bs16_1e-08_0.0/epoch=188.ckpt"
         model_file = os.path.join(CFG['modeldir'], model_name)
@@ -118,6 +118,6 @@ if __name__ == "__main__":
     parser.add_argument("--auto_lr_find", type=bool, default=False)
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--optim", type=str, default="sgd")
-    parser.add_argument("--init_type", type=str, default="zeros")
+    parser.add_argument("--init_type", type=str, default="rdn")
     hparams = parser.parse_args()
     init(hparams)
