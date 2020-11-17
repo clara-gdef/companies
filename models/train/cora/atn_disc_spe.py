@@ -112,7 +112,7 @@ if __name__ == "__main__":
     parser.add_argument("--load_dataset", type=str, default="True")
     parser.add_argument("--high_level_classes", type=str, default="True")
     parser.add_argument("--middle_size", type=int, default=250)
-    parser.add_argument("--load_from_checkpoint", type=bool, default=True)
+    parser.add_argument("--load_from_checkpoint", type=bool, default=False)
     parser.add_argument("--checkpoint", type=str, default=49)
     parser.add_argument("--lr", type=float, default=1e-6)
     parser.add_argument("--auto_lr_find", type=bool, default=False)
