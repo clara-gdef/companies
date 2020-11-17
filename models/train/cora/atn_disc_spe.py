@@ -66,19 +66,23 @@ def main(hparams):
     else:
         print("Starting training " + xp_title)
 
-    # Run learning rate finder
-    lr_finder = trainer.tuner.lr_find(model)
 
-    # Results can be found in
-    lr_finder.results
-
-    # Pick point based on plot, or get suggestion
-    new_lr = lr_finder.suggestion()
-
-    ipdb.set_trace()
-
-    # update hparams of the model
-    model.hparams.lr = new_lr
+    # # Run learning rate finder
+    # lr_finder = trainer.tuner.lr_find(model, train_dataloader=train_loader, val_dataloaders=valid_loader)
+    #
+    # # Results can be found in
+    # print(lr_finder.results)
+    #
+    # # Plot with
+    # #fig = lr_finder.plot(suggest=True)
+    # #fig.show()
+    #
+    # # Pick point based on plot, or get suggestion
+    # new_lr = lr_finder.suggestion()
+    #
+    # # update hparams of the model
+    # model.hparams.lr = new_lr
+    # ipdb.set_trace()
 
     trainer.fit(model.cuda(), train_loader, valid_loader)
 
