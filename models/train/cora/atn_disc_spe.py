@@ -66,9 +66,21 @@ def main(hparams):
     else:
         print("Starting training " + xp_title)
 
+    # Run learning rate finder
+    lr_finder = trainer.tuner.lr_find(model)
+
+    # Results can be found in
+    lr_finder.results
+
+    # Pick point based on plot, or get suggestion
+    new_lr = lr_finder.suggestion()
+
+    ipdb.set_trace()
+
+    # update hparams of the model
+    model.hparams.lr = new_lr
+
     trainer.fit(model.cuda(), train_loader, valid_loader)
-
-
 
 
 def init_lightning(hparams, CFG, xp_title):
