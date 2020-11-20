@@ -13,9 +13,12 @@ def main(args):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
-    paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["emb"] + "_fs_TRAIN.pkl")
-    with open(paper_file, 'rb') as f:
-        data = pkl.load(f)
+
+    data = []
+    for item in ["TRAIN", "VALID", "TEST"]:
+        paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["emb"] + "_fs_" + item + ".pkl")
+        with open(paper_file, 'rb') as f:
+            data.extend(pkl.load(f))
     classes = Counter()
 
     high_level = (args.high_level_classes == "True")
