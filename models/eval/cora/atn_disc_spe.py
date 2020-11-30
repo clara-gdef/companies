@@ -31,7 +31,8 @@ def main(hparams):
     trainer = pl.Trainer(gpus=hparams.gpus,
                          logger=logger,
                          )
-    datasets = load_datasets(hparams, CFG, ["TEST"],  hparams.high_level_classes == "True")
+    # TODO : REMOVE TRAIN AND REPLACE BY TEST, THIS IS FOR DBEUG
+    datasets = load_datasets(hparams, CFG, ["TRAIN"],  hparams.high_level_classes == "True")
     dataset_test = datasets[0]
     test_loader = DataLoader(dataset_test, batch_size=1, collate_fn=collate_for_disc_spe_model_cora, num_workers=8,
                              shuffle=True)
@@ -77,7 +78,7 @@ if __name__ == "__main__":
     parser.add_argument("--auto_lr_find", type=bool, default=False)
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--optim", type=str, default="sgd")
-    parser.add_argument("--init_type", type=str, default="zeros")
-    parser.add_argument("--high_level_classes", type=str, default="False")
+    parser.add_argument("--init_type", type=str, default="eye")
+    parser.add_argument("--high_level_classes", type=str, default="Truerue")
     hparams = parser.parse_args()
     init(hparams)
