@@ -43,7 +43,7 @@ def main(hparams):
 
     model = init_model(hparams, dataset_train, CFG["gpudatadir"], xp_title, AtnInstanceClassifierDiscCora)
 
-    if hparams.load_from_checkpoint:
+    if hparams.load_from_checkpoint == "True":
         print("Loading from previous checkpoint...")
         model_name = xp_title
         if hparams.input_type == "hadamard":
