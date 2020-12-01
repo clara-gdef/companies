@@ -35,11 +35,11 @@ def main():
     with ipdb.launch_ipdb_on_exception():
         results = {}
         dico = {}
-        for min_df in [1e-2, 1e-3, 1e-4]:
+        for min_df in [1, 1e-2, 1e-3, 1e-4]:
             results[min_df] = {}
-            for max_df in [.7, .8, .9]:
+            for max_df in [.7, .8, .9, .1]:
                 results[min_df][max_df] = {}
-                for max_voc_size in [1000, 1200, 1400]:
+                for max_voc_size in [1000, 1150, 1300]:
                     results[min_df][max_df] = {}
                     dico['min_df'] = min_df
                     dico['max_df'] = max_df
