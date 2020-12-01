@@ -40,9 +40,9 @@ def main():
                     results[min_df][max_df] = {}
                     dico['min_df'] = min_df
                     dico['max_df'] = max_df
-                    dico['max_voc_size'] = max_voc_size
+                    dico['max_voc_size'] = int(max_voc_size)
                     arg = DotDict(dico)
-                    results[min_df][max_df][max_voc_size] = cora_bow_svm.main(arg, data_train, data_test, rev_class_dict, mapper_dict, class_dict, high_level)
+                    results[min_df][max_df][int(max_voc_size)] = cora_bow_svm.main(arg, data_train, data_test, rev_class_dict, mapper_dict, class_dict, high_level)
         ipdb.set_trace()
 
 
