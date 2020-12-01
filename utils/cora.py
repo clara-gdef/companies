@@ -20,7 +20,6 @@ def load_datasets(hparams, CFG, splits, high_level):
         "high_level": high_level,
         "load": hparams.load_dataset == "True"
     }
-    print("Loading dataset for AREAS : " + str(high_level))
     for split in splits:
         datasets.append(DiscriminativeCoraDataset(**common_hparams, split=split))
 

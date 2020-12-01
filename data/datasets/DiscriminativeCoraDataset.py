@@ -42,7 +42,7 @@ class DiscriminativeCoraDataset(Dataset):
         if self.high_level:
             tgt_file = os.path.join(self.datadir, "cora_hl_dataset_" + self.ft_type + "_" + self.split + '.pkl')
         else:
-            tgt_file = os.path.join(self.datadir, "cora_hl_dataset_" + self.ft_type + "_" + self.split + '.pkl')
+            tgt_file = os.path.join(self.datadir, "cora_dataset_" + self.ft_type + "_" + self.split + '.pkl')
         with open(tgt_file, 'wb') as f:
             pkl.dump(dico, f)
         print("Dataset saved : " + tgt_file)
@@ -51,7 +51,7 @@ class DiscriminativeCoraDataset(Dataset):
         if self.high_level:
             tgt_file = os.path.join(self.datadir, "cora_hl_dataset_" + self.ft_type + "_" + self.split + '.pkl')
         else:
-            tgt_file = os.path.join(self.datadir, "cora_hl_dataset_" + self.ft_type + "_" + self.split + '.pkl')
+            tgt_file = os.path.join(self.datadir, "cora_dataset_" + self.ft_type + "_" + self.split + '.pkl')
         with open(tgt_file, 'rb') as f:
             dico = pkl.load(f)
         for key in tqdm(dico, desc="Loading attributes from save..."):
