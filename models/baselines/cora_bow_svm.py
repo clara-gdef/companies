@@ -41,10 +41,11 @@ def init(args):
 
 def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, high_level):
     with ipdb.launch_ipdb_on_exception():
+        ipdb.set_trace()
         # TRAIN
         cleaned_abstracts, labels = pre_proc_data(data_train, rev_class_dict, mapper_dict)
         train_features = fit_vectorizer(args, cleaned_abstracts)
-        model = train_svm(train_features, labels)
+        model = train_svm(train_features, labels, class_weights)
 
         # TEST
         cleaned_abstracts_test, labels_test = pre_proc_data(data_test, rev_class_dict, mapper_dict)
@@ -91,8 +92,8 @@ def fit_vectorizer(args, input_data):
     data_features = data_features.toarray()
     return data_features
 
-def train_svm(data, labels):
-    model = LinearSVC()
+def train_svm(data, class_weights, labels):
+    model = LinearSVC(class_weight=class_weights)
     print("Fitting SVM...")
     model.fit(data, labels)
     print("SVM fitted!")

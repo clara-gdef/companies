@@ -43,11 +43,31 @@ def main():
                     dico['max_voc_size'] = int(max_voc_size)
                     arg = DotDict(dico)
                     results[min_df][max_df][int(max_voc_size)] = cora_bow_svm.main(arg, data_train, data_test, rev_class_dict, mapper_dict, class_dict, high_level)
+        best_acc_keys, best_f1_keys = analyze_results(results, 'SVM_BOW')
+        print("FOR BEST ACCURACY: " +  str(best_acc_keys))
+        print("RESULTS: " + str(results[best_acc_keys[0]][best_acc_keys[1]][best_acc_keys[2]]))
+        print("FOR BEST F1: " +  str(best_f1_keys))
+        print("RESULTS: " + str(results[best_f1_keys[0]][best_f1_keys[1]][best_f1_keys[2]]))
         ipdb.set_trace()
 
 
-def analyze_results(results):
-    ipdb.set_trace()
+def analyze_results(test_results, handle):
+    best_acc = 0
+    best_f1 = 0
+    best_acc_keys = None
+    best_f1_keys = None
+    for min_df in test_results.keys():
+        for max_df in test_results[min_df].keys():
+            for max_voc_size in test_results[min_df][max_df].keys():
+                if test_results[min_df][max_df][max_voc_size]["acc_" + handle] > best_acc:
+                    best_acc_keys = (min_df, max_df, max_voc_size)
+                    best_acc = test_results[min_df][max_df][max_voc_size]["acc_" + handle]
+                if test_results[min_df][max_df][max_voc_size]["f1_" + handle] > best_f1:
+                    best_f1_keys = (min_df, max_df, max_voc_size)
+                    best_f1 = test_results[min_df][max_df][max_voc_size]["f1_" + handle]
+    print("Evaluated for min_df= [" + str(test_results.keys()) + "], max_df=[" + str(test_results[min_df].keys()) + "]")
+    return best_acc_keys, best_f1_keys
+
 
 if __name__ == "__main__":
     main()
