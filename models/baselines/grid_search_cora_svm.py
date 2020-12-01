@@ -29,7 +29,7 @@ def main():
     with open(paper_file, 'rb') as f:
         data_test = pkl.load(f)
 
-    with ipdb.launch_ipdb_set_trace():
+    with ipdb.launch_ipdb_on_exception():
         results = {}
         dico = {}
         for min_df in [1e-2, 1e-3, 1e-4]:
