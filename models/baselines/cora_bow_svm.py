@@ -39,9 +39,8 @@ def init(args):
 
     main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, high_level)
 
-def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, high_level):
+def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, high_level, class_weights):
     with ipdb.launch_ipdb_on_exception():
-        ipdb.set_trace()
         # TRAIN
         cleaned_abstracts, labels = pre_proc_data(data_train, rev_class_dict, mapper_dict)
         train_features = fit_vectorizer(args, cleaned_abstracts)

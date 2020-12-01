@@ -4,6 +4,7 @@ import os
 import pickle as pkl
 from models.baselines import cora_bow_svm
 from utils import DotDict
+from collections import Counter
 
 
 def main():
@@ -29,6 +30,8 @@ def main():
     with open(paper_file, 'rb') as f:
         data_test = pkl.load(f)
 
+    class_weights = get_class_weights(data_train, rev_class_dict, mapper_dict)
+
     with ipdb.launch_ipdb_on_exception():
         results = {}
         dico = {}
@@ -42,7 +45,7 @@ def main():
                     dico['max_df'] = max_df
                     dico['max_voc_size'] = int(max_voc_size)
                     arg = DotDict(dico)
-                    results[min_df][max_df][int(max_voc_size)] = cora_bow_svm.main(arg, data_train, data_test, rev_class_dict, mapper_dict, class_dict, high_level)
+                    results[min_df][max_df][int(max_voc_size)] = cora_bow_svm.main(arg, data_train, data_test, rev_class_dict, mapper_dict, class_dict, high_level, class_weights)
         best_acc_keys, best_f1_keys = analyze_results(results, 'SVM_BOW')
         print("FOR BEST ACCURACY: " +  str(best_acc_keys))
         print("RESULTS: " + str(results[best_acc_keys[0]][best_acc_keys[1]][best_acc_keys[2]]))
@@ -50,6 +53,15 @@ def main():
         print("RESULTS: " + str(results[best_f1_keys[0]][best_f1_keys[1]][best_f1_keys[2]]))
         ipdb.set_trace()
 
+
+def get_class_weights(data_train, rev_class_dict, mapper_dict):
+    class_counter = Counter()
+    for item in data_train:
+        class_counter[mapper_dict[rev_class_dict[item[1]["class"]]]] +=1
+    total_samples = sum([i for i in class_counter.values()])
+    class_weight = {k: v/total_samples for k, v in class_counter.items()}
+    ipdb.set_trace()
+    return class_weight
 
 def analyze_results(test_results, handle):
     best_acc = 0
