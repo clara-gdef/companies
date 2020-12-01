@@ -48,7 +48,7 @@ def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, h
 
         # TEST
         cleaned_abstracts_test, labels_test = pre_proc_data(data_test, rev_class_dict, mapper_dict)
-        test_features = fit_vectorizer(cleaned_abstracts_test)
+        test_features = fit_vectorizer(args, cleaned_abstracts_test)
         predictions = model.decision_function(test_features)
 
         predictions_at_1 = []
@@ -63,8 +63,6 @@ def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, h
         for sample, lab in zip(predictions, labels_test):
             predictions_at_10.append(get_pred_at_k(sample, lab, 10))
         res_at_10 = eval_model(labels_test, predictions_at_10, num_c, "SVM_BOW_@10")
-
-        ipdb.set_trace()
 
         print({**res_at_1, **res_at_10})
         return {**res_at_1, **res_at_10}
