@@ -60,7 +60,6 @@ def get_class_weights(data_train, rev_class_dict, mapper_dict):
         class_counter[mapper_dict[rev_class_dict[item[1]["class"]]]] +=1
     total_samples = sum([i for i in class_counter.values()])
     class_weight = {k: v/total_samples for k, v in class_counter.items()}
-    ipdb.set_trace()
     return class_weight
 
 def analyze_results(test_results, handle):
