@@ -89,8 +89,7 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
         loss = torch.nn.functional.cross_entropy(output, labels)
         self.log("train_loss_CE", loss)
         self.training_losses.append(loss.item())
-        ipdb.set_trace()
-        self.log("Train acc", accuracy_score(labels, torch.argmax(output).detach().cpu().numpy()))
+        self.log("train_acc", 100*accuracy_score(labels.cpu().numpy(), torch.argmax(output, dim=-1).detach().cpu().numpy()))
         return {'loss': loss}
 
     def validation_step(self, batch, batch_nb):
@@ -109,6 +108,7 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
                 output = torch.transpose(tmp, 1, 0)
         val_loss = torch.nn.functional.cross_entropy(output, labels)
         self.log("val_loss_CE", val_loss)
+        self.log("valid_acc", 100*accuracy_score(labels.cpu().numpy(), torch.argmax(output, dim=-1).detach().cpu().numpy()))
         return {'val_loss': val_loss}
 
     def configure_optimizers(self):

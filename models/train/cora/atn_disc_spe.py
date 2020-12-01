@@ -54,7 +54,7 @@ def main(hparams):
         model.load_state_dict(torch.load(model_file)["state_dict"])
         print("Resuming training from checkpoint : " + model_file + ".")
     elif hparams.init == "True":
-        print("Loading from previous checkpoint...")
+        print("Initializing weights with vanilla model...")
         if hparams.high_level_classes == "True":
             model_name = "cora_disc_spe_HL_eye_sgd_fs_matMul_bs16_1e-06_0.0/epoch=14.ckpt"
         else:
