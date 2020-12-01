@@ -36,7 +36,7 @@ def main():
             results[min_df] = {}
             for max_df in [.7, .8, .9]:
                 results[min_df][max_df] = {}
-                for max_voc_size in [3e4, 4e4, 5e4]:
+                for max_voc_size in [200, 500, 1000]:
                     results[min_df][max_df] = {}
                     dico['min_df'] = min_df
                     dico['max_df'] = max_df

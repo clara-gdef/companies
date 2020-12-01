@@ -91,7 +91,6 @@ def fit_vectorizer(args, input_data):
     data_features = data_features.toarray()
     return data_features
 
-
 def train_svm(data, labels):
     model = LinearSVC()
     print("Fitting SVM...")
