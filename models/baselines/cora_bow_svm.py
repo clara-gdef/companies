@@ -13,7 +13,7 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 from tqdm import tqdm
 
 
-def main(args):
+def init(args):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
@@ -32,20 +32,18 @@ def main(args):
     with open(paper_file, 'rb') as f:
         data_train = pkl.load(f)
 
-    paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["plain"] + "VALID.pkl")
-    with open(paper_file, 'rb') as f:
-        data_valid = pkl.load(f)
-    data_train.extend(data_valid)
 
     paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["plain"] + "TEST.pkl")
     with open(paper_file, 'rb') as f:
         data_test = pkl.load(f)
 
-    with ipdb.launch_ipdb_on_exception():
+    main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, high_level)
 
+def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, high_level):
+    with ipdb.launch_ipdb_on_exception():
         # TRAIN
         cleaned_abstracts, labels = pre_proc_data(data_train, rev_class_dict, mapper_dict)
-        train_features = fit_vectorizer(cleaned_abstracts)
+        train_features = fit_vectorizer(args, cleaned_abstracts)
         model = train_svm(train_features, labels)
 
         # TEST
@@ -69,6 +67,7 @@ def main(args):
         ipdb.set_trace()
 
         print({**res_at_1, **res_at_10})
+        return {**res_at_1, **res_at_10}
 
 
 def pre_proc_data(data, class_dict, mapper_dict):
@@ -86,8 +85,8 @@ def pre_proc_data(data, class_dict, mapper_dict):
     return abstracts, labels
 
 
-def fit_vectorizer(input_data):
-    vectorizer = CountVectorizer(analyzer="word", tokenizer=None, preprocessor=None, stop_words=None, max_features=1500)
+def fit_vectorizer(args, input_data):
+    vectorizer = CountVectorizer(analyzer="word", tokenizer=None, preprocessor=None, stop_words=None, max_features=args.max_voc_size, max_df=args.max_df, min_df=args.min_df)
     print("Fitting vectorizer...")
     data_features = vectorizer.fit_transform(input_data)
     print("Vectorizer fitted.")
@@ -125,5 +124,9 @@ def get_pred_at_k(pred, label, k):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--high_level_classes", type=str, default="True")
+    parser.add_argument("--min_df", type=float, default=0.001)
+    parser.add_argument("--max_df", type=float, default=0.9)
+    parser.add_argument("--class_weight", default=None)
+    parser.add_argument("--max_voc_size", type=int, default=40000)
     args = parser.parse_args()
-    main(args)
+    init(args)
