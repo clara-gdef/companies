@@ -89,6 +89,8 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
         loss = torch.nn.functional.cross_entropy(output, labels)
         self.log("train_loss_CE", loss)
         self.training_losses.append(loss.item())
+        ipdb.set_trace()
+        self.log("Train acc", accuracy_score(labels, torch.argmax(output).detach().cpu().numpy()))
         return {'loss': loss}
 
     def validation_step(self, batch, batch_nb):
