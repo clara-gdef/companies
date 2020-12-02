@@ -65,7 +65,7 @@ if __name__ == "__main__":
     parser.add_argument("--load_from_checkpoint", type=bool, default=False)
     parser.add_argument("--checkpoint", type=str, default=49)
     parser.add_argument("--optim", type=str, default="sgd")
-    parser.add_argument("--init_type", type=str, default="zeros")
+    parser.add_argument("--init_type", type=str, default="eye")
     parser.add_argument("--lr", type=float, default=1e-6)
     parser.add_argument("--auto_lr_find", type=bool, default=False)
     parser.add_argument("--epochs", type=int, default=50)

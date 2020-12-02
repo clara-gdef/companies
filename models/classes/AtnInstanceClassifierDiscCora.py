@@ -155,6 +155,7 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
             res_dict_trained = {**res_dict_trained, **tmp}
         # self.save_bag_outputs(preds, labels, confusion_matrix(preds[:, :1].cpu(), labels.cpu()), res_dict_trained)
         cm = confusion_matrix(labels.cpu().numpy(), preds[:, 0].cpu().numpy())
+        ipdb.set_trace()
         with open(os.path.join(self.data_dir, "cm_" + self.description + ".pkl"), "wb") as f:
             pkl.dump(cm, f)
         return res_dict_trained
