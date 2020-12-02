@@ -97,12 +97,9 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             # the model is specialized
             loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
         self.training_losses.append(loss.item())
-
-        # preds = [i.item() for i in torch.argmax(output, dim=1)]
-        # res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "train", 0)
-        # tensorboard_logs = {**res_dict, 'train_loss': loss}
-        tensorboard_logs = {'train_loss': loss}
-        return {'loss': loss, 'log': tensorboard_logs}
+        self.log("train_loss_CE", loss)
+        self.log("train_acc", 100*accuracy_score(labels.cpu().numpy(), torch.argmax(output, dim=-1).detach().cpu().numpy()))
+        return {'loss': loss}
 
     def validation_step(self, mini_batch, batch_nb):
         if self.input_type != "userOriented" and self.input_type != "bagTransformer":
@@ -129,16 +126,16 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
                                                          torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
         preds = [i.item() for i in torch.argmax(output, dim=1)]
         res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "valid", 0)
-        tensorboard_logs = {**res_dict, 'val_loss': val_loss}
-        return {'loss': val_loss, 'log': tensorboard_logs}
+        self.log("val_loss", val_loss)
+        self.log("valid_acc", 100*accuracy_score(labels.cpu().numpy(),
+                                                 torch.argmax(output, dim=-1).detach().cpu().numpy()))
+        return {'val_loss': val_loss}
 
     def epoch_end(self):
         train_loss_mean = np.mean(self.training_losses)
         self.logger.experiment.add_scalar('training_mean_loss', train_loss_mean, global_step=self.current_epoch)
         self.training_losses = []
 
-    def validation_end(self, outputs):
-        return outputs[-1]
 
     def configure_optimizers(self):
         # return torch.optim.SGD(self.parameters(), lr=self.hparams.lr, weight_decay=self.wd)

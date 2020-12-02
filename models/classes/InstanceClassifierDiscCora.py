@@ -76,6 +76,8 @@ class InstanceClassifierDiscCora(pl.LightningModule):
                 output = torch.transpose(tmp, 1, 0)
         loss = torch.nn.functional.cross_entropy(output, labels, reduction="mean")
         self.log("train_loss_CE", loss)
+        self.log("train_acc", 100*accuracy_score(labels.cpu().numpy(),
+                                                 torch.argmax(output, dim=-1).detach().cpu().numpy()))
         return {'loss': loss}
 
     def validation_step(self, batch, batch_nb):
@@ -93,7 +95,9 @@ class InstanceClassifierDiscCora(pl.LightningModule):
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
         val_loss = torch.nn.functional.cross_entropy(output, labels, reduction="mean")
-        self.log("val_loss_CE", val_loss)
+        self.log("val_loss", val_loss)
+        self.log("valid_acc", 100*accuracy_score(labels.cpu().numpy(),
+                                                 torch.argmax(output, dim=-1).detach().cpu().numpy()))
         return {'val_loss': val_loss}
 
     def configure_optimizers(self):
@@ -133,9 +137,10 @@ class InstanceClassifierDiscCora(pl.LightningModule):
         preds = torch.argsort(outputs.view(-1, self.num_tracks), dim=-1, descending=True)
         labels = torch.LongTensor([i.item() for i in self.test_labels]).cuda()
         res_dict_trained = get_metrics(preds[:, :1].cpu(), labels.cpu(), self.num_tracks, "tracks", 0)
-        for k in [10]:
+        for k in [3]:
             tmp = get_metrics_at_k(preds[:, :k].cpu(), labels.cpu(), self.num_tracks, "tracks_@" + str(k), 0)
             res_dict_trained = {**res_dict_trained, **tmp}
+        ipdb.set_trace()
         # self.save_bag_outputs(preds, labels, confusion_matrix(preds[:, :1].cpu(), labels.cpu()), res_dict_trained)
         return res_dict_trained
 
