@@ -113,7 +113,8 @@ def train_svm(data, labels, class_weights):
 
 
 def train_nb(data,labels, class_weights):
-    model = GaussianNB(priors=class_weights)
+    priors = [i[1] for i in sorted(class_weights.items())]
+    model = GaussianNB(priors=priors)
     print("Fitting Naive Bayes...")
     model.fit(data, labels)
     print("Naive Bayes fitted!")
