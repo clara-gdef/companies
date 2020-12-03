@@ -45,27 +45,34 @@ def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, h
         cleaned_abstracts, labels = pre_proc_data(data_train, rev_class_dict, mapper_dict)
         train_features = fit_vectorizer(args, cleaned_abstracts)
         model = train_svm(train_features, labels, class_weights)
-
         # TEST
         cleaned_abstracts_test, labels_test = pre_proc_data(data_test, rev_class_dict, mapper_dict)
         test_features = fit_vectorizer(args, cleaned_abstracts_test)
-        predictions = model.decision_function(test_features)
-
-        predictions_at_1 = []
-        for sample, lab in zip(predictions, labels_test):
-            predictions_at_1.append(get_pred_at_k(sample, lab, 1))
 
         num_c = 10 if high_level else len(class_dict)
 
-        res_at_1 = eval_model(labels_test, predictions_at_1, num_c, "SVM_BOW")
+        preds_test, preds_test_at_3 = get_predictions(model, test_features, labels_test)
+        res_at_1_test = eval_model(labels_test, preds_test, num_c, "TEST_SVM")
+        res_at_3_test = eval_model(labels_test, preds_test_at_3, num_c, "TEST_SVM_@3")
 
-        predictions_at_10 = []
-        for sample, lab in zip(predictions, labels_test):
-            predictions_at_10.append(get_pred_at_k(sample, lab, 10))
-        res_at_10 = eval_model(labels_test, predictions_at_10, num_c, "SVM_BOW_@10")
+        preds_train, preds_train_at_3 = get_predictions(model, train_features, labels)
+        res_at_1_train = eval_model(labels, preds_train, num_c, "TRAIN_SVM")
+        res_at_3_train = eval_model(labels, preds_train_at_3, num_c, "TRAIN_SVM_@3")
 
-        print({**res_at_1, **res_at_10})
-        return {**res_at_1, **res_at_10}
+        print({**res_at_1_test, **res_at_3_test, **res_at_1_train, **res_at_3_train})
+        return {**res_at_1_test, **res_at_3_test, **res_at_1_train, **res_at_3_train}
+
+
+def get_predictions(model, features, labels):
+    predictions = model.decision_function(features)
+    predictions_at_1 = []
+    for sample, lab in zip(predictions, labels):
+        predictions_at_1.append(get_pred_at_k(sample, lab, 1))
+
+    predictions_at_3 = []
+    for sample, lab in zip(predictions, labels):
+        predictions_at_3.append(get_pred_at_k(sample, lab, 3))
+    return predictions_at_1, predictions_at_3
 
 
 def pre_proc_data(data, class_dict, mapper_dict):

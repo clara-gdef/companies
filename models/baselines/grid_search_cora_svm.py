@@ -35,18 +35,18 @@ def main():
     with ipdb.launch_ipdb_on_exception():
         results = {}
         dico = {}
-        for min_df in [1, 1e-2, 1e-3, 1e-4]:
+        for min_df in [1e-3]:
             results[min_df] = {}
-            for max_df in [.7, .8, .9, .1]:
+            for max_df in [.5, .6, .7]:
                 results[min_df][max_df] = {}
-                for max_voc_size in [1000, 1150, 1300]:
+                for max_voc_size in [1300]:
                     results[min_df][max_df] = {}
                     dico['min_df'] = min_df
                     dico['max_df'] = max_df
                     dico['max_voc_size'] = int(max_voc_size)
                     arg = DotDict(dico)
                     results[min_df][max_df][int(max_voc_size)] = cora_bow_svm.main(arg, data_train, data_test, rev_class_dict, mapper_dict, class_dict, high_level, class_weights)
-        best_acc_keys, best_f1_keys = analyze_results(results, 'SVM_BOW')
+        best_acc_keys, best_f1_keys = analyze_results(results, 'TEST_SVM')
         print("FOR BEST ACCURACY: " +  str(best_acc_keys))
         print("RESULTS: " + str(results[best_acc_keys[0]][best_acc_keys[1]][best_acc_keys[2]]))
         print("FOR BEST F1: " +  str(best_f1_keys))
