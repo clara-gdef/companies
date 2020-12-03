@@ -5,7 +5,7 @@ import os
 import pickle as pkl
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.svm import LinearSVC
-from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import GaussianNB, MultinomialNB
 import numpy as np
 import ipdb
 from nltk.corpus import stopwords
@@ -118,7 +118,8 @@ def train_svm(data, labels, class_weights):
 
 def train_nb(data,labels, class_weights):
     priors = [i[1] for i in sorted(class_weights.items())]
-    model = GaussianNB(priors=priors)
+    # model = GaussianNB(priors=priors)
+    model = MultinomialNB(class_prior=priors)
     print("Fitting Naive Bayes...")
     model.fit(data, labels)
     print("Naive Bayes fitted!")
