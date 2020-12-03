@@ -5,9 +5,10 @@ import pickle as pkl
 from models.baselines import cora_bow_svm
 from utils import DotDict
 from collections import Counter
+import argparse
 
 
-def main():
+def main(args):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
@@ -34,10 +35,10 @@ def main():
 
     with ipdb.launch_ipdb_on_exception():
         results = {}
-        dico = {}
+        dico = {"model": args.model}
         for min_df in [1e-3]:
             results[min_df] = {}
-            for max_df in [.5, .6, .7]:
+            for max_df in [.7]:
                 results[min_df][max_df] = {}
                 for max_voc_size in [1300]:
                     results[min_df][max_df] = {}
@@ -81,4 +82,7 @@ def analyze_results(test_results, handle):
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", type=str, default="NB")
+    args = parser.parse_args()
+    main(args)

@@ -5,6 +5,7 @@ import os
 import pickle as pkl
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.svm import LinearSVC
+from sklearn.naive_bayes import GaussianNB
 import numpy as np
 import ipdb
 from nltk.corpus import stopwords
@@ -44,7 +45,12 @@ def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, h
         # TRAIN
         cleaned_abstracts, labels = pre_proc_data(data_train, rev_class_dict, mapper_dict)
         train_features = fit_vectorizer(args, cleaned_abstracts)
-        model = train_svm(train_features, labels, class_weights)
+        if args.model == "SVM":
+            model = train_svm(train_features, labels, class_weights)
+        elif args.model == "NB":
+            model = train_nb(train_features, labels, class_weights)
+        else:
+            raise Exception("Wrong model type specified, can be either SVM or NB")
         # TEST
         cleaned_abstracts_test, labels_test = pre_proc_data(data_test, rev_class_dict, mapper_dict)
         test_features = fit_vectorizer(args, cleaned_abstracts_test)
@@ -52,12 +58,12 @@ def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, h
         num_c = 10 if high_level else len(class_dict)
 
         preds_test, preds_test_at_3 = get_predictions(model, test_features, labels_test)
-        res_at_1_test = eval_model(labels_test, preds_test, num_c, "TEST_SVM")
-        res_at_3_test = eval_model(labels_test, preds_test_at_3, num_c, "TEST_SVM_@3")
+        res_at_1_test = eval_model(labels_test, preds_test, num_c, "TEST_" + args.model + "")
+        res_at_3_test = eval_model(labels_test, preds_test_at_3, num_c, "TEST_" + args.model + "_@3")
 
         preds_train, preds_train_at_3 = get_predictions(model, train_features, labels)
-        res_at_1_train = eval_model(labels, preds_train, num_c, "TRAIN_SVM")
-        res_at_3_train = eval_model(labels, preds_train_at_3, num_c, "TRAIN_SVM_@3")
+        res_at_1_train = eval_model(labels, preds_train, num_c, "TRAIN_" + args.model + "")
+        res_at_3_train = eval_model(labels, preds_train_at_3, num_c, "TRAIN_" + args.model + "_@3")
 
         print({**res_at_1_test, **res_at_3_test, **res_at_1_train, **res_at_3_train})
         return {**res_at_1_test, **res_at_3_test, **res_at_1_train, **res_at_3_train}
@@ -98,11 +104,19 @@ def fit_vectorizer(args, input_data):
     data_features = data_features.toarray()
     return data_features
 
-def train_svm(data,labels, class_weights):
+def train_svm(data, labels, class_weights):
     model = LinearSVC(class_weight=class_weights)
     print("Fitting SVM...")
     model.fit(data, labels)
     print("SVM fitted!")
+    return model
+
+
+def train_nb(data,labels, class_weights):
+    model = GaussianNB(priors=class_weights)
+    print("Fitting Naive Bayes...")
+    model.fit(data, labels)
+    print("Naive Bayes fitted!")
     return model
 
 
@@ -129,6 +143,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--high_level_classes", type=str, default="True")
     parser.add_argument("--min_df", type=float, default=0.001)
+    parser.add_argument("--model", type=str, default="NB")
     parser.add_argument("--max_df", type=float, default=0.9)
     parser.add_argument("--class_weight", default=None)
     parser.add_argument("--max_voc_size", type=int, default=40000)
