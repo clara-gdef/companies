@@ -69,8 +69,12 @@ def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, h
         return {**res_at_1_test, **res_at_3_test, **res_at_1_train, **res_at_3_train}
 
 
-def get_predictions(model, features, labels):
-    predictions = model.decision_function(features)
+def get_predictions(args, model, features, labels):
+    if args.model == "SVM":
+        predictions = model.decision_function(features)
+    elif args.model == "NB":
+        predictions = model.predict_log_proba(features)
+
     predictions_at_1 = []
     for sample, lab in zip(predictions, labels):
         predictions_at_1.append(get_pred_at_k(sample, lab, 1))
