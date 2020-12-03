@@ -57,11 +57,11 @@ def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, h
 
         num_c = 10 if high_level else len(class_dict)
 
-        preds_test, preds_test_at_3 = get_predictions(model, test_features, labels_test)
+        preds_test, preds_test_at_3 = get_predictions(args, model, test_features, labels_test)
         res_at_1_test = eval_model(labels_test, preds_test, num_c, "TEST_" + args.model + "")
         res_at_3_test = eval_model(labels_test, preds_test_at_3, num_c, "TEST_" + args.model + "_@3")
 
-        preds_train, preds_train_at_3 = get_predictions(model, train_features, labels)
+        preds_train, preds_train_at_3 = get_predictions(args, model, train_features, labels)
         res_at_1_train = eval_model(labels, preds_train, num_c, "TRAIN_" + args.model + "")
         res_at_3_train = eval_model(labels, preds_train_at_3, num_c, "TRAIN_" + args.model + "_@3")
 
