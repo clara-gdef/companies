@@ -51,7 +51,8 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
         if self.hp.log_cm == "True":
             self.train_outputs = []
             self.valid_outputs = []
-
+            self.train_labels = []
+            self.valid_labels = []
 
         self.training_losses = []
         self.test_outputs = []
@@ -88,6 +89,7 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
             output = self.forward(profiles, bags)
             if self.hp.log_cm == "True":
                 self.train_outputs.append(output)
+                self.train_labels.append(output)
         else:
             bag_matrix, profiles = self.get_input_tensor(batch)
             if self.input_type == "userOriented":
@@ -110,6 +112,7 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
             output = self.forward(profiles, bags)
             if self.hp.log_cm == "True":
                 self.valid_outputs.append(output)
+                self.valid_labels.append(labels)
         else:
             bag_matrix, profiles = self.get_input_tensor(batch)
             if self.input_type == "userOriented":

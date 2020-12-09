@@ -117,13 +117,16 @@ def init_lightning(hparams, CFG, xp_title):
 
 
 class MyCallbacks(Callback):
+    def __init__(self):
+        self.epoch = 0
     def on_validation_epoch_end(self, trainer, pl_module):
-        ipdb.set_trace()
-        print('trainer is init now')
+        pl_module.log_confusion_matrix(pl_module.valid_outputs, pl_module.valid_labels, "valid_ep_"+ str(self.epoch))
+        print('Confusion Matrix logged for validation epoch ' + str(self.epoch))
+        self.epoch += 1
 
     def on_train_epoch_end(self, trainer, pl_module):
-        ipdb.set_trace()
-        print('do something when training ends')
+        pl_module.log_confusion_matrix(pl_module.train_outputs, pl_module.train_labels, "train_ep_"+ str(self.epoch))
+        print('Confusion Matrix logged for train epoch ' + str(self.epoch))
 
 
 if __name__ == "__main__":
