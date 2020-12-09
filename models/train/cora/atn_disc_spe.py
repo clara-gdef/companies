@@ -34,8 +34,7 @@ def main(hparams):
     trainer = pl.Trainer(gpus=hparams.gpus,
                          max_epochs=hparams.epochs,
                          callbacks=call_back_list,
-                         logger=logger,
-                         auto_lr_find=True
+                         logger=logger
                          )
     datasets = load_datasets(hparams, CFG, ["TRAIN", "VALID"], hparams.high_level_classes == "True")
     dataset_train, dataset_valid = datasets[0], datasets[1]
