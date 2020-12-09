@@ -68,7 +68,6 @@ def main(hparams):
     else:
         print("Starting training " + xp_title)
 
-
     # # Run learning rate finder
     # lr_finder = trainer.tuner.lr_find(model, train_dataloader=train_loader, val_dataloaders=valid_loader)
     #
@@ -119,13 +118,18 @@ def init_lightning(hparams, CFG, xp_title):
 class MyCallbacks(Callback):
     def __init__(self):
         self.epoch = 0
+
     def on_validation_epoch_end(self, trainer, pl_module):
-        pl_module.log_confusion_matrix(pl_module.valid_outputs, pl_module.valid_labels, "valid_ep_"+ str(self.epoch))
+        pl_module.log_confusion_matrix(torch.stack(pl_module.valid_outputs),
+                                       torch.stack(pl_module.valid_labels),
+                                       "valid_ep_" + str(self.epoch))
         print('Confusion Matrix logged for validation epoch ' + str(self.epoch))
         self.epoch += 1
 
     def on_train_epoch_end(self, trainer, pl_module):
-        pl_module.log_confusion_matrix(pl_module.train_outputs, pl_module.train_labels, "train_ep_"+ str(self.epoch))
+        pl_module.log_confusion_matrix(torch.stack(pl_module.train_outputs),
+                                       torch.stack(pl_module.train_labels),
+                                       "train_ep_" + str(self.epoch))
         print('Confusion Matrix logged for train epoch ' + str(self.epoch))
 
 
