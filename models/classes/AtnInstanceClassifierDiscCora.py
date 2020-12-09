@@ -27,7 +27,8 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
 
         self.atn_layer = torch.nn.Linear(300, 1)
         ############
-        torch.nn.init.normal_(self.atn_layer.weight)
+        # torch.nn.init.ones_(self.atn_layer.weight)
+        torch.nn.init.constant_(self.atn_layer.weight, 1/(12*300))
         torch.nn.init.zeros_(self.atn_layer.bias)
         ###########
         if self.input_type == "hadamard":
@@ -65,12 +66,11 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
 
     def forward(self, tmp_people, bags):
         people = torch.stack(tmp_people).type(torch.FloatTensor).cuda()
-        atn = self.atn_layer(people)
+        atn = torch.relu(self.atn_layer(people))
         normed_atn = atn.clone()
         for ind, sample in enumerate(atn):
             normed_atn[ind] = torch.softmax(atn[ind], dim=0)
         new_people = self.ponderate_jobs(people, normed_atn)
-        ipdb.set_trace()
         if self.input_type == "bagTransformer":
             mat = torch.diag(self.lin.weight).unsqueeze(1)
             out = bags * mat + self.lin.bias.view(bags.shape[0], -1)
