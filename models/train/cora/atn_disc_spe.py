@@ -125,13 +125,6 @@ class MyCallbacks(Callback):
                                        "sanity_check")
         print('Confusion Matrix logged for sanity check')
 
-    def on_train_epoch_start(self, trainer, pl_module):
-        pl_module.log_confusion_matrix(torch.stack(pl_module.train_outputs),
-                                       torch.stack(pl_module.train_labels),
-                                       "train_start_ep_" + str(self.epoch))
-        print('Confusion Matrix logged for train start epoch ' + str(self.epoch))
-
-
     def on_validation_epoch_end(self, trainer, pl_module):
         pl_module.log_confusion_matrix(torch.stack(pl_module.valid_outputs),
                                        torch.stack(pl_module.valid_labels),
