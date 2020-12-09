@@ -141,6 +141,8 @@ class InstanceClassifierDiscCora(pl.LightningModule):
             tmp = get_metrics_at_k(preds[:, :k].cpu(), labels.cpu(), self.num_tracks, "tracks_@" + str(k), 0)
             res_dict_trained = {**res_dict_trained, **tmp}
         cm = confusion_matrix(labels.cpu().numpy(), preds[:, 0].cpu().numpy())
+        with open(os.path.join(self.data_dir, "cm_" + self.description + ".pkl"), "wb") as f:
+            pkl.dump(cm, f)
         ipdb.set_trace()
         # self.save_bag_outputs(preds, labels, confusion_matrix(preds[:, :1].cpu(), labels.cpu()), res_dict_trained)
         return res_dict_trained
