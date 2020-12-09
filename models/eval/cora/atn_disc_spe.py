@@ -33,7 +33,7 @@ def main(hparams):
                          logger=logger,
                          )
     # TODO : REMOVE TRAIN AND REPLACE BY TEST, THIS IS FOR DBEUG
-    datasets = load_datasets(hparams, CFG, ["TRAIN"],  hparams.high_level_classes == "True")
+    datasets = load_datasets(hparams, CFG, ["TEST"],  hparams.high_level_classes == "True")
     dataset_test = datasets[0]
     test_loader = DataLoader(dataset_test, batch_size=1, collate_fn=collate_for_disc_spe_model_cora, num_workers=8,
                              shuffle=True)
