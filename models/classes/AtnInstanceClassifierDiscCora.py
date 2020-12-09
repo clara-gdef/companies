@@ -48,6 +48,11 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
         if frozen:
             self.lin.requires_grad = False
 
+        if self.hp.log_cm == "True":
+            self.train_outputs = []
+            self.valid_outputs = []
+
+
         self.training_losses = []
         self.test_outputs = []
         self.test_labels_one_hot = []
@@ -81,6 +86,8 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
         if self.input_type != "userOriented" and self.input_type != "bagTransformer":
             bags, profiles = self.get_input_tensor(batch)
             output = self.forward(profiles, bags)
+            if self.hp.log_cm == "True":
+                self.train_outputs.append(output)
         else:
             bag_matrix, profiles = self.get_input_tensor(batch)
             if self.input_type == "userOriented":
@@ -101,6 +108,8 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
         if self.input_type != "userOriented" and self.input_type != "bagTransformer":
             bags, profiles = self.get_input_tensor(batch)
             output = self.forward(profiles, bags)
+            if self.hp.log_cm == "True":
+                self.valid_outputs.append(output)
         else:
             bag_matrix, profiles = self.get_input_tensor(batch)
             if self.input_type == "userOriented":
@@ -172,7 +181,18 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
                }
         tgt_file = os.path.join(self.data_dir, "OUTPUTS_" + self.description + ".pkl")
         with open(tgt_file, 'wb') as f:
+
             pkl.dump(res, f)
+
+    def get_confusion_matrix(self, preds, labels):
+        sorted_preds = torch.argsort(preds.view(-1, self.num_tracks), dim=-1, descending=True)
+        return  confusion_matrix(labels.cpu().numpy(), sorted_preds[:, 0].cpu().numpy())
+
+    def log_confusion_matrix(self, preds, labels, handle):
+        cm = self.get_confusion_matrix(preds, labels)
+        tgt_file = os.path.join(self.data_dir, "cm_" + handle + "_" + self.description + ".pkl")
+        with open(tgt_file, "wb") as f:
+            pkl.dump(cm, f)
 
     def save_outputs(self, ci_preds, cie_labels, ci_cm, ci_res,
                      cl_preds, clus_labels, cl_cm, cl_res,

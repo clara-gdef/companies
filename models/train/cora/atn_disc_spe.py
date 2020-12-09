@@ -4,7 +4,7 @@ import torch
 import ipdb
 import argparse
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
+from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping, Callback
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
@@ -27,10 +27,13 @@ def main(hparams):
     xp_title = xp_title_from_params(hparams)
 
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, CFG, xp_title)
-    print(hparams.auto_lr_find)
+    call_back_list = [checkpoint_callback, early_stop_callback]
+    if hparams.log_cm == "True":
+        call_back_list.append(MyCallbacks)
+
     trainer = pl.Trainer(gpus=hparams.gpus,
                          max_epochs=hparams.epochs,
-                         callbacks=[checkpoint_callback, early_stop_callback],
+                         callbacks=call_back_list,
                          logger=logger,
                          auto_lr_find=True
                          )
@@ -114,6 +117,16 @@ def init_lightning(hparams, CFG, xp_title):
     return logger, checkpoint_callback, early_stop_callback
 
 
+class MyCallbacks(Callback):
+    def on_validation_epoch_end(self, trainer, pl_module):
+        ipdb.set_trace()
+        print('trainer is init now')
+
+    def on_train_epoch_end(self, trainer, pl_module):
+        ipdb.set_trace()
+        print('do something when training ends')
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--ft_type", type=str, default='fs')
@@ -134,6 +147,7 @@ if __name__ == "__main__":
     parser.add_argument("--auto_lr_find", type=bool, default=False)
     parser.add_argument("--epochs", type=int, default=200)
     parser.add_argument("--optim", type=str, default="sgd")
+    parser.add_argument("--log_cm", type=str, default="True")
     parser.add_argument("--init_type", type=str, default="eye")
     hparams = parser.parse_args()
     init(hparams)
