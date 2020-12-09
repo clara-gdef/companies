@@ -39,9 +39,9 @@ def main(hparams):
     datasets = load_datasets(hparams, CFG, ["TRAIN", "VALID"], hparams.high_level_classes == "True")
     dataset_train, dataset_valid = datasets[0], datasets[1]
     train_loader = DataLoader(dataset_train, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model_cora,
-                              num_workers=2, shuffle=True)
+                              num_workers=2, shuffle=True, drop_last=True)
     valid_loader = DataLoader(dataset_valid, batch_size=hparams.b_size, collate_fn=collate_for_disc_spe_model_cora,
-                              num_workers=2)
+                              num_workers=2, drop_last=True)
 
     model = init_model(hparams, dataset_train, CFG["gpudatadir"], xp_title, AtnInstanceClassifierDiscCora)
 
