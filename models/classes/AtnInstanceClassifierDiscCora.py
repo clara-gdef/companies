@@ -70,6 +70,7 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
         for ind, sample in enumerate(atn):
             normed_atn[ind] = torch.softmax(atn[ind], dim=0)
         new_people = self.ponderate_jobs(people, normed_atn)
+        ipdb.set_trace()
         if self.input_type == "bagTransformer":
             mat = torch.diag(self.lin.weight).unsqueeze(1)
             out = bags * mat + self.lin.bias.view(bags.shape[0], -1)
