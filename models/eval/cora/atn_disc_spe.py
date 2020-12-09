@@ -5,6 +5,7 @@ import ipdb
 import argparse
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.callbacks import Callback
 from torch.utils.data import DataLoader
 import yaml
 from models.classes import AtnInstanceClassifierDiscCora
@@ -67,6 +68,7 @@ if __name__ == "__main__":
     parser.add_argument("--init", type=str, default="False")
     parser.add_argument("--frozen", type=str, default="False")
     parser.add_argument("--DEBUG", type=bool, default=False)
+    parser.add_argument("--log_cm", type=str, default="False")
     parser.add_argument("--b_size", type=int, default=16)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--model_type", type=str, default="atn_cora_disc_spe")
