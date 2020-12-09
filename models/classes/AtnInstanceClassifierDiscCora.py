@@ -89,7 +89,7 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
             output = self.forward(profiles, bags)
             if self.hp.log_cm == "True":
                 self.train_outputs.append(output)
-                self.train_labels.append(output)
+                self.train_labels.append(labels)
         else:
             bag_matrix, profiles = self.get_input_tensor(batch)
             if self.input_type == "userOriented":
@@ -189,8 +189,8 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
 
     def get_confusion_matrix(self, preds, labels):
         sorted_preds = torch.argmax(preds, dim=-1).view(-1, 1)
-        return  confusion_matrix(labels.view(-1, 1).squeeze(-1).cpu().numpy(),
-                                 sorted_preds.squeeze(-1).cpu().numpy())
+        return  confusion_matrix(labels.view(-1, 1).squeeze(-1).detach().cpu().numpy(),
+                                 sorted_preds.squeeze(-1).detach().cpu().numpy())
 
     def log_confusion_matrix(self, preds, labels, handle):
         cm = self.get_confusion_matrix(preds, labels)
