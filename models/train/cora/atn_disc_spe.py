@@ -126,7 +126,7 @@ class MyCallbacks(Callback):
         print('Confusion Matrix logged for validation epoch ' + str(self.epoch))
         self.epoch += 1
 
-    def on_train_epoch_end(self, trainer, pl_module):
+    def on_train_epoch_end(self, trainer, pl_module, tmp):
         pl_module.log_confusion_matrix(torch.stack(pl_module.train_outputs),
                                        torch.stack(pl_module.train_labels),
                                        "train_ep_" + str(self.epoch))
