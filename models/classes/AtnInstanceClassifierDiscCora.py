@@ -188,8 +188,9 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
             pkl.dump(res, f)
 
     def get_confusion_matrix(self, preds, labels):
-        sorted_preds = torch.argsort(preds.view(-1, self.num_tracks), dim=-1, descending=True)
-        return  confusion_matrix(labels.cpu().numpy(), sorted_preds[:, 0].cpu().numpy())
+        sorted_preds = torch.argmax(preds, dim=-1).view(-1, 1)
+        return  confusion_matrix(labels.view(-1, 1).squeeze(-1).cpu().numpy(),
+                                 sorted_preds.squeeze(-1).cpu().numpy())
 
     def log_confusion_matrix(self, preds, labels, handle):
         cm = self.get_confusion_matrix(preds, labels)
