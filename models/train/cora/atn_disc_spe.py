@@ -119,7 +119,7 @@ class MyCallbacks(Callback):
     def __init__(self):
         self.epoch = 0
 
-    def on_sanity_check_start(self, trainer, pl_module):
+    def on_sanity_check_end(self, trainer, pl_module):
         pl_module.log_confusion_matrix(torch.stack(pl_module.valid_outputs),
                                        torch.stack(pl_module.valid_labels),
                                        "sanity_check")
