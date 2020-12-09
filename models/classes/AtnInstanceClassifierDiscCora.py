@@ -132,7 +132,9 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
         if self.optim == "adam":
             return torch.optim.Adam(params, lr=self.hp.lr, weight_decay=self.hp.wd)
         else:
-            return torch.optim.SGD(params, lr=self.hp.lr, weight_decay=self.hp.wd)
+            #return torch.optim.SGD(params, lr=self.hp.lr, weight_decay=self.hp.wd)
+            return torch.optim.SGD(None, lr=self.hp.lr, weight_decay=self.hp.wd)
+
 
     def test_step(self, batch, batch_idx):
         if self.input_type == "userOriented":
