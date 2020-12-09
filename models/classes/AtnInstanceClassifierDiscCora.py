@@ -25,11 +25,13 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
         self.data_dir = datadir
         self.description = desc
 
-        self.atn_layer = torch.nn.Linear(300, 1)
+        #self.atn_layer = torch.nn.Linear(300, 1)
+        self.atn_layer = torch.nn.Sequential(torch.nn.Linear(300, 150),
+                                             torch.nn.Linear(150, 1))
         ############
         # torch.nn.init.ones_(self.atn_layer.weight)
-        torch.nn.init.constant_(self.atn_layer.weight, 1/(12*300))
-        torch.nn.init.zeros_(self.atn_layer.bias)
+        # torch.nn.init.constant_(self.atn_layer.weight, 1/(12*300))
+        # torch.nn.init.zeros_(self.atn_layer.bias)
         ###########
         if self.input_type == "hadamard":
             self.lin_dim_reduction = torch.nn.Linear(in_size, self.hp.middle_size)
