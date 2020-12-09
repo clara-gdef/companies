@@ -29,7 +29,7 @@ def main(hparams):
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, CFG, xp_title)
     call_back_list = [checkpoint_callback, early_stop_callback]
     if hparams.log_cm == "True":
-        call_back_list.append(MyCallbacks)
+        call_back_list.append(MyCallbacks())
 
     trainer = pl.Trainer(gpus=hparams.gpus,
                          max_epochs=hparams.epochs,
