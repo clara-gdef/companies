@@ -6,9 +6,9 @@ import pickle as pkl
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.svm import LinearSVC
 from sklearn.naive_bayes import GaussianNB, MultinomialNB
-from .grid_search_cora_svm import get_class_weights
 import numpy as np
 import ipdb
+from collections import Counter
 from nltk.corpus import stopwords
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score, confusion_matrix
 
@@ -139,6 +139,15 @@ def eval_model(labels, preds, num_classes, handle):
         "recall_" + handle: recall_score(labels, preds, average='weighted', labels=num_c, zero_division=0) * 100,
         "f1_" + handle: f1_score(labels, preds, average='weighted', labels=num_c, zero_division=0) * 100}
     return res_dict
+
+
+def get_class_weights(data_train, rev_class_dict, mapper_dict):
+    class_counter = Counter()
+    for item in data_train:
+        class_counter[mapper_dict[rev_class_dict[item[1]["class"]]]] +=1
+    total_samples = sum([i for i in class_counter.values()])
+    class_weight = {k: v/total_samples for k, v in class_counter.items()}
+    return class_weight
 
 
 def get_pred_at_k(pred, label, k):
