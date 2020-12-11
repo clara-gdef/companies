@@ -25,6 +25,9 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
         self.data_dir = datadir
         self.description = desc
 
+        with open(os.path.join(self.data_dir, "cora_area_fqc.pkl"), 'rb') as f:
+            self.class_weights = pkl.load(f)
+
         #self.atn_layer = torch.nn.Linear(300, 1)
         self.atn_layer = torch.nn.Sequential(torch.nn.Linear(300, 150),
                                              torch.nn.Linear(150, 1))
@@ -102,7 +105,10 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
                 new_bags = self(bag_matrix.T)
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
-        loss = torch.nn.functional.cross_entropy(output, labels)
+        if self.hp.weight_classes == "True":
+            loss = torch.nn.functional.cross_entropy(output, labels, weight=self.class_weights)
+        else:
+            loss = torch.nn.functional.cross_entropy(output, labels)
         self.log("train_loss_CE", loss)
         self.training_losses.append(loss.item())
         self.log("train_acc", 100*accuracy_score(labels.cpu().numpy(), torch.argmax(output, dim=-1).detach().cpu().numpy()))
@@ -125,7 +131,10 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
                 new_bags = self(bag_matrix.T)
                 tmp = torch.matmul(new_bags, torch.transpose(profiles, 1, 0))
                 output = torch.transpose(tmp, 1, 0)
-        val_loss = torch.nn.functional.cross_entropy(output, labels)
+        if self.hp.weight_classes == "True":
+            val_loss = torch.nn.functional.cross_entropy(output, labels, weight=self.class_weights)
+        else:
+            val_loss = torch.nn.functional.cross_entropy(output, labels)
         self.log("val_loss_CE", val_loss)
         self.log("valid_acc", 100*accuracy_score(labels.cpu().numpy(), torch.argmax(output, dim=-1).detach().cpu().numpy()))
         return {'val_loss': val_loss}
