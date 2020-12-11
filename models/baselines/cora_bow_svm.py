@@ -47,7 +47,7 @@ def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, h
     with ipdb.launch_ipdb_on_exception():
         # TRAIN
         cleaned_abstracts, labels = pre_proc_data(data_train, rev_class_dict, mapper_dict)
-        train_features = fit_vectorizer(args, cleaned_abstracts)
+        train_features, vectorizer = fit_vectorizer(args, cleaned_abstracts)
         if args.model == "SVM":
             model = train_svm(train_features, labels, class_weights)
         elif args.model == "NB":
@@ -56,7 +56,7 @@ def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, h
             raise Exception("Wrong model type specified, can be either SVM or NB")
         # TEST
         cleaned_abstracts_test, labels_test = pre_proc_data(data_test, rev_class_dict, mapper_dict)
-        test_features = fit_vectorizer(args, cleaned_abstracts_test)
+        test_features = vectorizer.transformer(cleaned_abstracts_test)
 
         num_c = 10 if high_level else len(class_dict)
 
@@ -109,7 +109,7 @@ def fit_vectorizer(args, input_data):
     data_features = vectorizer.fit_transform(input_data)
     print("Vectorizer fitted.")
     data_features = data_features.toarray()
-    return data_features
+    return data_features, vectorizer
 
 def train_svm(data, labels, class_weights):
     model = LinearSVC(class_weight=class_weights)
