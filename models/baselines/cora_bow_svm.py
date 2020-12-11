@@ -105,7 +105,6 @@ def pre_proc_data(data, class_dict, mapper_dict):
 
 def fit_vectorizer(args, input_data):
     vectorizer = CountVectorizer(analyzer="word", tokenizer=None, preprocessor=None, stop_words=None, max_df=args.max_df, min_df=args.min_df)
-    ipdb.set_trace()
     print("Fitting vectorizer...")
     data_features = vectorizer.fit_transform(input_data)
     print("Vectorizer fitted.")
