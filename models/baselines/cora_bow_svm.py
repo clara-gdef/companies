@@ -6,6 +6,7 @@ import pickle as pkl
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.svm import LinearSVC
 from sklearn.naive_bayes import GaussianNB, MultinomialNB
+from .grid_search_cora_svm import get_class_weights
 import numpy as np
 import ipdb
 from nltk.corpus import stopwords
@@ -37,7 +38,10 @@ def init(args):
     with open(paper_file, 'rb') as f:
         data_test = pkl.load(f)
 
-    main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, high_level)
+    class_weights = get_class_weights(data_train, rev_class_dict, mapper_dict)
+
+
+    main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, high_level, class_weights)
 
 def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, high_level, class_weights):
     with ipdb.launch_ipdb_on_exception():
