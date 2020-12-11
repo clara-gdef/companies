@@ -33,7 +33,6 @@ def init(args):
     with open(paper_file, 'rb') as f:
         data_train = pkl.load(f)
 
-
     paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["plain"] + "TEST.pkl")
     with open(paper_file, 'rb') as f:
         data_test = pkl.load(f)
@@ -101,7 +100,8 @@ def pre_proc_data(data, class_dict, mapper_dict):
 
 
 def fit_vectorizer(args, input_data):
-    vectorizer = CountVectorizer(analyzer="word", tokenizer=None, preprocessor=None, stop_words=None, max_features=args.max_voc_size, max_df=args.max_df, min_df=args.min_df)
+    vectorizer = CountVectorizer(analyzer="word", tokenizer=None, preprocessor=None, stop_words=None, max_df=args.max_df, min_df=args.min_df)
+    ipdb.set_trace()
     print("Fitting vectorizer...")
     data_features = vectorizer.fit_transform(input_data)
     print("Vectorizer fitted.")
