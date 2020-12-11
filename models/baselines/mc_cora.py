@@ -30,6 +30,12 @@ def main(args):
         else:
             classes[paper["class"]] += 1
     mc_class = classes.most_common(1)[0][0]
+    fqc = {k : v/ sum(classes.values()) for k, v in classes.items()}
+    fqc_sorted_tsr = torch.FloatTensor([fqc[i] for i in sorted(fqc.keys())])
+    ipdb.set_trace()
+    with open(os.path.join(CFG["gpudatadir"], "cora_area_fqc.pkl"), 'wb') as f:
+        pkl.dump(fqc_sorted_tsr, f)
+
     ipdb.set_trace()
     paper_file = os.path.join(CFG["gpudatadir"], CFG["rep"]["cora"]["papers"]["emb"] + "_fs_TEST.pkl")
     with open(paper_file, 'rb') as f:
