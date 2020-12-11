@@ -26,7 +26,8 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
         self.description = desc
 
         with open(os.path.join(self.data_dir, "cora_area_fqc.pkl"), 'rb') as f:
-            self.class_weights = pkl.load(f)
+            tmp = pkl.load(f)
+        self.class_weights = tmp.cuda()
 
         #self.atn_layer = torch.nn.Linear(300, 1)
         self.atn_layer = torch.nn.Sequential(torch.nn.Linear(300, 150),
