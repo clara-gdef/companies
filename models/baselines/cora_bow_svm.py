@@ -149,7 +149,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--high_level_classes", type=str, default="True")
     parser.add_argument("--min_df", type=float, default=0.001)
-    parser.add_argument("--model", type=str, default="NB")
+    parser.add_argument("--model", type=str, default="SVM")
     parser.add_argument("--max_df", type=float, default=0.9)
     parser.add_argument("--class_weight", default=None)
     parser.add_argument("--max_voc_size", type=int, default=40000)
