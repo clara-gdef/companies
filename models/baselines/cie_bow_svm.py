@@ -79,7 +79,7 @@ def main(args, data_train, data_test, class_dict, class_weights):
         else:
             raise Exception("Wrong model type specified, can be either SVM or NB")
         # TEST
-        cleaned_abstracts_test, labels_test = pre_proc_data(data_test, rev_class_dict, mapper_dict)
+        cleaned_abstracts_test, labels_test = pre_proc_data(data_test)
         test_features = vectorizer.transform(cleaned_abstracts_test)
 
         num_c = len(class_dict)
