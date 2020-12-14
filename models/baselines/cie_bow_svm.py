@@ -134,7 +134,7 @@ def eval_model(labels, preds, num_classes, handle):
     return res_dict
 
 
-def get_class_weights(data_train, rev_class_dict, mapper_dict):
+def get_class_weights(data_train, rev_class_dict):
     ipdb.set_trace()
     class_counter = Counter()
     for item in data_train:
