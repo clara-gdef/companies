@@ -84,21 +84,21 @@ def main(args, data_train, data_test, class_dict, class_weights):
 
         num_c = len(class_dict)
 
-        preds_test, preds_test_at_3 = get_predictions(args, model, test_features, labels_test)
+        preds_test, preds_test_at_10 = get_predictions(args, model, test_features, labels_test)
         res_at_1_test = eval_model(labels_test, preds_test, num_c, "TEST_" + args.model + "")
-        res_at_3_test = eval_model(labels_test, preds_test_at_3, num_c, "TEST_" + args.model + "_@3")
+        res_at_10_test = eval_model(labels_test, preds_test_at_10, num_c, "TEST_" + args.model + "_@3")
 
-        preds_train, preds_train_at_3 = get_predictions(args, model, train_features, labels)
+        preds_train, preds_train_at_10 = get_predictions(args, model, train_features, labels)
         res_at_1_train = eval_model(labels, preds_train, num_c, "TRAIN_" + args.model + "")
-        res_at_3_train = eval_model(labels, preds_train_at_3, num_c, "TRAIN_" + args.model + "_@3")
+        res_at_10_train = eval_model(labels, preds_train_at_10, num_c, "TRAIN_" + args.model + "_@3")
 
-        print({**res_at_1_test, **res_at_3_test, **res_at_1_train, **res_at_3_train})
-        return {**res_at_1_test, **res_at_3_test, **res_at_1_train, **res_at_3_train}
+        print({**res_at_1_test, **res_at_10_test, **res_at_1_train, **res_at_10_train})
+        return {**res_at_1_test, **res_at_10_test, **res_at_1_train, **res_at_10_train}
 
 
 def map_profiles_to_label(raw_profiles, labelled_data):
     mapped_profiles = {}
-    for person in tqdm(raw_profiles[:3000], desc='parsing raw profiles...'):
+    for person in tqdm(raw_profiles, desc='parsing raw profiles...'):
         person_id = person[0]
         for item in labelled_data:
             if item["id"] == person_id:
@@ -126,10 +126,10 @@ def get_predictions(args, model, features, labels):
     for sample, lab in zip(predictions, labels):
         predictions_at_1.append(get_pred_at_k(sample, lab, 1))
 
-    predictions_at_3 = []
+    predictions_at_10 = []
     for sample, lab in zip(predictions, labels):
-        predictions_at_3.append(get_pred_at_k(sample, lab, 3))
-    return predictions_at_1, predictions_at_3
+        predictions_at_10.append(get_pred_at_k(sample, lab, 10))
+    return predictions_at_1, predictions_at_10
 
 
 def pre_proc_data(data):
