@@ -81,6 +81,7 @@ def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, h
 
 def map_profiles_to_label(raw_profiles, labelled_data):
     mapped_profiles = {}
+    ipdb.set_trace()
     for person in tqdm(raw_profiles, desc='parson raw profiles...'):
         person_id = person[0]
         for item in labelled_data:
