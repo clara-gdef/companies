@@ -33,7 +33,7 @@ def init(args):
     with open(os.path.join(CFG["gpudatadir"], file_name), 'rb') as f_name:
         labelled_train = torch.load(f_name)
 
-    data_train = map_profiles_to_label(raw_profiles_train, labelled_train)
+    data_train = map_profiles_to_label(raw_profiles_train, labelled_train["tuples"])
 
     class_weights = get_class_weights(data_train, rev_class_dict)
 
@@ -45,7 +45,7 @@ def init(args):
     with open(os.path.join(CFG["gpudatadir"], file_name), 'rb') as f_name:
         labelled_test = torch.load(f_name)
 
-    data_test = map_profiles_to_label(raw_profiles_test, labelled_test)
+    data_test = map_profiles_to_label(raw_profiles_test, labelled_test["tuples"])
 
     main(args, data_train, data_test, rev_class_dict, class_dict, class_weights)
 
@@ -80,8 +80,26 @@ def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, h
 
 
 def map_profiles_to_label(raw_profiles, labelled_data):
+    mapped_profiles = {}
+    for person in tqdm(raw_profiles, desc='parson raw profiles...'):
+        person_id = person[0]
+        for item in labelled_data:
+            if item["id"] == person_id:
+                mapped_profiles["id"] = person_id
+                mapped_profiles["jobs"] = person[3]
+                mapped_profiles["cie"] = item["cie"]
     ipdb.set_trace()
     return mapped_profiles
+
+def handle_jobs(job_list):
+    exp_list = []
+    for job in sorted(job_list, key=lambda k: k['to'], reverse=True):
+        for sentence in job["job"]:
+            exp_list.append(sentence)
+
+    tmp = ' '.join([i for i in exp_list])
+    ipdb.set_trace()
+    return tmp
 
 
 def get_predictions(args, model, features, labels):
