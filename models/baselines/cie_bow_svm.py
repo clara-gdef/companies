@@ -86,11 +86,11 @@ def main(args, data_train, data_test, class_dict, class_weights):
 
         preds_test, preds_test_at_10 = get_predictions(args, model, test_features, labels_test)
         res_at_1_test = eval_model(labels_test, preds_test, num_c, "TEST_" + args.model + "")
-        res_at_10_test = eval_model(labels_test, preds_test_at_10, num_c, "TEST_" + args.model + "_@3")
+        res_at_10_test = eval_model(labels_test, preds_test_at_10, num_c, "TEST_" + args.model + "_@10")
 
         preds_train, preds_train_at_10 = get_predictions(args, model, train_features, labels)
         res_at_1_train = eval_model(labels, preds_train, num_c, "TRAIN_" + args.model + "")
-        res_at_10_train = eval_model(labels, preds_train_at_10, num_c, "TRAIN_" + args.model + "_@3")
+        res_at_10_train = eval_model(labels, preds_train_at_10, num_c, "TRAIN_" + args.model + "_@10")
 
         print({**res_at_1_test, **res_at_10_test, **res_at_1_train, **res_at_10_train})
         return {**res_at_1_test, **res_at_10_test, **res_at_1_train, **res_at_10_train}
