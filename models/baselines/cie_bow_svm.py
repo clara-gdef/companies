@@ -27,7 +27,7 @@ def init(args):
 
     data_train, data_test = get_labelled_data(args)
 
-    class_weights = get_class_weights(data_train, rev_class_dict)
+    class_weights = get_class_weights(data_train)
 
     main(args, data_train, data_test, rev_class_dict, class_dict, class_weights)
 
@@ -67,11 +67,11 @@ def get_labelled_data(args):
 
 
 
-def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, high_level, class_weights):
+def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, class_weights):
     with ipdb.launch_ipdb_on_exception():
         # TRAIN
-        cleaned_abstracts, labels = pre_proc_data(data_train, rev_class_dict, mapper_dict)
-        train_features, vectorizer = fit_vectorizer(args, cleaned_abstracts)
+        cleaned_profiles, labels = pre_proc_data(data_train)
+        train_features, vectorizer = fit_vectorizer(args, cleaned_profiles)
         if args.model == "SVM":
             model = train_svm(train_features, labels, class_weights)
         elif args.model == "NB":
@@ -82,7 +82,7 @@ def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, h
         cleaned_abstracts_test, labels_test = pre_proc_data(data_test, rev_class_dict, mapper_dict)
         test_features = vectorizer.transform(cleaned_abstracts_test)
 
-        num_c = 10 if high_level else len(class_dict)
+        num_c = len(class_dict)
 
         preds_test, preds_test_at_3 = get_predictions(args, model, test_features, labels_test)
         res_at_1_test = eval_model(labels_test, preds_test, num_c, "TEST_" + args.model + "")
@@ -98,7 +98,7 @@ def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, h
 
 def map_profiles_to_label(raw_profiles, labelled_data):
     mapped_profiles = {}
-    for person in tqdm(raw_profiles, desc='parsing raw profiles...'):
+    for person in tqdm(raw_profiles[:10000], desc='parsing raw profiles...'):
         person_id = person[0]
         for item in labelled_data:
             if item["id"] == person_id:
@@ -132,19 +132,15 @@ def get_predictions(args, model, features, labels):
     return predictions_at_1, predictions_at_3
 
 
-def pre_proc_data(data, class_dict, mapper_dict):
-    stop_words = set(stopwords.words("english"))
+def pre_proc_data(data):
+    stop_words = set(stopwords.words("french"))
     labels = []
-    abstracts = []
-    for article in tqdm(data, desc="Parsing articles..."):
-        if "Abstract" in article[1].keys() and "class" in article[1].keys():
-            if mapper_dict is not None:
-                labels.append(mapper_dict[class_dict[article[1]["class"]]])
-            else:
-                labels.append(class_dict[article[1]["class"]])
-            cleaned_ab = [w for w in article[1]["Abstract"] if w not in stop_words]
-            abstracts.append(" ".join(cleaned_ab))
-    return abstracts, labels
+    profiles = []
+    for k in tqdm(data.keys(), desc="Parsing profiles..."):
+        labels.append(data[k]["cie"])
+        cleaned_ab = [w for w in data[k]["jobs"].split(" ") if (w not in stop_words) and (w != "")]
+        profiles.append(" ".join(cleaned_ab))
+    return profiles, labels
 
 
 def fit_vectorizer(args, input_data):
@@ -184,8 +180,7 @@ def eval_model(labels, preds, num_classes, handle):
     return res_dict
 
 
-def get_class_weights(data_train, rev_class_dict):
-    ipdb.set_trace()
+def get_class_weights(data_train):
     class_counter = Counter()
     for k in data_train.keys():
         class_counter[data_train[k]["cie"]] +=1
