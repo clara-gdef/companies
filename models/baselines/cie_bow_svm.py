@@ -25,29 +25,46 @@ def init(args):
         class_dict = pkl.load(f)
     rev_class_dict = {v: k for k, v in class_dict.items()}
 
-    paper_file = os.path.join(CFG["gpudatadir"],  "profiles_jobs_skills_TRAIN.pkl")
-    with open(paper_file, 'rb') as f:
-        raw_profiles_train = pkl.load(f)
-
-    file_name = "disc_poly_avg_ft_TRAIN_standardized.pkl"
-    with open(os.path.join(CFG["gpudatadir"], file_name), 'rb') as f_name:
-        labelled_train = torch.load(f_name)
-
-    data_train = map_profiles_to_label(raw_profiles_train, labelled_train["tuples"])
+    data_train, data_test = get_labelled_data(args)
 
     class_weights = get_class_weights(data_train, rev_class_dict)
 
-    paper_file = os.path.join(CFG["gpudatadir"], "profiles_jobs_skills_TEST.pkl")
-    with open(paper_file, 'rb') as f:
-        raw_profiles_test = pkl.load(f)
-
-    file_name = "disc_poly_avg_ft_TEST_standardized.pkl"
-    with open(os.path.join(CFG["gpudatadir"], file_name), 'rb') as f_name:
-        labelled_test = torch.load(f_name)
-
-    data_test = map_profiles_to_label(raw_profiles_test, labelled_test["tuples"])
-
     main(args, data_train, data_test, rev_class_dict, class_dict, class_weights)
+
+
+def get_labelled_data(args):
+    if args.load_dataset == "True":
+        with open(os.path.join(CFG["gpudatadir"], "txt_profiles_cie_labelled_TRAIN.pkl"), 'rb') as f_name:
+            data_train = pkl.load(f_name)
+        with open(os.path.join(CFG["gpudatadir"], "txt_profiles_cie_labelled_TEST.pkl"), 'rb') as f_name:
+            data_test = pkl.load(f_name)
+    else:
+        paper_file = os.path.join(CFG["gpudatadir"], "profiles_jobs_skills_TRAIN.pkl")
+        with open(paper_file, 'rb') as f:
+            raw_profiles_train = pkl.load(f)
+
+        file_name = "disc_poly_avg_ft_TRAIN_standardized.pkl"
+        with open(os.path.join(CFG["gpudatadir"], file_name), 'rb') as f_name:
+            labelled_train = torch.load(f_name)
+
+        data_train = map_profiles_to_label(raw_profiles_train, labelled_train["tuples"])
+        with open(os.path.join(CFG["gpudatadir"], "txt_profiles_cie_labelled_TRAIN.pkl"), 'wb') as f_name:
+            pkl.dump(data_train, f_name)
+
+        paper_file = os.path.join(CFG["gpudatadir"], "profiles_jobs_skills_TEST.pkl")
+        with open(paper_file, 'rb') as f:
+            raw_profiles_test = pkl.load(f)
+
+        file_name = "disc_poly_avg_ft_TEST_standardized.pkl"
+        with open(os.path.join(CFG["gpudatadir"], file_name), 'rb') as f_name:
+            labelled_test = torch.load(f_name)
+
+        data_test = map_profiles_to_label(raw_profiles_test, labelled_test["tuples"])
+        with open(os.path.join(CFG["gpudatadir"], "txt_profiles_cie_labelled_TEST.pkl"), 'wb') as f_name:
+            pkl.dump(data_test, f_name)
+
+    return data_train, data_test
+
 
 
 def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, high_level, class_weights):
@@ -81,15 +98,13 @@ def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, h
 
 def map_profiles_to_label(raw_profiles, labelled_data):
     mapped_profiles = {}
-    ipdb.set_trace()
-    for person in tqdm(raw_profiles, desc='parson raw profiles...'):
+    for person in tqdm(raw_profiles[:1000], desc='parson raw profiles...'):
         person_id = person[0]
         for item in labelled_data:
             if item["id"] == person_id:
                 mapped_profiles["id"] = person_id
-                mapped_profiles["jobs"] = person[3]
+                mapped_profiles["jobs"] = handle_jobs(person[3])
                 mapped_profiles["cie"] = item["cie"]
-    ipdb.set_trace()
     return mapped_profiles
 
 def handle_jobs(job_list):
@@ -97,9 +112,7 @@ def handle_jobs(job_list):
     for job in sorted(job_list, key=lambda k: k['to'], reverse=True):
         for sentence in job["job"]:
             exp_list.append(sentence)
-
     tmp = ' '.join([i for i in exp_list])
-    ipdb.set_trace()
     return tmp
 
 
@@ -191,7 +204,7 @@ def get_pred_at_k(pred, label, k):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--high_level_classes", type=str, default="True")
+    parser.add_argument("--load_dataset", type=str, default="False")
     parser.add_argument("--min_df", type=float, default=0.001)
     parser.add_argument("--model", type=str, default="SVM")
     parser.add_argument("--max_df", type=float, default=0.9)
