@@ -67,7 +67,7 @@ def get_labelled_data(args):
 
 
 
-def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, class_weights):
+def main(args, data_train, data_test, class_dict, class_weights):
     with ipdb.launch_ipdb_on_exception():
         # TRAIN
         cleaned_profiles, labels = pre_proc_data(data_train)
