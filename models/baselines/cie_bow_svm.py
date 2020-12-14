@@ -98,13 +98,13 @@ def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, h
 
 def map_profiles_to_label(raw_profiles, labelled_data):
     mapped_profiles = {}
-    for person in tqdm(raw_profiles, desc='parsing raw profiles...'):
+    for person in tqdm(raw_profiles[:1000], desc='parsing raw profiles...'):
         person_id = person[0]
         for item in labelled_data:
             if item["id"] == person_id:
-                mapped_profiles["id"] = person_id
-                mapped_profiles["jobs"] = handle_jobs(person[3])
-                mapped_profiles["cie"] = item["cie"]
+                mapped_profiles[person_id] = {}
+                mapped_profiles[person_id]["jobs"] = handle_jobs(person[3])
+                mapped_profiles[person_id]["cie"] = item["cie"]
     return mapped_profiles
 
 def handle_jobs(job_list):
@@ -187,8 +187,8 @@ def eval_model(labels, preds, num_classes, handle):
 def get_class_weights(data_train, rev_class_dict):
     ipdb.set_trace()
     class_counter = Counter()
-    for item in data_train:
-        class_counter[mapper_dict[rev_class_dict[item[1]["class"]]]] +=1
+    for k in data_train.keys():
+        class_counter[data_train[k]["cie"]] +=1
     total_samples = sum([i for i in class_counter.values()])
     class_weight = {k: v/total_samples for k, v in class_counter.items()}
     return class_weight
