@@ -2,6 +2,7 @@ import argparse
 
 import yaml
 import os
+import torch
 import pickle as pkl
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.svm import LinearSVC
@@ -26,16 +27,28 @@ def init(args):
 
     paper_file = os.path.join(CFG["gpudatadir"],  "profiles_jobs_skills_TRAIN.pkl")
     with open(paper_file, 'rb') as f:
-        data_train = pkl.load(f)
+        raw_profiles_train = pkl.load(f)
 
-    paper_file = os.path.join(CFG["gpudatadir"], "profiles_jobs_skills_TEST.pkl")
-    with open(paper_file, 'rb') as f:
-        data_test = pkl.load(f)
+    file_name = "disc_poly_avg_ft_TRAIN_standardized.pkl"
+    with open(os.path.join(CFG["gpudatadir"], file_name), 'rb') as f_name:
+        labelled_train = torch.load(f_name)
+
+    data_train = map_profiles_to_label(raw_profiles_train, labelled_train)
 
     class_weights = get_class_weights(data_train, rev_class_dict)
 
+    paper_file = os.path.join(CFG["gpudatadir"], "profiles_jobs_skills_TEST.pkl")
+    with open(paper_file, 'rb') as f:
+        raw_profiles_test = pkl.load(f)
 
-    main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, high_level, class_weights)
+    file_name = "disc_poly_avg_ft_TEST_standardized.pkl"
+    with open(os.path.join(CFG["gpudatadir"], file_name), 'rb') as f_name:
+        labelled_test = torch.load(f_name)
+
+    data_test = map_profiles_to_label(raw_profiles_test, labelled_test)
+
+    main(args, data_train, data_test, rev_class_dict, class_dict, class_weights)
+
 
 def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, high_level, class_weights):
     with ipdb.launch_ipdb_on_exception():
@@ -64,6 +77,11 @@ def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, h
 
         print({**res_at_1_test, **res_at_3_test, **res_at_1_train, **res_at_3_train})
         return {**res_at_1_test, **res_at_3_test, **res_at_1_train, **res_at_3_train}
+
+
+def map_profiles_to_label(raw_profiles, labelled_data):
+    ipdb.set_trace()
+    return mapped_profiles
 
 
 def get_predictions(args, model, features, labels):
