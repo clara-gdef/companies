@@ -29,7 +29,7 @@ def init(args):
 
     class_weights = get_class_weights(data_train)
 
-    main(args, data_train, data_test, rev_class_dict, class_dict, class_weights)
+    main(args, data_train, data_test, class_dict, class_weights)
 
 
 def get_labelled_data(args):
