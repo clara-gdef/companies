@@ -98,7 +98,7 @@ def main(args, data_train, data_test, rev_class_dict, mapper_dict, class_dict, h
 
 def map_profiles_to_label(raw_profiles, labelled_data):
     mapped_profiles = {}
-    for person in tqdm(raw_profiles[:1000], desc='parsing raw profiles...'):
+    for person in tqdm(raw_profiles, desc='parsing raw profiles...'):
         person_id = person[0]
         for item in labelled_data:
             if item["id"] == person_id:
