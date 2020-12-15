@@ -13,7 +13,7 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 
 
 class AtnInstanceClassifierDisc(pl.LightningModule):
-    def __init__(self, in_size, out_size, dim_size, hparams, desc, num_cie, num_clus, num_dpt, middle_size=None, fixed_weights=None):
+    def __init__(self, in_size, out_size, dim_size, hparams, desc, num_cie, num_clus, num_dpt, data_dir, middle_size=None, fixed_weights=None):
         super().__init__()
         self.num_cie = num_cie
         self.num_clus = num_clus
@@ -24,6 +24,8 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         self.input_type = hparams.input_type
         self.hparams = hparams
         self.type = desc.split("_")[2]
+        self.description = desc
+        self.data_dir = data_dir
         if self.type == 'spe':
             self.bag_type = desc.split("_")[4]
 

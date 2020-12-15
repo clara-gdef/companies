@@ -61,6 +61,7 @@ def train(hparams):
                  "num_dpt": 0,
                  'hparams': hparams,
                  'desc': xp_title,
+                 "data_dir": CFG["gpudatadir"],
                  "middle_size": hparams.middle_size,
                  "fixed_weights": weights}
 
