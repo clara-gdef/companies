@@ -50,7 +50,7 @@ def main(hparams):
                  'hparams': hparams,
                  'desc': xp_title,
                  "data_dir": CFG["gpudatadir"],
-
+                 "frozen": hparams.frozen,
                  "middle_size": hparams.middle_size}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
