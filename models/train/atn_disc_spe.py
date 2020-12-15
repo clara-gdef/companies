@@ -175,7 +175,7 @@ if __name__ == "__main__":
     parser.add_argument("--init_weights", default="True")
     parser.add_argument("--frozen", default="True")
     parser.add_argument("--load_dataset", default="True")
-    parser.add_argument("--auto_lr_find", type=bool, default="False")
+    parser.add_argument("--auto_lr_find", type=bool, default="True")
     parser.add_argument("--load_from_checkpoint", default="False")
     parser.add_argument("--checkpoint", type=int, default=45)
     parser.add_argument("--data_agg_type", type=str, default="avg")
