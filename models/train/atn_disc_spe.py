@@ -59,7 +59,7 @@ def main(hparams):
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
     model = AtnInstanceClassifierDisc(**arguments)
     print("Model Loaded.")
-    if hparams.load_from_checkpoint:
+    if hparams.load_from_checkpoint == "True":
         print("Loading from previous checkpoint...")
         model_name = hparams.model_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" + \
                      str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
