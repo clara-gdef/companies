@@ -255,15 +255,14 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         if self.type == "poly":
             tmp_labels = [batch[2], batch[3], batch[4]]
         elif self.type == "spe":
-            ipdb.set_trace()
             if self.bag_type == "cie":
-                tmp_labels = [batch[2]]
+                tmp_labels = [batch[3]]
             elif self.bag_type == "clus":
                 offset = self.num_cie
-                tmp_labels = [[i - offset for i in batch[2]]]
+                tmp_labels = [[i - offset for i in batch[3]]]
             elif self.bag_type == "dpt":
                 offset = self.num_cie + self.num_clus
-                tmp_labels = [[i - offset for i in batch[2]]]
+                tmp_labels = [[i - offset for i in batch[3]]]
             else:
                 raise Exception("Wrong bag type specified: " + str(self.bag_type))
         else:
