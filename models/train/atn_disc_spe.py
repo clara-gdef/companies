@@ -52,6 +52,7 @@ def main(hparams):
                  "num_dpt": 0,
                  'hparams': hparams,
                  'desc': xp_title,
+                 "data_dir": CFG["gpu_datadir"],
                  "frozen": hparams.frozen,
                  "middle_size": hparams.middle_size}
 
@@ -165,7 +166,7 @@ def make_xp_title(hparams):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
-    parser.add_argument("--gpus", type=int, default=1)
+    parser.add_argument("--gpus", type=int, default=0)
     parser.add_argument("--b_size", type=int, default=16)
     parser.add_argument("--middle_size", type=int, default=20)
     parser.add_argument("--input_type", type=str, default="matMul")
