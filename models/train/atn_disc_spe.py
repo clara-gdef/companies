@@ -78,10 +78,9 @@ def main(hparams):
         model.lin.weight = torch.nn.Parameter(torch.load(model_path)["state_dict"]["lin.weight"])
         model.lin.bias = torch.nn.Parameter(torch.load(model_path)["state_dict"]["lin.bias"])
         print("Prediction layer initiated.")
-    else:
-        print("Starting training for " + xp_title + "...")
 
     if hparams.auto_lr_find == "True":
+        print("looking for bbest lr...")
         # Run learning rate finder
         lr_finder = trainer.tuner.lr_find(model, train_dataloader=train_loader, val_dataloaders=valid_loader)
 
@@ -94,6 +93,8 @@ def main(hparams):
         # update hparams of the model
         model.hparams.lr = new_lr
         ipdb.set_trace()
+    print("Starting training for " + xp_title + "...")
+
     trainer.fit(model.cuda(), train_loader, valid_loader)
 
 
