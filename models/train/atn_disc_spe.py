@@ -80,7 +80,7 @@ def main(hparams):
         print("Prediction layer initiated.")
 
     if hparams.auto_lr_find == "True":
-        print("looking for bbest lr...")
+        print("looking for best lr...")
         # Run learning rate finder
         lr_finder = trainer.tuner.lr_find(model, train_dataloader=train_loader, val_dataloaders=valid_loader)
 
@@ -175,11 +175,11 @@ if __name__ == "__main__":
     parser.add_argument("--init_weights", default="True")
     parser.add_argument("--frozen", default="True")
     parser.add_argument("--load_dataset", default="True")
-    parser.add_argument("--auto_lr_find", type=bool, default="True")
+    parser.add_argument("--auto_lr_find", type=str, default="True")
     parser.add_argument("--load_from_checkpoint", default="False")
     parser.add_argument("--checkpoint", type=int, default=45)
     parser.add_argument("--data_agg_type", type=str, default="avg")
-    parser.add_argument("--DEBUG", type=bool, default="False")
+    parser.add_argument("--DEBUG", type=str, default="False")
     parser.add_argument("--model_type", type=str, default="atn_disc_spe")
     parser.add_argument("--lr", type=float, default=1e-6)
     parser.add_argument("--wd", type=float, default=0.)
