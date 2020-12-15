@@ -52,7 +52,7 @@ def main(hparams):
                  "num_dpt": 0,
                  'hparams': hparams,
                  'desc': xp_title,
-                 "data_dir": CFG["gpu_datadir"],
+                 "data_dir": CFG["gpudatadir"],
                  "frozen": hparams.frozen,
                  "middle_size": hparams.middle_size}
 

@@ -23,7 +23,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         self.dim_size = dim_size
         self.input_type = hparams.input_type
         self.hparams = hparams
-        self.type = desc.split("_")[2]
+        self.type = "spe"
         self.description = desc
         self.data_dir = data_dir
         if self.type == 'spe':
