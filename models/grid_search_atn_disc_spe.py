@@ -52,6 +52,8 @@ def init_args(hparams):
             'epochs': hparams.epochs,
             "load_from_checkpoint": False,
             "checkpoint": 49,
+            "frozen": hparams.frozen,
+            "init_weights": hparams.init_weights,
             "bag_type": "cie",
             "wd": 0.0,
             "DEBUG": hparams.DEBUG,
@@ -66,18 +68,19 @@ if __name__ == "__main__":
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
-    parser.add_argument("--gpus", type=int, default=1)
+    parser.add_argument("--gpus", type=int, default=0)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", default="True")
     parser.add_argument("--TRAIN", default="True")
-    parser.add_argument("--auto_lr_find", type=bool, default=True)
+    parser.add_argument("--auto_lr_find", default='False')
     parser.add_argument("--data_agg_type", type=str, default="avg")
-    parser.add_argument("--frozen", type=str, default="avg")
+    parser.add_argument("--frozen", type=str, default="False")
+    parser.add_argument("--init_weights", type=str, default="False")
     parser.add_argument("--DEBUG", type=bool, default=False)
-    parser.add_argument("--model_type", type=str, default="atn_disc_spe")
+    parser.add_argument("--model_type", type=str, default="atn_disc_spe_new")
     parser.add_argument("--middle_size", type=int, default=50)
     parser.add_argument("--epochs", type=int, default=100)
-    parser.add_argument("--b_size", nargs='+', default=[64, 512])
-    parser.add_argument("--lr", nargs='+', default=[1e-5, 1e-6])
+    parser.add_argument("--b_size", nargs='+', default=[64, 256, 16])
+    parser.add_argument("--lr", nargs='+', default=[1e-6, 1e-7, 1e-8])
     hparams = parser.parse_args()
     grid_search(hparams)
