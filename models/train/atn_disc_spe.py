@@ -13,30 +13,27 @@ from models.classes.AtnInstanceClassifierDisc import AtnInstanceClassifierDisc
 from utils.models import collate_for_attn_disc_spe_model, get_model_params
 
 
-def main(hparams):
+def init(hparams):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     if hparams.DEBUG:
         with ipdb.launch_ipdb_on_exception():
-            return train(hparams)
+            return main(hparams)
     else:
-        return train(hparams)
+        return main(hparams)
 
 
-def train(hparams):
-    xp_title = hparams.model_type + "_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_" + \
-               str(hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
-    if hparams.input_type == "hadamard":
-        xp_title += "_" + str(hparams.middle_size)
+def main(hparams):
+    xp_title = make_xp_title(hparams)
 
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, xp_title)
+    call_back_list = [checkpoint_callback, early_stop_callback]
+
     trainer = pl.Trainer(gpus=[hparams.gpus],
                          max_epochs=hparams.epochs,
-                         checkpoint_callback=checkpoint_callback,
-                         early_stop_callback=early_stop_callback,
-                         logger=logger,
-                         auto_lr_find=False
+                         callbacks=call_back_list,
+                         logger=logger
                          )
     datasets = load_datasets(hparams, ["TRAIN", "VALID"], hparams.load_dataset)
     dataset_train, dataset_valid = datasets[0], datasets[1]
@@ -55,6 +52,7 @@ def train(hparams):
                  "num_dpt": 0,
                  'hparams': hparams,
                  'desc': xp_title,
+                 "frozen": hparams.frozen,
                  "middle_size": hparams.middle_size}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
@@ -72,7 +70,7 @@ def train(hparams):
         print("Resuming training from checkpoint : " + model_file + ".")
     elif hparams.init_weights == "True":
         print("Initializing class prediction weights...")
-        model_name = 'disc_spe/cie/ft/avg/matMul/epoch=02.ckpt'
+        model_name = 'disc_spe_std/cie/ft/avg/matMul/16/1e-06/0.0/epoch=02.ckpt'
         if hparams.input_type == "hadamard":
             model_name += "/" + str(hparams.middle_size)
         model_path = os.path.join(CFG['modeldir'], model_name)
@@ -81,6 +79,20 @@ def train(hparams):
         print("Prediction layer initiated.")
     else:
         print("Starting training for " + xp_title + "...")
+
+    if hparams.auto_lr_find == "True":
+        # Run learning rate finder
+        lr_finder = trainer.tuner.lr_find(model, train_dataloader=train_loader, val_dataloaders=valid_loader)
+
+        # Results can be found in
+        print(lr_finder.results)
+
+        # Pick point based on plot, or get suggestion
+        new_lr = lr_finder.suggestion()
+
+        # update hparams of the model
+        model.hparams.lr = new_lr
+        ipdb.set_trace()
     trainer.fit(model.cuda(), train_loader, valid_loader)
 
 
@@ -135,6 +147,20 @@ def init_lightning(hparams, xp_title):
     return logger, checkpoint_callback, early_stop_callback
 
 
+def make_xp_title(hparams):
+    xp_title = ""
+    if hparams.frozen == "True":
+        xp_title += "frozen_"
+    if hparams.init_weights == "True":
+        xp_title += "init_"
+    xp_title += hparams.model_type + "_" + hparams.bag_type + "_" + hparams.rep_type + "_" +\
+               hparams.data_agg_type + "_" + hparams.input_type + "_" + \
+               str(hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
+    if hparams.input_type == "hadamard":
+        xp_title += "_" + str(hparams.middle_size)
+    print("xp_title = " + xp_title)
+    return xp_title
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -145,15 +171,16 @@ if __name__ == "__main__":
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--bag_type", type=str, default="cie")
     parser.add_argument("--init_weights", default="True")
+    parser.add_argument("--frozen", default="True")
     parser.add_argument("--load_dataset", default="True")
-    parser.add_argument("--auto_lr_find", type=bool, default=False)
-    parser.add_argument("--load_from_checkpoint", default=False)
+    parser.add_argument("--auto_lr_find", type=bool, default="False")
+    parser.add_argument("--load_from_checkpoint", default="False")
     parser.add_argument("--checkpoint", type=int, default=45)
     parser.add_argument("--data_agg_type", type=str, default="avg")
-    parser.add_argument("--DEBUG", type=bool, default=False)
+    parser.add_argument("--DEBUG", type=bool, default="False")
     parser.add_argument("--model_type", type=str, default="atn_disc_spe")
     parser.add_argument("--lr", type=float, default=1e-6)
     parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--epochs", type=int, default=50)
     hparams = parser.parse_args()
-    main(hparams)
+    init(hparams)

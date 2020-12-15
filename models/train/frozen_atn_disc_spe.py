@@ -50,7 +50,7 @@ def train(hparams):
 
     print("Loading previously saved classifier...")
 
-    model_name = 'disc_spe/cie/ft/avg/matMul/epoch=02.ckpt'
+    model_name = 'disc_spe_std/cie/ft/avg/matMul/epoch=02.ckpt'
 
     weights = torch.load(os.path.join(CFG['modeldir'], model_name))["state_dict"]
     arguments = {'dim_size': 300,

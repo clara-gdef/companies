@@ -13,7 +13,7 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 
 
 class AtnInstanceClassifierDisc(pl.LightningModule):
-    def __init__(self, in_size, out_size, dim_size, hparams, desc, num_cie, num_clus, num_dpt, data_dir, middle_size=None, fixed_weights=None):
+    def __init__(self, in_size, out_size, dim_size, hparams, desc, num_cie, num_clus, num_dpt, data_dir, frozen, middle_size=None, fixed_weights=None):
         super().__init__()
         self.num_cie = num_cie
         self.num_clus = num_clus
@@ -39,12 +39,9 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             torch.nn.init.zeros_(self.lin_class_prediction.bias)
         else:
             self.lin = torch.nn.Linear(in_size, out_size)
-            if fixed_weights is None:
-                torch.nn.init.eye_(self.lin.weight)
-                torch.nn.init.zeros_(self.lin.bias)
-            else:
-                self.lin.weight = torch.nn.Parameter(fixed_weights["lin.weight"])
-                self.lin.bias = torch.nn.Parameter(fixed_weights["lin.bias"])
+            torch.nn.init.eye_(self.lin.weight)
+            torch.nn.init.zeros_(self.lin.bias)
+            if frozen == "True":
                 self.lin.requires_grad = False
 
         self.training_losses = []
