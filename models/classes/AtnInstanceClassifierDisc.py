@@ -123,7 +123,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             # the model is specialized
             val_loss = torch.nn.functional.cross_entropy(output,
                                                          torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
-            self.log("valid_acc", 100 * accuracy_score(tmp_labels,
+            self.log("valid_acc", 100 * accuracy_score(tmp_labels[0],
                                                    torch.argmax(output, dim=-1).detach().cpu().numpy()))
         preds = [i.item() for i in torch.argmax(output, dim=1)]
         # res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "valid", 0)
