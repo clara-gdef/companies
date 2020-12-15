@@ -115,7 +115,12 @@ def load_datasets(hparams, splits, load):
 
 
 def init_lightning(hparams, xp_title):
-    model_name = hparams.model_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" + \
+    model_name = ""
+    if hparams.frozen == "True":
+        model_name += "frozen_"
+    if hparams.init_weights == "True":
+        model_name += "init_"
+    model_name += hparams.model_type + "/" + hparams.rep_type + "/" + hparams.data_agg_type + "/" + hparams.input_type + "/" + \
                  str(hparams.b_size) + "/" + str(hparams.lr) + "/" + str(hparams.wd)
     if hparams.input_type == "hadamard":
         model_name += "/" + str(hparams.middle_size)
