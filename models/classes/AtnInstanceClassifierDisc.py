@@ -214,7 +214,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
                                                    self.bag_type + "_@" + str(k), 0)
             res_dict_trained = {**res_dict_trained, **tmp}
 
-        # self.save_bag_outputs(preds, labels, confusion_matrix(preds[:, :1].cpu(), labels.cpu()), res_dict_trained)
+        self.save_bag_outputs(preds, labels, confusion_matrix(preds[:, :1].cpu(), labels.cpu()), res_dict_trained)
         return res_dict_trained
 
     def save_bag_outputs(self, preds, labels, cm, res):
