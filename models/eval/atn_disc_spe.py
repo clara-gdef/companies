@@ -17,7 +17,7 @@ def init(hparams):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
-    if hparams.DEBUG:
+    if hparams.DEBUG == "True":
         with ipdb.launch_ipdb_on_exception():
             return main(hparams)
     else:
@@ -108,14 +108,14 @@ if __name__ == "__main__":
     parser.add_argument("--bag_type", type=str, default="cie")
     parser.add_argument("--init_weights", default="True")
     parser.add_argument("--load_dataset", default="True")
-    parser.add_argument("--auto_lr_find", type=bool, default=False)
-    parser.add_argument("--load_from_checkpoint", default=False)
+    parser.add_argument("--frozen", default="True")
+    parser.add_argument("--auto_lr_find", default="False")
+    parser.add_argument("--load_from_checkpoint", default="False")
     parser.add_argument("--checkpoint", type=int, default=45)
     parser.add_argument("--data_agg_type", type=str, default="avg")
-    parser.add_argument("--DEBUG", type=bool, default=False)
+    parser.add_argument("--DEBUG", default="False")
     parser.add_argument("--model_type", type=str, default="atn_disc_spe")
     parser.add_argument("--lr", type=float, default=1e-6)
     parser.add_argument("--wd", type=float, default=0.)
-    parser.add_argument("--epochs", type=int, default=50)
     hparams = parser.parse_args()
     init(hparams)
