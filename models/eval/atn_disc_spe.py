@@ -49,6 +49,8 @@ def main(hparams):
                  "num_dpt": 0,
                  'hparams': hparams,
                  'desc': xp_title,
+                 "data_dir": CFG["gpudatadir"],
+
                  "middle_size": hparams.middle_size}
 
     print("Initiating model with params (" + str(in_size) + ", " + str(out_size) + ")")
