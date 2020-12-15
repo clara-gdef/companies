@@ -169,6 +169,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             labels_one_hot = labels_to_one_hot(len(profiles), tmp_labels, self.get_num_classes())
             self.test_outputs.append(self.forward(profiles, bags))
             # self.before_training.append(input_tensor)
+        ipdb.set_trace()
         self.test_labels_one_hot.append(labels_one_hot)
         self.test_labels.append(tmp_labels)
         self.test_ppl_id.append(mini_batch[0])
@@ -254,6 +255,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         if self.type == "poly":
             tmp_labels = [batch[2], batch[3], batch[4]]
         elif self.type == "spe":
+            ipdb.set_trace()
             if self.bag_type == "cie":
                 tmp_labels = [batch[2]]
             elif self.bag_type == "clus":

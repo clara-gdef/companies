@@ -13,7 +13,7 @@ from models.classes.AtnInstanceClassifierDisc import AtnInstanceClassifierDisc
 from utils.models import collate_for_attn_disc_spe_model, get_model_params
 
 
-def main(hparams):
+def init(hparams):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
@@ -24,7 +24,7 @@ def main(hparams):
         return train(hparams)
 
 
-def train(hparams):
+def main(hparams):
     xp_title = hparams.model_type + "_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_" + \
                str(hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
     if hparams.input_type == "hadamard":
@@ -116,4 +116,4 @@ if __name__ == "__main__":
     parser.add_argument("--wd", type=float, default=0.)
     parser.add_argument("--epochs", type=int, default=50)
     hparams = parser.parse_args()
-    main(hparams)
+    init(hparams)
