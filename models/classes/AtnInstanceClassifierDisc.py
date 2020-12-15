@@ -13,7 +13,8 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 
 
 class AtnInstanceClassifierDisc(pl.LightningModule):
-    def __init__(self, in_size, out_size, dim_size, hparams, desc, num_cie, num_clus, num_dpt, data_dir, frozen, middle_size=None, fixed_weights=None):
+    def __init__(self, in_size, out_size, dim_size, hparams, desc, num_cie, num_clus, num_dpt, data_dir, frozen,
+                 middle_size=None, fixed_weights=None):
         super().__init__()
         self.num_cie = num_cie
         self.num_clus = num_clus
@@ -94,10 +95,13 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             loss = torch.nn.functional.binary_cross_entropy_with_logits(output, labels.cuda())
         else:
             # the model is specialized
-            loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
+            loss = torch.nn.functional.cross_entropy(output,
+                                                     torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
+            self.log("train_acc",
+                     100 * accuracy_score(tmp_labels[0], torch.argmax(output, dim=-1).detach().cpu().numpy()))
+
         self.training_losses.append(loss.item())
         self.log("train_loss_CE", loss)
-        self.log("train_acc", 100*accuracy_score(labels.cpu().numpy(), torch.argmax(output, dim=-1).detach().cpu().numpy()))
         return {'loss': loss}
 
     def validation_step(self, mini_batch, batch_nb):
@@ -124,7 +128,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             val_loss = torch.nn.functional.cross_entropy(output,
                                                          torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
             self.log("valid_acc", 100 * accuracy_score(tmp_labels[0],
-                                                   torch.argmax(output, dim=-1).detach().cpu().numpy()))
+                                                       torch.argmax(output, dim=-1).detach().cpu().numpy()))
         preds = [i.item() for i in torch.argmax(output, dim=1)]
         # res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "valid", 0)
         self.log("val_loss", val_loss)
@@ -134,7 +138,6 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         train_loss_mean = np.mean(self.training_losses)
         self.logger.experiment.add_scalar('training_mean_loss', train_loss_mean, global_step=self.current_epoch)
         self.training_losses = []
-
 
     def configure_optimizers(self):
         # return torch.optim.SGD(self.parameters(), lr=self.hparams.lr, weight_decay=self.wd)
@@ -175,7 +178,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         if self.type == "poly":
             res = self.test_poly(outputs)
         else:
-             res = self.test_spe(outputs)
+            res = self.test_spe(outputs)
         return res
 
     def test_poly(self, outputs):
@@ -209,8 +212,8 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
         labels = torch.LongTensor([i[0][0] for i in self.test_labels]).cuda()
         res_dict_trained = get_metrics(preds[:, :1].cpu(), labels.cpu(), self.get_num_classes(), self.bag_type, 0)
         for k in [10]:
-            tmp = get_metrics_at_k(preds[:, :k].cpu(), labels.cpu(),  self.get_num_classes(),
-                                                   self.bag_type + "_@" + str(k), 0)
+            tmp = get_metrics_at_k(preds[:, :k].cpu(), labels.cpu(), self.get_num_classes(),
+                                   self.bag_type + "_@" + str(k), 0)
             res_dict_trained = {**res_dict_trained, **tmp}
 
         self.save_bag_outputs(preds, labels, confusion_matrix(preds[:, :1].cpu(), labels.cpu()), res_dict_trained)
@@ -327,7 +330,7 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
                 limit = self.num_cie + self.num_clus
             elif self.bag_type == "dpt":
                 offset = self.num_cie + self.num_clus
-                limit = self.num_cie  + self.num_clus + self.num_dpt
+                limit = self.num_cie + self.num_clus + self.num_dpt
             if self.input_type != "userOriented":
                 preds = outputs[:, 0, offset:limit]
             else:
@@ -386,7 +389,8 @@ def test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds
 
     all_preds_k = []
     chained_labels = [i for i in itertools.chain(cie_labels, clus_labels, dpt_labels)]
-    for preds, labels in tqdm(zip(itertools.chain(cie_preds_at_k, clus_preds_at_k, dpt_preds_at_k), chained_labels), desc="Computing at k=10..."):
+    for preds, labels in tqdm(zip(itertools.chain(cie_preds_at_k, clus_preds_at_k, dpt_preds_at_k), chained_labels),
+                              desc="Computing at k=10..."):
         if labels.item() in preds[:10]:
             all_preds_k.append(labels.item())
         else:
@@ -403,11 +407,11 @@ def test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds
 def test_for_bag(preds, labels, b4_training, offset, num_classes, bag_type):
     predicted_classes = torch.argsort(preds, dim=-1, descending=True)
     res_dict_trained = get_metrics([i.item() + offset for i in predicted_classes[:, 0]], labels.cpu(), num_classes,
-                                      bag_type, offset)
+                                   bag_type, offset)
 
     for k in [10]:
         tmp = get_metrics_at_k(predicted_classes[:, :k].cpu(), labels.cpu(), num_classes,
-                                               bag_type + "_@" + str(k), offset)
+                               bag_type + "_@" + str(k), offset)
         res_dict_trained = {**res_dict_trained, **tmp}
     return res_dict_trained
 
