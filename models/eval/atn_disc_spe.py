@@ -70,7 +70,7 @@ def main(hparams):
     model_files = glob.glob(os.path.join(model_path, "*"))
     latest_file = max(model_files, key=os.path.getctime)
     model.load_state_dict(torch.load(latest_file)["state_dict"])
-    trainer.test(model.cuda(), test_loader)
+    return trainer.test(model.cuda(), test_loader)
 
 
 def load_datasets(hparams, splits, load):
