@@ -30,8 +30,8 @@ class AtnInstanceClassifierDiscCora(pl.LightningModule):
         self.class_weights = tmp.cuda()
 
         #self.atn_layer = torch.nn.Linear(300, 1)
-        self.atn_layer = torch.nn.Sequential(torch.nn.Linear(300, 150),
-                                             torch.nn.Linear(150, 1))
+        self.atn_layer = torch.nn.Sequential(torch.nn.Linear(300, 150, bias=False),
+                                             torch.nn.Linear(150, 1, bias=False))
         ############
         # torch.nn.init.ones_(self.atn_layer.weight)
         # torch.nn.init.constant_(self.atn_layer.weight, 1/(12*300))
