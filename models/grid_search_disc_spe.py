@@ -56,6 +56,7 @@ def init_args(hparams):
             "standardized" : True,
             'high_level_classes': False,
             "init_type": hparams.init_type,
+            "ft_type": hparams.ft_type,
             "log_cm": hparams.log_cm,
             "optim": hparams.optim,
             "DEBUG": hparams.DEBUG,
@@ -71,6 +72,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=1)
+    parser.add_argument("--ft_type", type=str, default='fs')
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--model_type", type=str, default="disc_spe_new")
