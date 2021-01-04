@@ -55,7 +55,9 @@ def init_args(hparams):
             "subsample": 0,
             "standardized" : True,
             'high_level_classes': False,
+            "init_type": hparams.init_type,
             "log_cm": hparams.log_cm,
+            "optim": hparams.optim,
             "DEBUG": hparams.DEBUG,
             "load_from_checkpoint": False}
     print(hparams.epochs)
@@ -75,10 +77,12 @@ if __name__ == "__main__":
     parser.add_argument("--high_level_classes", type=str, default="False")
     parser.add_argument("--auto_lr_find", default="False")
     parser.add_argument("--data_agg_type", type=str, default="avg")
+    parser.add_argument("--optim", type=str, default="sgd")
     parser.add_argument("--middle_size", type=int, default=100)
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--TRAIN", default="True")
-    parser.add_argument("--DEBUG", type=bool, default=False)
+    parser.add_argument("--DEBUG", default="False")
+    parser.add_argument("--init_type", type=str, default="uni")
     parser.add_argument("--lr", nargs='+', default=[1e-7, 1e-8, 1e-9])
     parser.add_argument("--log_cm", type=str, default="False")
     parser.add_argument("--b_size", nargs='+', default=[64, 512, 16])
