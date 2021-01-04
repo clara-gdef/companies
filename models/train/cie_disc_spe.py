@@ -13,18 +13,18 @@ from models.classes import InstanceClassifierDisc
 from utils.models import collate_for_disc_spe_model, get_model_params
 
 
-def main(hparams):
+def init(hparams):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     if hparams.DEBUG:
         with ipdb.launch_ipdb_on_exception():
-            return train(hparams)
+            return main(hparams)
     else:
-        return train(hparams)
+        return main(hparams)
 
 
-def train(hparams):
+def main(hparams):
     xp_title = hparams.model_type + "_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, CFG, xp_title)
@@ -187,4 +187,4 @@ if __name__ == "__main__":
     parser.add_argument("--auto_lr_find", type=str, default="False")
     parser.add_argument("--epochs", type=int, default=50)
     hparams = parser.parse_args()
-    main(hparams)
+    init(hparams)

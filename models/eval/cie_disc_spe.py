@@ -14,18 +14,18 @@ from models.classes import InstanceClassifierDisc
 from utils.models import collate_for_disc_spe_model, get_model_params
 
 
-def main(hparams):
+def init(hparams):
     global CFG
     with open("config.yaml", "r") as ymlfile:
         CFG = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     if hparams.DEBUG:
         with ipdb.launch_ipdb_on_exception():
-            return test(hparams, CFG)
+            return main(hparams, CFG)
     else:
-        return test(hparams, CFG)
+        return main(hparams, CFG)
 
 
-def test(hparams, CFG):
+def main(hparams, CFG):
     xp_title = hparams.model_type + "_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" \
                + hparams.input_type + "_bs" + str(
         hparams.b_size)
@@ -111,4 +111,4 @@ if __name__ == "__main__":
     parser.add_argument("--wd", type=float, default=0.0)
     parser.add_argument("--b_size", type=int, default=16)
     hparams = parser.parse_args()
-    main(hparams)
+    init(hparams)
