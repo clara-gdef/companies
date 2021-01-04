@@ -75,7 +75,7 @@ def train(hparams):
     else:
         print("Starting training " + xp_title)
 
-    if hparams.auto_lf_find == "True":
+    if hparams.auto_lr_find == "True":
         # Run learning rate finder
         lr_finder = trainer.tuner.lr_find(model, train_dataloader=train_loader, val_dataloaders=valid_loader)
         # Results can be found in
