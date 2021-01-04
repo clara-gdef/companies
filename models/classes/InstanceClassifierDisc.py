@@ -102,12 +102,11 @@ class InstanceClassifierDisc(pl.LightningModule):
             # the model is specialized
             loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
             tensorboard_logs = {'train_loss': loss}
+            self.log("train_loss", loss)
+            self.log("train_acc", 100 * accuracy_score(labels.cpu().numpy(),
+                                                       torch.argmax(output, dim=-1).detach().cpu().numpy()))
         self.training_losses.append(loss.item())
-
-        preds = [i.item() for i in torch.argmax(output, dim=1)]
-        # res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "train", 0)
-
-        return {'loss': loss, 'log': tensorboard_logs}
+        return {'loss': loss}
 
     def validation_step(self, batch, batch_nb):
         if self.input_type != "userOriented" and self.input_type != "bagTransformer":
@@ -146,10 +145,10 @@ class InstanceClassifierDisc(pl.LightningModule):
             # the model is specialized
             val_loss = torch.nn.functional.cross_entropy(output,
                                                          torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
-            tensorboard_logs = {'val_loss': val_loss}
-        preds = [i.item() for i in torch.argmax(output, dim=1)]
-        res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "valid", 0)
-        return {'loss': val_loss, 'log': tensorboard_logs}
+            self.log("val_loss", val_loss)
+            self.log("valid_acc", 100 * accuracy_score(labels.cpu().numpy(),
+                                                       torch.argmax(output, dim=-1).detach().cpu().numpy()))
+        return {'val_loss': val_loss}
 
     def epoch_end(self):
         train_loss_mean = np.mean(self.training_losses)
