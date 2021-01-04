@@ -54,6 +54,7 @@ def init_args(hparams):
             "wd": 0.,
             "subsample": 0,
             "standardized" : True,
+            'high_level_classes': False,
             "log_cm": hparams.log_cm,
             "DEBUG": hparams.DEBUG,
             "load_from_checkpoint": False}
