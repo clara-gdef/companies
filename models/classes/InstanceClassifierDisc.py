@@ -101,7 +101,6 @@ class InstanceClassifierDisc(pl.LightningModule):
         else:
             # the model is specialized
             loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
-            tensorboard_logs = {'train_loss': loss}
             self.log("train_loss", loss)
             self.log("train_acc", 100 * accuracy_score(tmp_labels[0],
                                                        torch.argmax(output, dim=-1).detach().cpu().numpy()))
@@ -136,11 +135,6 @@ class InstanceClassifierDisc(pl.LightningModule):
             val_loss_clus = torch.nn.functional.cross_entropy(clus_preds, clus_labels)
             val_loss_dpt = torch.nn.functional.cross_entropy(dpt_preds, dpt_labels)
             val_loss = val_loss_cie + val_loss_clus + val_loss_dpt
-            tensorboard_logs = {'val_loss': val_loss,
-                                "val_loss_cie": val_loss_cie,
-                                "val_loss_clus": val_loss_clus,
-                                "val_loss_dpt": val_loss_dpt}
-            # val_loss = torch.nn.functional.binary_cross_entropy_with_logits(output, labels.cuda())
         else:
             # the model is specialized
             val_loss = torch.nn.functional.cross_entropy(output,

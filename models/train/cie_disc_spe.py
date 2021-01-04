@@ -134,7 +134,7 @@ def init_lightning(hparams, CFG, xp_title):
 
     early_stop_callback = EarlyStopping(
         monitor='val_loss',
-        min_delta=0.00,
+        min_delta=0.0000,
         patience=10,
         verbose=False,
         mode='min'
