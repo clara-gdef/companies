@@ -93,18 +93,13 @@ class InstanceClassifierDisc(pl.LightningModule):
             loss_clus = torch.nn.functional.cross_entropy(clus_preds, clus_labels)
             loss_dpt = torch.nn.functional.cross_entropy(dpt_preds, dpt_labels)
             loss = loss_cie + loss_clus + loss_dpt
-            tensorboard_logs = {'train_loss': loss,
-                                "train_loss_cie": loss_cie,
-                                "train_loss_clus": loss_clus,
-                                "train_loss_dpt": loss_dpt}
             # loss = torch.nn.functional.binary_cross_entropy_with_logits(output, labels.cuda())
         else:
             # the model is specialized
             loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
-            self.log("train_loss", loss, on_step=True, on_epoch=False, logger=True)
+            self.log("train_loss", loss)
             self.log("train_acc", 100 * accuracy_score(tmp_labels[0],
-                                                       torch.argmax(output, dim=-1).detach().cpu().numpy()),
-                     on_step=False, on_epoch=True, logger=True)
+                                                       torch.argmax(output, dim=-1).detach().cpu().numpy()))
         self.training_losses.append(loss.item())
         return {'loss': loss}
 
@@ -140,10 +135,9 @@ class InstanceClassifierDisc(pl.LightningModule):
             # the model is specialized
             val_loss = torch.nn.functional.cross_entropy(output,
                                                          torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
-            self.log("val_loss", val_loss, on_step=True, on_epoch=False, logger=True)
+            self.log("val_loss", val_loss)
             self.log("valid_acc", 100 * accuracy_score(tmp_labels[0],
-                                                       torch.argmax(output, dim=-1).detach().cpu().numpy()),
-                     on_step=False, on_epoch=True, logger=True)
+                                                       torch.argmax(output, dim=-1).detach().cpu().numpy()))
         return {'val_loss': val_loss}
 
     # def epoch_end(self):
