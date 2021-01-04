@@ -101,9 +101,10 @@ class InstanceClassifierDisc(pl.LightningModule):
         else:
             # the model is specialized
             loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
-            self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+            self.log("train_loss", loss, on_step=True, on_epoch=False, logger=True)
             self.log("train_acc", 100 * accuracy_score(tmp_labels[0],
-                                                       torch.argmax(output, dim=-1).detach().cpu().numpy()), on_step=True, on_epoch=True, prog_bar=True, logger=True)
+                                                       torch.argmax(output, dim=-1).detach().cpu().numpy()),
+                     on_step=False, on_epoch=True, logger=True)
         self.training_losses.append(loss.item())
         return {'loss': loss}
 
@@ -139,9 +140,10 @@ class InstanceClassifierDisc(pl.LightningModule):
             # the model is specialized
             val_loss = torch.nn.functional.cross_entropy(output,
                                                          torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
-            self.log("val_loss", val_loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+            self.log("val_loss", val_loss, on_step=True, on_epoch=False, logger=True)
             self.log("valid_acc", 100 * accuracy_score(tmp_labels[0],
-                                                       torch.argmax(output, dim=-1).detach().cpu().numpy()), on_step=True, on_epoch=True, prog_bar=True, logger=True)
+                                                       torch.argmax(output, dim=-1).detach().cpu().numpy()),
+                     on_step=False, on_epoch=True, logger=True)
         return {'val_loss': val_loss}
 
     # def epoch_end(self):
@@ -222,8 +224,8 @@ class InstanceClassifierDisc(pl.LightningModule):
         labels = torch.LongTensor([i[0][0] for i in self.test_labels]).cuda()
         res_dict_trained = get_metrics(preds[:, :1].cpu(), labels.cpu(), self.get_num_classes(), self.bag_type, 0)
         for k in [10]:
-            tmp = get_metrics_at_k(preds[:, :k].cpu(), labels.cpu(),  self.get_num_classes(),
-                                                   self.bag_type + "_@" + str(k), 0)
+            tmp = get_metrics_at_k(preds[:, :k].cpu(), labels.cpu(), self.get_num_classes(),
+                                   self.bag_type + "_@" + str(k), 0)
             res_dict_trained = {**res_dict_trained, **tmp}
         self.save_bag_outputs(preds, labels, confusion_matrix(preds[:, :1].cpu(), labels.cpu()), res_dict_trained)
         return res_dict_trained
@@ -348,7 +350,7 @@ class InstanceClassifierDisc(pl.LightningModule):
                 limit = self.num_cie + self.num_clus
             elif self.bag_type == "dpt":
                 offset = self.num_cie + self.num_clus
-                limit = self.num_cie  + self.num_clus + self.num_dpt
+                limit = self.num_cie + self.num_clus + self.num_dpt
             if self.input_type != "userOriented":
                 preds = outputs[:, 0, offset:limit]
             else:
@@ -393,7 +395,8 @@ def test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds
 
     all_preds_k = []
     chained_labels = [i for i in itertools.chain(cie_labels, clus_labels, dpt_labels)]
-    for preds, labels in tqdm(zip(itertools.chain(cie_preds_at_k, clus_preds_at_k, dpt_preds_at_k), chained_labels), desc="Computing at k=10..."):
+    for preds, labels in tqdm(zip(itertools.chain(cie_preds_at_k, clus_preds_at_k, dpt_preds_at_k), chained_labels),
+                              desc="Computing at k=10..."):
         if labels.item() in preds[:10]:
             all_preds_k.append(labels.item())
         else:
@@ -410,11 +413,11 @@ def test_for_all_bags(cie_labels, clus_labels, dpt_labels, cie_preds, clus_preds
 def test_for_bag(preds, labels, b4_training, offset, num_classes, bag_type):
     predicted_classes = torch.argsort(preds, dim=-1, descending=True)
     res_dict_trained = get_metrics([i.item() + offset for i in predicted_classes[:, 0]], labels.cpu(), num_classes,
-                                      bag_type, offset)
+                                   bag_type, offset)
 
     for k in [10]:
         tmp = get_metrics_at_k(predicted_classes[:, :k].cpu(), labels.cpu(), num_classes,
-                                               bag_type + "_@" + str(k), offset)
+                               bag_type + "_@" + str(k), offset)
         res_dict_trained = {**res_dict_trained, **tmp}
     return res_dict_trained
 
