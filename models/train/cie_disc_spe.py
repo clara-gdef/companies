@@ -182,6 +182,8 @@ if __name__ == "__main__":
     parser.add_argument("--load_from_checkpoint", type=bool, default=False)
     parser.add_argument("--checkpoint", type=str, default=49)
     parser.add_argument("--bag_type", type=str, default="cie")
+    parser.add_argument("--optim", type=str, default="sgd")
+
     parser.add_argument("--log_cm", type=str, default="False")
     parser.add_argument("--lr", type=float, default=1e-6)
     parser.add_argument("--auto_lr_find", type=str, default="False")
