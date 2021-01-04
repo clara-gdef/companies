@@ -125,7 +125,7 @@ def init_lightning(hparams, CFG, xp_title):
 
     checkpoint_callback = ModelCheckpoint(
         filepath=os.path.join(model_path, '{epoch:02d}'),
-        save_top_k=False,
+        save_top_k=2,
         verbose=True,
         monitor='val_loss',
         mode='min',
@@ -136,7 +136,7 @@ def init_lightning(hparams, CFG, xp_title):
         monitor='val_loss',
         min_delta=0.0000,
         patience=10,
-        verbose=False,
+        verbose=True,
         mode='min'
     )
     return logger, checkpoint_callback, early_stop_callback
