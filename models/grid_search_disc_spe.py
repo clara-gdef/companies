@@ -24,7 +24,7 @@ def grid_search(hparams):
                         dico["bag_type"] = bag_type
                         arg = DotDict(dico)
                         if hparams.TRAIN == "True":
-                            models.train.disc_spe.main(arg)
+                            models.train.cie_disc_spe.main(arg)
                         test_results[lr][b_size][mid_size] = models.eval.disc_spe.main(arg)
                 else:
                     print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
@@ -34,7 +34,7 @@ def grid_search(hparams):
                     dico["bag_type"] = bag_type
                     arg = DotDict(dico)
                     if hparams.TRAIN == "True":
-                        models.train.disc_spe.init(arg)
+                        models.train.cie_disc_spe.init(arg)
                     test_results[lr][b_size] = models.eval.disc_spe.init(arg)
         res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_disc_spe_" + bag_type + "_" + hparams.rep_type +
                                 "_" + hparams.input_type)
