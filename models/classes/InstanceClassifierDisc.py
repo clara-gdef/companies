@@ -135,7 +135,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             # the model is specialized
             val_loss = torch.nn.functional.cross_entropy(output,
                                                          torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
-            self.log("val_loss", val_loss)
+            self.log("val_loss", val_loss, prog_bar=True)
             self.log("valid_acc", 100 * accuracy_score(tmp_labels[0],
                                                        torch.argmax(output, dim=-1).detach().cpu().numpy()))
         return {'val_loss': val_loss}
