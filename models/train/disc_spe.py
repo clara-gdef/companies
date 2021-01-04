@@ -4,7 +4,7 @@ import torch
 import ipdb
 import argparse
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
+from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping, Callback
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 import yaml
@@ -28,11 +28,15 @@ def train(hparams):
     xp_title = hparams.model_type + "_" + hparams.bag_type + "_" + hparams.rep_type + "_" + hparams.data_agg_type + "_" + hparams.input_type + "_bs" + str(
         hparams.b_size) + "_" + str(hparams.lr) + '_' + str(hparams.wd)
     logger, checkpoint_callback, early_stop_callback = init_lightning(hparams, CFG, xp_title)
+
+    call_back_list = [checkpoint_callback, early_stop_callback]
+    if hparams.log_cm == "True":
+        call_back_list.append(MyCallbacks())
+
     print(hparams.auto_lr_find)
     trainer = pl.Trainer(gpus=hparams.gpus,
                          max_epochs=hparams.epochs,
-                         checkpoint_callback=checkpoint_callback,
-                         early_stop_callback=early_stop_callback,
+                         callbacks=call_back_list,
                          logger=logger,
                          auto_lr_find=hparams.auto_lr_find
                          )
@@ -136,6 +140,30 @@ def init_lightning(hparams, CFG, xp_title):
         mode='min'
     )
     return logger, checkpoint_callback, early_stop_callback
+
+class MyCallbacks(Callback):
+    def __init__(self):
+        self.epoch = 0
+
+    def on_sanity_check_end(self, trainer, pl_module):
+        pl_module.log_confusion_matrix(torch.stack(pl_module.valid_outputs),
+                                       torch.stack(pl_module.valid_labels),
+                                       "sanity_check")
+        print('Confusion Matrix logged for sanity check')
+
+    def on_validation_epoch_end(self, trainer, pl_module):
+        pl_module.log_confusion_matrix(torch.stack(pl_module.valid_outputs),
+                                       torch.stack(pl_module.valid_labels),
+                                       "valid_ep_" + str(self.epoch))
+        print('Confusion Matrix logged for validation epoch ' + str(self.epoch))
+
+    def on_train_epoch_end(self, trainer, pl_module, tmp):
+        pl_module.log_confusion_matrix(torch.stack(pl_module.train_outputs),
+                                       torch.stack(pl_module.train_labels),
+                                       "train_end_ep_" + str(self.epoch))
+        print('Confusion Matrix logged for train end epoch ' + str(self.epoch))
+        self.epoch += 1
+
 
 
 if __name__ == "__main__":
