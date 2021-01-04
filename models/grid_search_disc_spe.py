@@ -89,7 +89,7 @@ if __name__ == "__main__":
     parser.add_argument("--EVAL", default="False")
     parser.add_argument("--DEBUG", default="False")
     parser.add_argument("--init_type", type=str, default="eye")
-    parser.add_argument("--lr", nargs='+', default=[1e-7, 1e-8, 1e-9])
+    parser.add_argument("--lr", nargs='+', default=[1e-6, 1e-5])
     parser.add_argument("--log_cm", type=str, default="False")
     parser.add_argument("--b_size", nargs='+', default=[64, 512, 16])
     parser.add_argument("--bag_types", nargs='+', default=["cie"])
