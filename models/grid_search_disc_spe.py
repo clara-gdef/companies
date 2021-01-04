@@ -34,8 +34,8 @@ def grid_search(hparams):
                     dico["bag_type"] = bag_type
                     arg = DotDict(dico)
                     if hparams.TRAIN == "True":
-                        train.disc_spe.main(arg)
-                    test_results[lr][b_size] = eval.disc_spe.main(arg)
+                        train.disc_spe.init(arg)
+                    test_results[lr][b_size] = eval.disc_spe.init(arg)
         res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_disc_spe_" + bag_type + "_" + hparams.rep_type +
                                 "_" + hparams.input_type)
         with open(res_path, "wb") as f:
@@ -70,6 +70,7 @@ if __name__ == "__main__":
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", type=bool, default=True)
     parser.add_argument("--model_type", type=str, default="disc_spe_new")
+    parser.add_argument("--high_level_classes", type=str, default="False")
     parser.add_argument("--auto_lr_find", default="False")
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--middle_size", type=int, default=100)
