@@ -35,11 +35,14 @@ def grid_search(hparams):
                     arg = DotDict(dico)
                     if hparams.TRAIN == "True":
                         models.train.cie_disc_spe.init(arg)
-                    test_results[lr][b_size] = models.eval.cie_disc_spe.init(arg)
-        res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_disc_spe_" + bag_type + "_" + hparams.rep_type +
-                                "_" + hparams.input_type)
-        with open(res_path, "wb") as f:
-            pkl.dump(test_results, f)
+                    if hparams.EVAL == "True":
+                        test_results[lr][b_size] = models.eval.cie_disc_spe.init(arg)
+
+        if hparams.EVAL == "True":
+            res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_wd_disc_spe_" + bag_type + "_" + hparams.rep_type +
+                                    "_" + hparams.input_type)
+            with open(res_path, "wb") as f:
+                pkl.dump(test_results, f)
 
 
 def init_args(hparams):
@@ -83,6 +86,7 @@ if __name__ == "__main__":
     parser.add_argument("--middle_size", type=int, default=100)
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--TRAIN", default="True")
+    parser.add_argument("--EVAL", default="False")
     parser.add_argument("--DEBUG", default="False")
     parser.add_argument("--init_type", type=str, default="uni")
     parser.add_argument("--lr", nargs='+', default=[1e-7, 1e-8, 1e-9])
