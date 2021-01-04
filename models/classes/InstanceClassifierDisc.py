@@ -144,17 +144,16 @@ class InstanceClassifierDisc(pl.LightningModule):
                                                        torch.argmax(output, dim=-1).detach().cpu().numpy()))
         return {'val_loss': val_loss}
 
-    def epoch_end(self):
-        train_loss_mean = np.mean(self.training_losses)
-        self.logger.experiment.add_scalar('training_mean_loss', train_loss_mean, global_step=self.current_epoch)
-        self.training_losses = []
-
-    def validation_end(self, outputs):
-        return outputs[-1]
+    # def epoch_end(self):
+    #     train_loss_mean = np.mean(self.training_losses)
+    #     self.logger.experiment.add_scalar('training_mean_loss', train_loss_mean, global_step=self.current_epoch)
+    #     self.training_losses = []
 
     def configure_optimizers(self):
-        return torch.optim.SGD(self.parameters(), lr=self.hparams.lr, weight_decay=self.wd)
-        #return torch.optim.Adam(self.parameters(), lr=self.hparams.lr, weight_decay=self.wd)
+        if self.hp.optim == "adam":
+            return torch.optim.Adam(self.parameters(), lr=self.hp.lr, weight_decay=self.hp.wd)
+        else:
+            return torch.optim.SGD(self.parameters(), lr=self.hp.lr, weight_decay=self.hp.wd)
 
     def test_step(self, batch, batch_idx):
         if self.input_type == "userOriented":
