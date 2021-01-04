@@ -150,10 +150,10 @@ class InstanceClassifierDisc(pl.LightningModule):
     #     self.training_losses = []
 
     def configure_optimizers(self):
-        if self.hp.optim == "adam":
-            return torch.optim.Adam(self.parameters(), lr=self.hp.lr, weight_decay=self.hp.wd)
+        if self.hparams.optim == "adam":
+            return torch.optim.Adam(self.parameters(), lr=self.hparams.lr, weight_decay=self.hparams.wd)
         else:
-            return torch.optim.SGD(self.parameters(), lr=self.hp.lr, weight_decay=self.hp.wd)
+            return torch.optim.SGD(self.parameters(), lr=self.hparams.lr, weight_decay=self.hparams.wd)
 
     def test_step(self, batch, batch_idx):
         if self.input_type == "userOriented":
