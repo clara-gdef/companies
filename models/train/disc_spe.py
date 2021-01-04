@@ -70,6 +70,20 @@ def train(hparams):
         print("Resuming training from checkpoint : " + model_file + ".")
     else:
         print("Starting training " + xp_title)
+
+    if hparams.auto_lf_find == "True":
+        # Run learning rate finder
+        lr_finder = trainer.tuner.lr_find(model, train_dataloader=train_loader, val_dataloaders=valid_loader)
+        # Results can be found in
+        print(lr_finder.results)
+
+        # Pick point based on plot, or get suggestion
+        new_lr = lr_finder.suggestion()
+
+        # update hparams of the model
+        model.hparams.lr = new_lr
+        ipdb.set_trace()
+
     trainer.fit(model, train_loader, valid_loader)
 
 
@@ -141,7 +155,7 @@ if __name__ == "__main__":
     parser.add_argument("--checkpoint", type=str, default=49)
     parser.add_argument("--bag_type", type=str, default="cie")
     parser.add_argument("--lr", type=float, default=1e-6)
-    parser.add_argument("--auto_lr_find", type=bool, default=False)
+    parser.add_argument("--auto_lr_find", type=str, default="False")
     parser.add_argument("--epochs", type=int, default=50)
     hparams = parser.parse_args()
     main(hparams)
