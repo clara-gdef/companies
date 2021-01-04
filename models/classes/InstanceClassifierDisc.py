@@ -103,7 +103,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
             tensorboard_logs = {'train_loss': loss}
             self.log("train_loss", loss)
-            self.log("train_acc", 100 * accuracy_score(labels.cpu().numpy(),
+            self.log("train_acc", 100 * accuracy_score(tmp_labels[0],
                                                        torch.argmax(output, dim=-1).detach().cpu().numpy()))
         self.training_losses.append(loss.item())
         return {'loss': loss}
@@ -146,7 +146,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             val_loss = torch.nn.functional.cross_entropy(output,
                                                          torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
             self.log("val_loss", val_loss)
-            self.log("valid_acc", 100 * accuracy_score(labels.cpu().numpy(),
+            self.log("valid_acc", 100 * accuracy_score(tmp_labels[0],
                                                        torch.argmax(output, dim=-1).detach().cpu().numpy()))
         return {'val_loss': val_loss}
 
