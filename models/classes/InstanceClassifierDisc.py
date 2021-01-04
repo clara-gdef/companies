@@ -97,9 +97,9 @@ class InstanceClassifierDisc(pl.LightningModule):
         else:
             # the model is specialized
             loss = torch.nn.functional.cross_entropy(output, torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
-            self.log("train_loss", loss)
+            self.log("train_loss", loss, on_step=False, on_epoch=True)
             self.log("train_acc", 100 * accuracy_score(tmp_labels[0],
-                                                       torch.argmax(output, dim=-1).detach().cpu().numpy()))
+                                                       torch.argmax(output, dim=-1).detach().cpu().numpy()), on_step=False, on_epoch=True)
         self.training_losses.append(loss.item())
         return {'loss': loss}
 
