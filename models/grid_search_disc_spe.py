@@ -78,7 +78,7 @@ if __name__ == "__main__":
     parser.add_argument("--ft_type", type=str, default='fs')
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", type=bool, default=True)
-    parser.add_argument("--model_type", type=str, default="cie_disc_spe")
+    parser.add_argument("--model_type", type=str, default="newDisc_spe")
     parser.add_argument("--high_level_classes", type=str, default="False")
     parser.add_argument("--auto_lr_find", default="False")
     parser.add_argument("--data_agg_type", type=str, default="avg")
