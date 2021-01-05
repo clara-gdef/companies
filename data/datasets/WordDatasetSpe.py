@@ -36,8 +36,7 @@ class WordDatasetSpe(Dataset):
                 lookup = pkl.load(f_name)
 
             split_ids = self.get_split_indices(split)
-            # TODO remove slicing
-            self.build_profiles_from_indices(split_ids[:100], embedder, lookup, ds_mean, ds_std)
+            self.build_profiles_from_indices(split_ids, embedder, lookup, ds_mean, ds_std)
 
             if subsample > 0:
                 np.random.shuffle(self.tuples)
@@ -75,7 +74,6 @@ class WordDatasetSpe(Dataset):
             print("Mean = " + str(ds_mean) + " and STD  = " + str(ds_std) + " computed for train split.")
             with open(os.path.join(self.data_dir, "word_dataset_params.pkl"), 'wb') as f_name:
                 pkl.dump([ds_mean, ds_std], f_name)
-        ipdb.set_trace()
         self.tuples = []
         for tup in tups:
             jobs_embs = np.zeros((self.MAX_JOB_COUNT, self.MAX_WORD_COUNT, self.embedder_dim))
@@ -85,7 +83,6 @@ class WordDatasetSpe(Dataset):
                         if place < self.MAX_WORD_COUNT:
                             jobs_embs[num_job, place, :] = (word - ds_mean)/ds_std
             tup[-2] = jobs_embs
-            ipdb.set_trace()
             self.tuples.append(tup)
 
 
