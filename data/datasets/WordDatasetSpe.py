@@ -35,6 +35,7 @@ class WordDatasetSpe(Dataset):
                 lookup = pkl.load(f_name)
 
             split_ids = self.get_split_indices(split)
+            ipdb.set_trace()
             self.build_profiles_from_indices(split_ids, embedder, lookup, ds_mean, ds_std)
 
             if subsample > 0:
@@ -57,7 +58,7 @@ class WordDatasetSpe(Dataset):
         return ids
 
     def build_profiles_from_indices(self, indices, embedder, lookup,  ds_mean, ds_std):
-        base_file = os.path.join(self.data_dir,  "profiles_jobs_skills_edu.pkl")
+        base_file = os.path.join(self.data_dir, "profiles_jobs_skills_edu.pkl")
         with open(base_file, 'rb') as f:
             ppl = pkl.load(f)
         for person in tqdm(ppl):
