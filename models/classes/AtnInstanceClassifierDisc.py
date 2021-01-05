@@ -130,9 +130,10 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
                                                          torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
         # res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "valid", 0)
         self.log("val_loss", val_loss, prog_bar=True)
-        self.log("valid_acc", 100 * accuracy_score(tmp_labels[0],
-                                                   torch.argmax(output, dim=-1).detach().cpu().numpy()))
-        return {'val_loss': val_loss}
+        acc_val = 100 * accuracy_score(tmp_labels[0],
+                                                   torch.argmax(output, dim=-1).detach().cpu().numpy())
+        self.log("valid_acc", acc_val)
+        return {'val_loss': val_loss, "valid_acc": acc_val}
 
     def epoch_end(self):
         train_loss_mean = np.mean(self.training_losses)

@@ -71,7 +71,7 @@ def main(hparams):
         print("Resuming training from checkpoint : " + model_file + ".")
     elif hparams.init_weights == "True":
         print("Initializing class prediction weights...")
-        model_name = 'disc_spe_std/cie/ft/avg/matMul/16/1e-06/0.0/epoch=02.ckpt'
+        model_name = 'newDisc_spe/cie/ft/avg/matMul/512/1e-07/0.0/epoch=33.ckpt'
         if hparams.input_type == "hadamard":
             model_name += "/" + str(hparams.middle_size)
         model_path = os.path.join(CFG['modeldir'], model_name)

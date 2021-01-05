@@ -35,7 +35,7 @@ def grid_search(hparams):
                     train.cie_atn_disc_spe.init(arg)
                 if hparams.EVAL == "True":
                     test_results[lr][b_size] = eval.cie_atn_disc_spe.init(arg)
-                    
+
         if hparams.EVAL == "True":
             res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_" + hparams.model_type + "_topK_disc_spe_" + hparams.rep_type + "_" + hparams.input_type)
             with open(res_path, "wb") as f:
