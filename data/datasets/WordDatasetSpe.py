@@ -35,7 +35,8 @@ class WordDatasetSpe(Dataset):
                 lookup = pkl.load(f_name)
 
             split_ids = self.get_split_indices(split)
-            self.build_profiles_from_indices(split_ids, embedder, lookup, ds_mean, ds_std)
+            # TODO remove sliicing
+            self.build_profiles_from_indices(split_ids[:100], embedder, lookup, ds_mean, ds_std)
 
             if subsample > 0:
                 np.random.shuffle(self.tuples)
@@ -90,16 +91,17 @@ class WordDatasetSpe(Dataset):
         new_p.append(job_words)
         jobs_embs = []
         for job in job_words:
-            job_emb = torch.zeros(self.MAX_WORD_COUNT, self.embedder_dim)
+            job_emb = np.zeros(self.MAX_WORD_COUNT, self.embedder_dim)
             for place, word in enumerate(job):
                 if place < self.MAX_WORD_COUNT:
                     tmp = embedder(word)
                     if self.rep_type == "ft":
-                        job_emb[place, :] = torch.from_numpy(tmp)
+                        job_emb[place, :] = tmp
                     else:
                         ipdb.set_trace()
             jobs_embs.append(job_emb)
-        new_p.append(torch.stack(jobs_embs))
+        new_p.append(np.stack(jobs_embs))
+        ipdb.set_trace()
         new_p.append(lookup[person[0]]["cie_label"])
         return new_p
 
