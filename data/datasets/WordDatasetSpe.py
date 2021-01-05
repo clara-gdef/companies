@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 
 
 class WordDatasetSpe(Dataset):
-    def __init__(self, data_dir, rep_type, embedder, split, subsample, load, min_job_count, max_word_count=126):
+    def __init__(self, data_dir, rep_type, embedder, split, subsample, load, min_job_count, max_job_count, max_word_count=126):
         self.data_dir = data_dir
         self.split = split
         self.rep_type = rep_type
@@ -17,6 +17,7 @@ class WordDatasetSpe(Dataset):
             self.load_dataset()
         else:
             self.MIN_JOB_COUNT = min_job_count
+            self.MAX_JOB_COUNT = max_job_count
             self.MAX_WORD_COUNT = max_word_count
 
             if rep_type == "ft":
@@ -35,7 +36,7 @@ class WordDatasetSpe(Dataset):
                 lookup = pkl.load(f_name)
 
             split_ids = self.get_split_indices(split)
-            # TODO remove sliicing
+            # TODO remove slicing
             self.build_profiles_from_indices(split_ids[:100], embedder, lookup, ds_mean, ds_std)
 
             if subsample > 0:
@@ -89,18 +90,19 @@ class WordDatasetSpe(Dataset):
         for job in person[-1]:
             job_words.append(job["job"][:min(self.MAX_WORD_COUNT, len(job["job"]))])
         new_p.append(job_words)
-        jobs_embs = []
-        for job in job_words:
-            job_emb = np.zeros(self.MAX_WORD_COUNT, self.embedder_dim)
-            for place, word in enumerate(job):
-                if place < self.MAX_WORD_COUNT:
-                    tmp = embedder(word)
-                    if self.rep_type == "ft":
-                        job_emb[place, :] = tmp
-                    else:
-                        ipdb.set_trace()
-            jobs_embs.append(job_emb)
-        new_p.append(np.stack(jobs_embs))
+        jobs_embs = np.zeros((self.MAX_JOB_COUNT, self.MAX_WORD_COUNT, self.embedder_dim))
+        for num_job, job in enumerate(job_words):
+            if num_job < self.MAX_JOB_COUNT:
+                job_emb = np.zeros((self.MAX_WORD_COUNT, self.embedder_dim))
+                for place, word in enumerate(job):
+                    if place < self.MAX_WORD_COUNT:
+                        tmp = embedder(word)
+                        if self.rep_type == "ft":
+                            job_emb[place, :] = tmp
+                        else:
+                            ipdb.set_trace()
+                jobs_embs[num_job, :, :] = job_emb
+        new_p.append(jobs_embs)
         ipdb.set_trace()
         new_p.append(lookup[person[0]]["cie_label"])
         return new_p
