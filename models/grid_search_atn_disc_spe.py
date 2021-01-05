@@ -72,6 +72,7 @@ if __name__ == "__main__":
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", default="True")
     parser.add_argument("--TRAIN", default="True")
+    parser.add_argument("--EVAL", default="False")
     parser.add_argument("--auto_lr_find", default='False')
     parser.add_argument("--data_agg_type", type=str, default="avg")
     parser.add_argument("--frozen", type=str, default="False")
