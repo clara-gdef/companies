@@ -55,6 +55,7 @@ def init_args(hparams):
             "frozen": hparams.frozen,
             "init_weights": hparams.init_weights,
             "bag_type": "cie",
+            "subsample": hparams.subsample,
             "wd": 0.0,
             "DEBUG": hparams.DEBUG,
             "model_type": hparams.model_type
@@ -69,6 +70,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rep_type", type=str, default='ft')
     parser.add_argument("--gpus", type=int, default=0)
+    parser.add_argument("--subsample", type=int, default=0)
     parser.add_argument("--input_type", type=str, default="matMul")
     parser.add_argument("--load_dataset", default="True")
     parser.add_argument("--TRAIN", default="True")

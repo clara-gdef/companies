@@ -106,7 +106,7 @@ def load_datasets(hparams, splits, load):
         "bag_type": "cie",
         "load": load,
         "standardized": True,
-        "subsample": 0
+        "subsample": hparams.subsample
     }
     for split in splits:
         datasets.append(JobsDatasetSpe(**common_hparams, split=split))
