@@ -84,6 +84,6 @@ if __name__ == "__main__":
     parser.add_argument("--middle_size", type=int, default=50)
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--b_size", nargs='+', default=[64, 256, 16])
-    parser.add_argument("--lr", nargs='+', default=[1e-6, 1e-7, 1e-8])
+    parser.add_argument("--lr", nargs='+', default=[1e-7, 1e-8])
     hparams = parser.parse_args()
     grid_search(hparams)
