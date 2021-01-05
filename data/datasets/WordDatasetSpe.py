@@ -85,8 +85,8 @@ class WordDatasetSpe(Dataset):
     def build_new_person(self, person, embedder, lookup):
         new_p = [person[0], len(person[-1])]
         job_words = []
-        for job in person[1]:
-            job_words.append([job["job"][:min(self.MAX_WORD_COUNT, len(job["job"]))]])
+        for job in person[-1]:
+            job_words.append(job["job"][:min(self.MAX_WORD_COUNT, len(job["job"]))])
         new_p.append(job_words)
         jobs_embs = []
         for job in job_words:
