@@ -68,11 +68,10 @@ class WordDatasetSpe(Dataset):
                 self.tuples.append(new_p)
         # standardize word embeddings
         tups = self.tuples
-        prof_emb_tmp = np.stack([i[-2] for i in self.tuples])
+        prof_emb_tmp = np.concatenate([i[-2] for i in self.tuples])
         if ds_std is None and ds_mean is None:
-            ipdb.set_trace()
-            ds_mean = np.mean(prof_emb_tmp, axis=0)
-            ds_std = np.std(prof_emb_tmp, axis=0)
+            ds_mean = np.mean(np.mean(prof_emb_tmp, axis=0), axis=0)
+            ds_std = np.std(np.std(prof_emb_tmp, axis=0))
             print("Mean = " + str(ds_mean) + " and STD  = " + str(ds_std) + " computed for train split.")
             with open(os.path.join(self.data_dir, "word_dataset_params.pkl"), 'wb') as f_name:
                 pkl.dump([ds_mean, ds_std], f_name)
@@ -80,11 +79,11 @@ class WordDatasetSpe(Dataset):
         self.tuples = []
         for tup in tups:
             jobs_embs = np.zeros((self.MAX_JOB_COUNT, self.MAX_WORD_COUNT, self.embedder_dim))
-            for num_job, job in enumerate(tup[2]):
+            for num_job, job in enumerate(tup[3]):
                 if num_job < self.MAX_JOB_COUNT:
                     for place, word in enumerate(job):
                         if place < self.MAX_WORD_COUNT:
-                            jobs_embs[num_job, place, :] = (tup[-2] - ds_mean)/ds_std
+                            jobs_embs[num_job, place, :] = (word - ds_mean)/ds_std
             tup[-2] = jobs_embs
             ipdb.set_trace()
             self.tuples.append(tup)
@@ -101,12 +100,13 @@ class WordDatasetSpe(Dataset):
         # for num_job, job in enumerate(job_words):
         #     if num_job < self.MAX_JOB_COUNT:
         for job in job_words:
-            job_emb = np.zeros((self.MAX_WORD_COUNT, self.embedder_dim))
+            job_emb = []
+            # job_emb = np.zeros((self.MAX_WORD_COUNT, self.embedder_dim))
             for place, word in enumerate(job):
                 if place < self.MAX_WORD_COUNT:
                     tmp = embedder(word)
                     if self.rep_type == "ft":
-                        job_emb[place, :] = tmp
+                        job_emb.append(tmp)
                     else:
                         ipdb.set_trace()
             jobs_embs.append(job_emb)
