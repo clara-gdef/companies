@@ -127,8 +127,8 @@ def init_lightning(hparams, CFG, xp_title):
         filepath=os.path.join(model_path, '{epoch:02d}'),
         save_top_k=1,
         verbose=True,
-        monitor='val_loss',
-        mode='min',
+        monitor='valid_acc',
+        mode='max',
         prefix=''
     )
 
