@@ -35,7 +35,10 @@ class JobsDatasetSpe(Dataset):
             self.tuples = []
             self.select_relevant_tuples(ds_dict["tuples"], bag_type, subsample)
             self.save_dataset(data_dir, split, standardized)
-
+        if subsample > 0:
+            np.random.shuffle(self.tuples)
+            tmp = self.tuples[:subsample]
+            self.tuples = tmp
         print("Job dataset loaded.")
         print("Dataset Length: " + str(len(self.tuples)))
 
