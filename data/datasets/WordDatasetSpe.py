@@ -100,13 +100,12 @@ class WordDatasetSpe(Dataset):
         # for num_job, job in enumerate(job_words):
         #     if num_job < self.MAX_JOB_COUNT:
         for job in job_words:
-            job_emb = []
-            # job_emb = np.zeros((self.MAX_WORD_COUNT, self.embedder_dim))
+            job_emb = np.zeros((self.MAX_WORD_COUNT, self.embedder_dim))
             for place, word in enumerate(job):
                 if place < self.MAX_WORD_COUNT:
                     tmp = embedder(word)
                     if self.rep_type == "ft":
-                        job_emb.append(tmp)
+                        job_emb[place, :] = tmp
                     else:
                         ipdb.set_trace()
             jobs_embs.append(job_emb)
