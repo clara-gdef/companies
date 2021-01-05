@@ -101,7 +101,7 @@ class InstanceClassifierDisc(pl.LightningModule):
             self.log("train_loss_st", loss, on_step=True, on_epoch=False)
             self.log("train_acc", 100 * accuracy_score(tmp_labels[0],
                                                        torch.argmax(output, dim=-1).detach().cpu().numpy()), on_step=False, on_epoch=True)
-        self.training_losses.append(loss.item())
+#        self.training_losses.append(loss.item())
         return {'loss': loss}
 
     def validation_step(self, batch, batch_nb):

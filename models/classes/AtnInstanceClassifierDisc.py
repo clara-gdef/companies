@@ -97,11 +97,12 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             # the model is specialized
             loss = torch.nn.functional.cross_entropy(output,
                                                      torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
-            self.log("train_acc",
-                     100 * accuracy_score(tmp_labels[0], torch.argmax(output, dim=-1).detach().cpu().numpy()))
-
-        self.training_losses.append(loss.item())
-        self.log("train_loss_CE", loss)
+            self.log("train_loss_ep", loss, on_step=False, on_epoch=True)
+            self.log("train_loss_st", loss, on_step=True, on_epoch=False)
+            self.log("train_acc", 100 * accuracy_score(tmp_labels[0],
+                                                       torch.argmax(output, dim=-1).detach().cpu().numpy()), on_step=False, on_epoch=True)
+        # self.training_losses.append(loss.item())
+        # self.log("train_loss_CE", loss)
         return {'loss': loss}
 
     def validation_step(self, mini_batch, batch_nb):
@@ -127,11 +128,10 @@ class AtnInstanceClassifierDisc(pl.LightningModule):
             # the model is specialized
             val_loss = torch.nn.functional.cross_entropy(output,
                                                          torch.LongTensor(tmp_labels).view(output.shape[0]).cuda())
-            self.log("valid_acc", 100 * accuracy_score(tmp_labels[0],
-                                                       torch.argmax(output, dim=-1).detach().cpu().numpy()))
-        preds = [i.item() for i in torch.argmax(output, dim=1)]
         # res_dict = get_metrics(preds, tmp_labels[0], self.get_num_classes(), "valid", 0)
-        self.log("val_loss", val_loss)
+        self.log("val_loss", val_loss, prog_bar=True)
+        self.log("valid_acc", 100 * accuracy_score(tmp_labels[0],
+                                                   torch.argmax(output, dim=-1).detach().cpu().numpy()))
         return {'val_loss': val_loss}
 
     def epoch_end(self):

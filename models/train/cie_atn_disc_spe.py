@@ -134,10 +134,10 @@ def init_lightning(hparams, xp_title):
 
     checkpoint_callback = ModelCheckpoint(
         filepath=os.path.join(model_path, '{epoch:02d}'),
-        save_top_k=True,
+        save_top_k=1,
         verbose=True,
-        monitor='val_loss',
-        mode='min',
+        monitor='valid_acc',
+        mode='max',
         prefix=''
     )
     print("callback initiated.")

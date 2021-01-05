@@ -23,8 +23,8 @@ def grid_search(hparams):
                     dico["middle_size"] = mid_size
                     arg = DotDict(dico)
                     if hparams.TRAIN == "True":
-                        train.atn_disc_spe.init(arg)
-                    test_results[lr][b_size][mid_size] = eval.atn_disc_spe.main(arg)
+                        train.cie_atn_disc_spe.init(arg)
+                    test_results[lr][b_size][mid_size] = eval.cie_atn_disc_spe.main(arg)
             else:
                 print("Grid Search for (lr=" + str(lr) + ", b_size=" + str(b_size) + ")")
                 dico['lr'] = lr
@@ -32,13 +32,14 @@ def grid_search(hparams):
                 dico["middle_size"] = hparams.middle_size
                 arg = DotDict(dico)
                 if hparams.TRAIN == "True":
-                    train.atn_disc_spe.init(arg)
-
-                test_results[lr][b_size] = eval.atn_disc_spe.init(arg)
-        ## TODO REMOVE THIS - UNINDENT
-        res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_" + hparams.model_type + "_topK_disc_spe_" + hparams.rep_type + "_" + hparams.input_type)
-        with open(res_path, "wb") as f:
-            pkl.dump(test_results, f)
+                    train.cie_atn_disc_spe.init(arg)
+                if hparams.EVAL == "True":
+                    test_results[lr][b_size] = eval.cie_atn_disc_spe.init(arg)
+                    
+        if hparams.EVAL == "True":
+            res_path = os.path.join(CFG["gpudatadir"], "EVAL_gs_" + hparams.model_type + "_topK_disc_spe_" + hparams.rep_type + "_" + hparams.input_type)
+            with open(res_path, "wb") as f:
+                pkl.dump(test_results, f)
 
 
 def init_args(hparams):
@@ -76,7 +77,7 @@ if __name__ == "__main__":
     parser.add_argument("--frozen", type=str, default="False")
     parser.add_argument("--init_weights", type=str, default="False")
     parser.add_argument("--DEBUG", default="False")
-    parser.add_argument("--model_type", type=str, default="atn_disc_spe_new")
+    parser.add_argument("--model_type", type=str, default="jobAtn_disc_spe")
     parser.add_argument("--middle_size", type=int, default=50)
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--b_size", nargs='+', default=[64, 256, 16])
