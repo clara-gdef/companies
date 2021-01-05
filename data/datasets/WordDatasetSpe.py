@@ -68,8 +68,9 @@ class WordDatasetSpe(Dataset):
                 self.tuples.append(new_p)
         # standardize word embeddings
         tups = self.tuples
+        prof_emb_tmp = torch.stack([i[-2] for i in self.tuples])
         self.tuples = []
-        prof_emb_tmp = torch.stack([i[-1] for i in self.tuples])
+
         if ds_std is None and ds_mean is None:
             ipdb.set_trace()
             ds_mean = np.mean(prof_emb_tmp, axis=0)
@@ -103,7 +104,6 @@ class WordDatasetSpe(Dataset):
                             ipdb.set_trace()
                 jobs_embs[num_job, :, :] = job_emb
         new_p.append(jobs_embs)
-        ipdb.set_trace()
         new_p.append(lookup[person[0]]["cie_label"])
         return new_p
 
