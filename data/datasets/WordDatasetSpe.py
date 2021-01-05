@@ -2,7 +2,6 @@ import os
 import pickle as pkl
 import ipdb
 import itertools
-import torch
 import numpy as np
 from tqdm import tqdm
 from torch.utils.data import Dataset
@@ -65,6 +64,9 @@ class WordDatasetSpe(Dataset):
             if person[0] in indices:
                 new_p = self.build_new_person(person, embedder, lookup)
                 self.tuples.append(new_p)
+        del lookup
+        del embedder
+        del indices
         # standardize word embeddings
         tups = self.tuples
         prof_emb_tmp = np.concatenate([i[-2] for i in self.tuples])
