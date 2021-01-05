@@ -62,7 +62,7 @@ class WordDatasetSpe(Dataset):
             ppl = pkl.load(f)
         for person in tqdm(ppl):
             if person[0] in indices:
-                new_p = self.build_new_person(person, embedder, lookup,  ds_mean, ds_std)
+                new_p = self.build_new_person(person, embedder, lookup)
                 self.tuples.append(new_p)
         # standardize word embeddings
         tups = self.tuples
