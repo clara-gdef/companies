@@ -4,3 +4,4 @@ from .DiscriminativeSpecializedDataset import DiscriminativeSpecializedDataset
 from .JobsDatasetPoly import JobsDatasetPoly
 from .JobsDatasetSpe import JobsDatasetSpe
 from .DiscriminativeCoraDataset import DiscriminativeCoraDataset
+from .WordDatasetSpe import WordDatasetSpe
