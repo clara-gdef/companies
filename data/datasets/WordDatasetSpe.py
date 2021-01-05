@@ -95,7 +95,7 @@ class WordDatasetSpe(Dataset):
                 if place < self.MAX_WORD_COUNT:
                     tmp = embedder(word)
                     if self.rep_type == "ft":
-                        job_emb[place, :] = tmp
+                        job_emb[place, :] = torch.from_numpy(tmp)
                     else:
                         ipdb.set_trace()
             jobs_embs.append(job_emb)
