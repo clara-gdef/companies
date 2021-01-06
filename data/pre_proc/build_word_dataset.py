@@ -21,7 +21,8 @@ def main(hparams):
             "embedder": embedder,
             "min_job_count": hparams.min_job_count,
             "max_job_count": 9,# covers 90% of the dataset
-            "max_word_count": 126, # covers 90% of the dataset
+            #"max_word_count": 126, # covers 90% of the dataset
+            "max_word_count": 41,  # covers 50% of the dataset
             "load": False,
             "subsample":0
         }
